@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17.5-alpine3.22
+    container_name: postgres
+    restart: always
+    env_file: .env
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4:9.4
+    container_name: pgadmin
+    restart: always
+    env_file: .env
+    volumes:
+      - local_pgadmin_data:/var/lib/pgadmin
+    ports:
+      - 5433:80
+    depends_on:
+      - postgres
+
+volumes:
+  local_postgres_data:
+  local_pgadmin_data:
