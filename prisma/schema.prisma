@@ -1,0 +1,522 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../node_modules/.prisma/client"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["auth", "academic", "infraestructure", "inventory", "public"]
+}
+
+// # User - Teachers
+model Role {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String // @db.VarChar(240)
+  description String?
+  users       User[]
+
+  @@map("roles")
+  @@schema("auth")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  email     String   @unique
+  code      String?  @unique
+  hash      String
+  hashedRt  String?
+  roleId    String   @db.Uuid
+  teacherId String?  @db.Uuid // optional
+
+  // Relations
+  role    Role     @relation(fields: [roleId], references: [id])
+  teacher Teacher? @relation(fields: [teacherId], references: [id])
+
+  @@map("users") // use map
+  @@schema("auth")
+}
+
+model Teacher {
+  id             String  @id @default(uuid()) @db.Uuid
+  undergradId    String? @db.Uuid
+  postgradId     String? @db.Uuid
+  categoryId     String  @db.Uuid
+  contractTypeId String  @db.Uuid
+  shiftId        String  @db.Uuid
+
+  // Relations
+  undergrad       Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
+  postgrad        Postgraduate_Degree?          @relation(fields: [postgradId], references: [id])
+  category        Teacher_Category              @relation(fields: [categoryId], references: [id])
+  contractType    Contract_Type                 @relation(fields: [contractTypeId], references: [id])
+  shift           Shift                         @relation(fields: [shiftId], references: [id])
+  users           User[]
+  positionHeld    Teacher_Department_Position[]
+  academicReports Academic_Assignment_Report[]
+
+  @@map("teachers")
+  @@schema("academic")
+}
+
+model Undergraduate_Degree {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  teachers Teacher[]
+
+  @@map("undergraduate_degrees")
+  @@schema("academic")
+}
+
+model Postgraduate_Degree {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  teachers Teacher[]
+
+  @@map("postgraduate_degrees")
+  @@schema("academic")
+}
+
+model Teacher_Category {
+  id          String @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+
+  // Relations
+  teachers Teacher[]
+
+  @@map("teacher_categories")
+  @@schema("academic")
+}
+
+model Contract_Type {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  teachers Teacher[]
+
+  @@map("contract_types")
+  @@schema("academic")
+}
+
+model Shift {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  teachers Teacher[]
+
+  @@map("shifts")
+  @@schema("academic")
+}
+
+// # University
+model Center {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  departments Department[]
+  Building    Building[]
+
+  @@map("centers")
+  @@schema("academic")
+}
+
+model Faculty {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  departments Department[]
+
+  @@map("faculties")
+  @@schema("academic")
+}
+
+model Department {
+  id        String @id @default(uuid()) @db.Uuid
+  name      String
+  codigo    String
+  uvs       Int
+  centerId  String @db.Uuid
+  facultyId String @db.Uuid
+
+  // Relations
+  center              Center                        @relation(fields: [centerId], references: [id])
+  faculty             Faculty                       @relation(fields: [facultyId], references: [id])
+  teacherAppointments Teacher_Department_Position[]
+  academicReports     Academic_Assignment_Report[]
+  courses             Course[]
+
+  @@map("departments")
+  @@schema("academic")
+}
+
+model Course {
+  id           String @id @default(uuid()) @db.Uuid
+  name         String
+  code         String
+  uvs          Int
+  departmentId String @db.Uuid
+
+  // Relations
+  department       Department         @relation(fields: [departmentId], references: [id])
+  Course_Classroom Course_Classroom[]
+
+  @@map("courses")
+  @@schema("academic")
+}
+
+model Teacher_Department_Position {
+  id           String    @id @default(uuid()) @db.Uuid
+  teacherId    String    @db.Uuid
+  departmentId String    @db.Uuid
+  positionId   String    @db.Uuid
+  startDate    DateTime
+  endDate      DateTime?
+
+  // Relations
+  position   Position   @relation(fields: [positionId], references: [id])
+  teacher    Teacher    @relation(fields: [teacherId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+
+  @@unique([teacherId, departmentId, positionId])
+  @@map("teacher_department_positions")
+  @@schema("academic")
+}
+
+// ## cargos académicos
+model Position {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  appointments Teacher_Department_Position[]
+
+  @@map("positions")
+  @@schema("academic")
+}
+
+// # Classrooms
+model Building {
+  id       String  @id @default(uuid()) @db.Uuid
+  name     String
+  color    String?
+  floors   Int?
+  centerId String  @db.Uuid
+  center   Center  @relation(fields: [centerId], references: [id])
+
+  // Relationss
+  classrooms Classroom[]
+
+  @@map("buildings")
+  @@schema("infraestructure")
+}
+
+model Classroom {
+  id               String  @id @default(uuid()) @db.Uuid
+  name             String
+  desks            Int
+  tables           Int
+  powerOutlets     Int
+  lights           Int
+  blackboards      Int
+  lecterns         Int
+  windows          Int
+  buildingId       String  @db.Uuid
+  roomTypeId       String  @db.Uuid
+  connectivityId   String? @db.Uuid
+  audioEquipmentId String? @db.Uuid
+
+  // Relations
+  building         Building           @relation(fields: [buildingId], references: [id])
+  roomType         Room_Type          @relation(fields: [roomTypeId], references: [id])
+  connectivity     Connectivity?      @relation(fields: [connectivityId], references: [id])
+  audioEquipment   Audio_Equipment?   @relation(fields: [audioEquipmentId], references: [id])
+  airConditioners  AirConditioner[]
+  courseClassrooms Course_Classroom[]
+
+  @@map("classrooms")
+  @@schema("infraestructure")
+}
+
+model Room_Type {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  classrooms Classroom[]
+
+  @@map("room_types")
+  @@schema("infraestructure")
+}
+
+model Connectivity {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  classrooms Classroom[]
+
+  @@map("connectivities")
+  @@schema("inventory")
+}
+
+model Audio_Equipment {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  classrooms Classroom[]
+
+  @@map("audio_equipments")
+  @@schema("inventory")
+}
+
+model Brand {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Relations
+  pcEquipments    PC_Equipment[]
+  airConditioners AirConditioner[]
+
+  @@map("brands")
+  @@schema("inventory")
+}
+
+model Condition {
+  id     String @id @default(uuid()) @db.Uuid
+  status String
+
+  // Relations
+  pcEquipments    PC_Equipment[]
+  airConditioners AirConditioner[]
+
+  @@map("conditions")
+  @@schema("inventory")
+}
+
+model AirConditioner {
+  id          String  @id @default(uuid()) @db.Uuid
+  description String?
+  brandId     String  @db.Uuid
+  conditionId String  @db.Uuid
+  spaceId     String? @db.Uuid
+
+  // Relations
+  brand     Brand      @relation(fields: [brandId], references: [id])
+  condition Condition  @relation(fields: [conditionId], references: [id])
+  space     Classroom? @relation(fields: [spaceId], references: [id])
+
+  @@map("air_conditioners")
+  @@schema("inventory")
+}
+
+model PC_Equipment {
+  id              String  @id @default(uuid()) @db.Uuid
+  inventoryNumber String
+  processor       String
+  ram             String
+  disk            String
+  brandId         String  @db.Uuid
+  conditionId     String  @db.Uuid
+  monitorTypeId   String  @db.Uuid
+  monitorSizeId   String  @db.Uuid
+  pcTypeId        String  @db.Uuid
+  spaceId         String? @db.Uuid
+  departmentId    String? @db.Uuid
+
+  // Relations
+  brand       Brand        @relation(fields: [brandId], references: [id])
+  condition   Condition    @relation(fields: [conditionId], references: [id])
+  monitorType Monitor_Type @relation(fields: [monitorTypeId], references: [id])
+  monitorSize Monitor_Size @relation(fields: [monitorSizeId], references: [id])
+  pcType      PC_Type      @relation(fields: [pcTypeId], references: [id])
+
+  @@map("pc_equipments")
+  @@schema("inventory")
+}
+
+model Monitor_Type {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  pcEquipments PC_Equipment[]
+
+  @@map("monitor_types")
+  @@schema("inventory")
+}
+
+model Monitor_Size {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  pcEquipments PC_Equipment[]
+
+  @@map("monitor_sizes")
+  @@schema("inventory")
+}
+
+model PC_Type {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  pcEquipments PC_Equipment[]
+
+  @@map("pc_types")
+  @@schema("inventory")
+}
+
+model Course_Classroom {
+  id                 String   @id @default(uuid()) @db.Uuid
+  courseId           String   @db.Uuid
+  classroomId        String   @db.Uuid
+  assignmentReportId String   @db.Uuid
+  startHour          DateTime
+  endHour            DateTime
+  studentCount       Int
+  modalityId         String   @db.Uuid
+  nearGraduation     Boolean
+  groupCode          String   @default("G1") // "G1", "G2" => identificar secciones/grupos, por si se abre doble vez una clase, la otra alternativa es hacer uso de startHour como unique tambien
+
+  // Relations
+  course           Course                     @relation(fields: [courseId], references: [id])
+  classroom        Classroom                  @relation(fields: [classroomId], references: [id])
+  assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
+  Modality         Modality                   @relation(fields: [modalityId], references: [id])
+  teachingSessions Teaching_Session[]
+
+  @@unique([courseId, classroomId, assignmentReportId, groupCode])
+  @@map("course_classrooms")
+  @@schema("academic")
+}
+
+model Modality {
+  id String @id @default(uuid()) @db.Uuid
+  Id String
+
+  // Relations
+  courseClassrooms Course_Classroom[]
+
+  @@map("modalities")
+  @@schema("academic")
+}
+
+// # Academic Assignment
+model Academic_Assignment_Report {
+  id           String @id @default(uuid()) @db.Uuid
+  year         Int
+  pac          String
+  teacherId    String @db.Uuid
+  departmentId String @db.Uuid
+
+  // Relations
+  department              Department               @relation(fields: [departmentId], references: [id])
+  teacher                 Teacher                  @relation(fields: [teacherId], references: [id])
+  courseClassrooms        Course_Classroom[]
+  complementaryActivities Complementary_Activity[]
+
+  @@map("academic_assignment_reports")
+  @@schema("academic")
+}
+
+model Teaching_Session {
+  id                String   @id @default(uuid()) @db.Uuid
+  consultHour       DateTime
+  tutoringHour      DateTime
+  APB               Int
+  RPB               Int
+  NSP               Int
+  ABD               Int
+  courseClassroomId String   @db.Uuid
+
+  // Relations
+  courseClassroom Course_Classroom @relation(fields: [courseClassroomId], references: [id])
+
+  @@map("teaching_sessions")
+  @@schema("academic")
+}
+
+model Complementary_Activity {
+  id                 String  @id @default(uuid()) @db.Uuid
+  name               String
+  isRegistered       Boolean
+  fileNumber         String
+  progressLevel      String
+  assignmentReportId String  @db.Uuid
+  activityTypeId     String  @db.Uuid
+
+  // Relations
+  assignmentReport   Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
+  activityType       Activity_Type              @relation(fields: [activityTypeId], references: [id])
+  verificationMedias Verification_Media[]
+
+  @@map("complementary_activities")
+  @@schema("academic")
+}
+
+model Activity_Type {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+
+  // Relations
+  complementaryActivities Complementary_Activity[]
+
+  @@map("activity_types")
+  @@schema("academic")
+}
+
+model Verification_Media {
+  id               String @id @default(uuid()) @db.Uuid
+  description      String
+  url              String
+  multimediaTypeId String @db.Uuid
+  activityId       String @db.Uuid
+
+  // Relations
+  multimediaType        Multimedia_Type         @relation(fields: [multimediaTypeId], references: [id])
+  complementaryActivity Complementary_Activity? @relation(fields: [activityId], references: [id])
+
+  @@map("verification_medias")
+  @@schema("academic")
+}
+
+model Multimedia_Type {
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+
+  // Relations
+  verificationMedia Verification_Media[]
+
+  @@map("multimedia_types")
+  @@schema("academic")
+}
+
+// model Base {
+//   id String @id @default(uuid()) @db.Uuid
+//
+//   // Relations
+//
+//   @@map("bases")
+// }
