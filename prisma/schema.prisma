@@ -487,13 +487,13 @@ model Course_Stadistic {
 }
 
 model Complementary_Activity {
-  id                 String  @id @default(uuid()) @db.Uuid
+  id                 String   @id @default(uuid()) @db.Uuid
   name               String
-  isRegistered       Boolean
-  fileNumber         String
+  isRegistered       Boolean?
+  fileNumber         String?
   progressLevel      String
-  assignmentReportId String  @db.Uuid
-  activityTypeId     String  @db.Uuid
+  assignmentReportId String   @db.Uuid
+  activityTypeId     String   @db.Uuid
 
   // Relations
   assignmentReport   Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
