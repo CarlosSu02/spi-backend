@@ -388,25 +388,25 @@ model PC_Type {
 }
 
 model Course_Classroom {
-  id                 String   @id @default(uuid()) @db.Uuid
-  courseId           String   @db.Uuid
-  classroomId        String   @db.Uuid
-  assignmentReportId String   @db.Uuid
-  startHour          DateTime
-  endHour            DateTime
-  studentCount       Int
-  modalityId         String   @db.Uuid
-  nearGraduation     Boolean
-  groupCode          String   @default("G1") // "G1", "G2" => identificar secciones/grupos, por si se abre doble vez una clase, la otra alternativa es hacer uso de startHour como unique tambien
+  id                String   @id @default(uuid()) @db.Uuid
+  courseId          String   @db.Uuid
+  classroomId       String   @db.Uuid
+  teachingSessionId String   @db.Uuid
+  startHour         DateTime
+  endHour           DateTime
+  studentCount      Int
+  modalityId        String   @db.Uuid
+  nearGraduation    Boolean
+  groupCode         String   @default("G1") // "G1", "G2" => identificar secciones/grupos, por si se abre doble vez una clase, la otra alternativa es hacer uso de startHour como unique tambien
 
   // Relations
-  course           Course                     @relation(fields: [courseId], references: [id])
-  classroom        Classroom                  @relation(fields: [classroomId], references: [id])
-  assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
-  Modality         Modality                   @relation(fields: [modalityId], references: [id])
-  teachingSessions Teaching_Session[]
+  course           Course             @relation(fields: [courseId], references: [id])
+  classroom        Classroom          @relation(fields: [classroomId], references: [id])
+  teachingSession  Teaching_Session   @relation(fields: [teachingSessionId], references: [id])
+  Modality         Modality           @relation(fields: [modalityId], references: [id])
+  courseStadistics Course_Stadistic[]
 
-  @@unique([courseId, classroomId, assignmentReportId, groupCode])
+  @@unique([courseId, classroomId, teachingSessionId, groupCode])
   @@map("course_classrooms")
   @@schema("academic")
 }
@@ -422,38 +422,65 @@ model Modality {
   @@schema("academic")
 }
 
+// # Academic Period
+model Academic_Period {
+  id           String @id @default(uuid()) @db.Uuid
+  year         Int
+  pac          Int
+  pac_modality String @default("Trimestre") // Trimestre o semestres
+  // Nos da la posibilidad de agregar mas datos y con la posibilidad de estandarizarlos o que no se repitan
+
+  // Relations
+  assignmentReports Academic_Assignment_Report[]
+
+  @@map("academic_periods")
+  @@schema("academic")
+}
+
 // # Academic Assignment
 model Academic_Assignment_Report {
   id           String @id @default(uuid()) @db.Uuid
-  year         Int
-  pac          String
   teacherId    String @db.Uuid
   departmentId String @db.Uuid
+  periodId     String @db.Uuid
 
   // Relations
   department              Department               @relation(fields: [departmentId], references: [id])
   teacher                 Teacher                  @relation(fields: [teacherId], references: [id])
-  courseClassrooms        Course_Classroom[]
+  period                  Academic_Period          @relation(fields: [periodId], references: [id])
   complementaryActivities Complementary_Activity[]
+  teachingSessions        Teaching_Session[]
 
   @@map("academic_assignment_reports")
   @@schema("academic")
 }
 
 model Teaching_Session {
-  id                String   @id @default(uuid()) @db.Uuid
-  consultHour       DateTime
-  tutoringHour      DateTime
+  id                 String    @id @default(uuid()) @db.Uuid
+  consultHour        DateTime?
+  tutoringHour       DateTime?
+  assignmentReportId String    @db.Uuid
+
+  // Relations
+  assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
+  courseClassrooms Course_Classroom[]
+
+  @@map("teaching_sessions")
+  @@schema("academic")
+}
+
+model Course_Stadistic {
+  id                String @id @default(uuid()) @db.Uuid
   APB               Int
   RPB               Int
   NSP               Int
   ABD               Int
-  courseClassroomId String   @db.Uuid
+  courseClassroomId String @db.Uuid
 
   // Relations
   courseClassroom Course_Classroom @relation(fields: [courseClassroomId], references: [id])
 
-  @@map("teaching_sessions")
+  @@map("course_staditics")
   @@schema("academic")
 }
 
