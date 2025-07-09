@@ -28,16 +28,17 @@ model Role {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String
-  email     String   @unique
-  code      String?  @unique
-  hash      String
-  hashedRt  String?
-  roleId    String   @db.Uuid
-  teacherId String?  @db.Uuid // optional
+  id           String   @id @default(uuid()) @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  name         String
+  email        String   @unique
+  code         String?  @unique
+  hash         String
+  hashedRt     String?
+  activeStatus Boolean  @default(true) // para no eliminar al usuario, solo desactivarlo
+  roleId       String   @db.Uuid
+  teacherId    String?  @db.Uuid // optional
 
   // Relations
   role    Role     @relation(fields: [roleId], references: [id])
@@ -169,11 +170,12 @@ model Department {
 }
 
 model Course {
-  id           String @id @default(uuid()) @db.Uuid
+  id           String  @id @default(uuid()) @db.Uuid
   name         String
   code         String
   uvs          Int
-  departmentId String @db.Uuid
+  activeStatus Boolean @default(true) // por si cambian de clases, solo se desactivan para evitar ser seleccionadas
+  departmentId String  @db.Uuid
 
   // Relations
   department       Department         @relation(fields: [departmentId], references: [id])
