@@ -38,11 +38,10 @@ model User {
   hashedRt     String?
   activeStatus Boolean  @default(true) // para no eliminar al usuario, solo desactivarlo
   roleId       String   @db.Uuid
-  teacherId    String?  @db.Uuid // optional
 
   // Relations
-  role    Role     @relation(fields: [roleId], references: [id])
-  teacher Teacher? @relation(fields: [teacherId], references: [id])
+  role     Role      @relation(fields: [roleId], references: [id])
+  teachers Teacher[]
 
   @@map("users") // use map
   @@schema("auth")
@@ -55,6 +54,7 @@ model Teacher {
   categoryId     String  @db.Uuid
   contractTypeId String  @db.Uuid
   shiftId        String  @db.Uuid
+  userId         String  @db.Uuid
 
   // Relations
   undergrad       Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
@@ -62,7 +62,7 @@ model Teacher {
   category        Teacher_Category              @relation(fields: [categoryId], references: [id])
   contractType    Contract_Type                 @relation(fields: [contractTypeId], references: [id])
   shift           Shift                         @relation(fields: [shiftId], references: [id])
-  users           User[]
+  user            User                          @relation(fields: [userId], references: [id])
   positionHeld    Teacher_Department_Position[]
   academicReports Academic_Assignment_Report[]
 
