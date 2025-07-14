@@ -18,10 +18,15 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     switch (exception.code) {
       case 'P2002': {
         const status = HttpStatus.CONFLICT;
+        const { modelName, target } = exception.meta! as {
+          modelName: string;
+          target: string[];
+        };
+        const fields = Array.isArray(target) ? target.join(', ') : target;
 
         response.status(status).json({
           statusCode: status,
-          message: message,
+          message: `Hay una violación de restricciones única, un nuevo registro <${modelName}> no puede ser creado con ${fields}.`,
         });
 
         break;
