@@ -58,11 +58,16 @@ export class AuthService {
   // }
 
   async signinLocal(dto: AuthSigninDto): Promise<TTokens> {
-    const { email, password } = dto;
+    const { code, email, password } = dto;
 
-    const user = await this.prisma.user.findUnique({
+    if (!code && !email)
+      throw new BadRequestException(
+        'Debe ingresar el código de usuario o el email para poder iniciar sesión.',
+      );
+
+    const user = await this.prisma.user.findFirst({
       where: {
-        email,
+        OR: [{ email }, { code }],
       },
     });
 
@@ -72,7 +77,7 @@ export class AuthService {
 
     if (!passwordMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email ?? user.code);
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
@@ -107,7 +112,7 @@ export class AuthService {
 
     if (!rtMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email);
+    const tokens = await this.getTokens(user.id, user.email ?? user.code);
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
