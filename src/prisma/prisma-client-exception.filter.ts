@@ -26,13 +26,14 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
 
         response.status(status).json({
           statusCode: status,
-          message: `Hay una violación de restricciones única, un nuevo registro <${modelName}> no puede ser creado con ${fields}.`,
+          // message: `Hay una violación de restricciones única, un nuevo registro <${modelName}> no puede ser creado con ${fields}.`,
+          message: `El valor proporcionado para <${fields}> ya está en uso. Por favor, elige un nombre diferente para crear un nuevo registro de <${modelName}>`,
         });
 
         break;
       }
 
-      case 'P2005': {
+      case 'P2025': {
         const status = HttpStatus.NOT_FOUND;
 
         response.status(status).json({
