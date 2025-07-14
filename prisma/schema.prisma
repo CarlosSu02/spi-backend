@@ -19,7 +19,7 @@ datasource db {
 // # User - Teachers
 model Role {
   id          String  @id @default(uuid()) @db.Uuid
-  name        String // @db.VarChar(240)
+  name        String  @unique
   description String?
   users       User[]
 
