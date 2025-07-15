@@ -14,10 +14,9 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
   catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
     console.error(exception.message);
 
-    const context = host.switchToHttp();
-
-    const response = context.getResponse<Response>();
-    const request = context.getRequest<Request>();
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     // const message = exception.message.replace(/\n/g, '');
     const { modelName, target } = exception.meta! as {
