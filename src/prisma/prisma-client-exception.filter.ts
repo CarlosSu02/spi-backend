@@ -19,15 +19,15 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     const response = context.getResponse<Response>();
     const request = context.getRequest<Request>();
 
-    const message = exception.message.replace(/\n/g, '');
+    // const message = exception.message.replace(/\n/g, '');
+    const { modelName, target } = exception.meta! as {
+      modelName: string;
+      target: string[];
+    };
 
     switch (exception.code) {
       case 'P2002': {
         const status = HttpStatus.CONFLICT;
-        const { modelName, target } = exception.meta! as {
-          modelName: string;
-          target: string[];
-        };
         const fields = Array.isArray(target) ? target.join(', ') : target;
 
         response.status(status).json({
@@ -44,7 +44,10 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
 
         response.status(status).json({
           statusCode: status,
-          message: message,
+          // message: message,
+          message: `No se encontraron registros con el id <${
+            request.params['id']
+          }> en el modelo <${modelName}>.`,
         });
 
         break;
