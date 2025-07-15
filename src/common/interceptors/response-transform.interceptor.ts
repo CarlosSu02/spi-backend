@@ -36,7 +36,6 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<IResponse<T>> {
-    console.log('here');
     return next.handle().pipe(
       map((res: unknown) => this.responseHandler(res, context)),
       catchError((err: HttpException) =>
@@ -60,7 +59,8 @@ export class TransformInterceptor<T>
       statusCode: status,
       path: request.url,
       message: exception.message,
-      result: exception,
+      // result: exception,
+      // result: exception.getResponse(),
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     });
   }
