@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import * as argon from 'argon2';
 
@@ -34,16 +33,28 @@ async function main() {
 
   console.log({ roles });
 
-  const adminRole = await prisma.role.findFirst({
-    where: {
-      name: 'ADMIN',
-    },
+  // const adminRole = await prisma.role.findFirst({
+  //   where: {
+  //     name: 'ADMIN',
+  //   },
+  //   select: {
+  //     id: true,
+  //   },
+  // });
+
+  const allRoles: { id: string; name: string }[] = await prisma.role.findMany({
+    // where: {
+    //   name: 'ADMIN',
+    // },
     select: {
       id: true,
+      name: true,
     },
   });
 
-  if (!adminRole) throw new Error('Error: Rol Admin no encontrado.');
+  if (!allRoles) throw new Error('Error: Roles no encontrados.');
+
+  const rolesData = handleRoles(allRoles);
 
   const users = await prisma.user.createMany({
     data: [
@@ -52,7 +63,21 @@ async function main() {
         email: 'admin1@gmail.com',
         code: '12345',
         hash: await argon.hash('12345'),
-        roleId: adminRole.id,
+        roleId: rolesData.ADMIN,
+      },
+      {
+        name: 'user2',
+        email: 'teacher1@gmail.com',
+        code: '54321',
+        hash: await argon.hash('12345'),
+        roleId: rolesData.DOCENTE,
+      },
+      {
+        name: 'user3',
+        email: 'rrhh1@gmail.com',
+        code: '78900',
+        hash: await argon.hash('12345'),
+        roleId: rolesData.RRHH,
       },
     ],
     skipDuplicates: true,
@@ -70,3 +95,17 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
+const handleRoles = (array: { id: string; name: string }[]) => {
+  // const values: Record<string, string> = {};
+  //
+  // array.forEach((el) => {
+  //   values[el.name] = el.id;
+  // });
+  //
+  // return values;
+
+  const roles = Object.fromEntries(array.map((role) => [role.name, role.id]));
+
+  return roles;
+};
