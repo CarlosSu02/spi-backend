@@ -1,8 +1,13 @@
 import { ArgumentsHost, Catch, HttpStatus } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Prisma } from '@prisma/client';
+import { Request, Response } from 'express';
 
-import { Response } from 'express';
+enum EMethodsTranslated {
+  POST = 'crear',
+  PUT = 'actualizar',
+  PATCH = 'modificar',
+}
 
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
@@ -12,6 +17,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     const context = host.switchToHttp();
 
     const response = context.getResponse<Response>();
+    const request = context.getRequest<Request>();
 
     const message = exception.message.replace(/\n/g, '');
 
@@ -27,7 +33,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         response.status(status).json({
           statusCode: status,
           // message: `Hay una violación de restricciones única, un nuevo registro <${modelName}> no puede ser creado con ${fields}.`,
-          message: `El valor proporcionado para <${fields}> ya está en uso. Por favor, elige un nombre diferente para crear un nuevo registro de <${modelName}>`,
+          message: `El valor proporcionado para <${fields}> ya está en uso. Por favor, elige un nombre diferente para ${EMethodsTranslated[request.method]} el registro de <${modelName}>`,
         });
 
         break;
