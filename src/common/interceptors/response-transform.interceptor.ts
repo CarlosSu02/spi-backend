@@ -11,6 +11,7 @@ import { format } from 'date-fns';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { RESPONSE_MESSAGE_METADATA } from '../decorators';
+import { Prisma } from '@prisma/client';
 
 export interface IResponse<T> {
   status: boolean;
@@ -30,6 +31,14 @@ export interface IResponse<T> {
 export class TransformInterceptor<T>
   implements NestInterceptor<T, IResponse<T>>
 {
+  private readonly METHOD_TRANSLATIONS: Record<string, string> = {
+    POST: 'crear',
+    PUT: 'actualizar',
+    PATCH: 'modificar',
+    DELETE: 'eliminar',
+    GET: 'obtener',
+  };
+
   constructor(private reflector: Reflector) {}
 
   intercept(
@@ -38,27 +47,39 @@ export class TransformInterceptor<T>
   ): Observable<IResponse<T>> {
     return next.handle().pipe(
       map((res: unknown) => this.responseHandler(res, context)),
-      catchError((err: HttpException) =>
+      catchError((err: HttpException | Prisma.PrismaClientKnownRequestError) =>
         throwError(() => this.errorHandler(err, context)),
       ),
     );
   }
 
-  errorHandler(exception: HttpException, context: ExecutionContext) {
+  errorHandler(
+    exception: HttpException | Prisma.PrismaClientKnownRequestError,
+    context: ExecutionContext,
+  ) {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    // const status =
+    //   exception instanceof HttpException
+    //     ? exception.getStatus()
+    //     : exception instanceof Prisma.PrismaClientKnownRequestError
+    //       ? GetPrismaStatus(exception.code)
+    //       : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const [status, message] =
+      exception instanceof HttpException // if
+        ? [exception.getStatus(), exception.message]
+        : exception instanceof Prisma.PrismaClientKnownRequestError // elseif
+          ? this.getPrismaError(request, exception)
+          : [HttpStatus.INTERNAL_SERVER_ERROR, 'Error internal server.'];
 
     response.status(status).json({
       status: false,
       statusCode: status,
       path: request.url,
-      message: exception.message,
+      message,
       // result: exception,
       // result: exception.getResponse(),
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
@@ -84,5 +105,49 @@ export class TransformInterceptor<T>
       result: res,
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     };
+  }
+
+  getPrismaError(
+    request: Request,
+    exception: Prisma.PrismaClientKnownRequestError,
+  ): [number, string] {
+    const { modelName, target } =
+      (exception.meta! as {
+        modelName: string;
+        target: string[];
+      }) || {};
+
+    switch (exception.code) {
+      case 'P2002': {
+        const status = HttpStatus.CONFLICT;
+        const fields = Array.isArray(target) ? target.join(', ') : target;
+
+        const message = `El valor proporcionado para <${fields}> ya está en uso. Por favor, elige un nombre diferente para ${this.METHOD_TRANSLATIONS[request.method]} el registro de <${modelName}>`;
+
+        // break;
+        return [status, message];
+      }
+
+      case 'P2025': {
+        const status = HttpStatus.NOT_FOUND;
+        const message = `No se encontraron registros con el id <${
+          request.params['id']
+        }> en el modelo <${modelName}>.`;
+
+        // break;
+        return [status, message];
+      }
+
+      case 'P2003': {
+        return [
+          HttpStatus.BAD_REQUEST,
+          `No se puede ${this.METHOD_TRANSLATIONS[request.method] || 'procesar'} el ${modelName} debido a una restricción de clave externa`,
+        ];
+      }
+
+      default:
+        // break;
+        return [HttpStatus.INTERNAL_SERVER_ERROR, exception.message];
+    }
   }
 }
