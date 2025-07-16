@@ -4,13 +4,10 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-// import * as bcrypt from 'bcrypt';
 import * as argon from 'argon2';
 import { TTokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
-import { Prisma } from '@prisma/client';
-import { EPrismaClientErrors } from 'src/prisma/constants';
 import { AuthDto, AuthSigninDto } from './dto';
 
 @Injectable()
@@ -69,6 +66,13 @@ export class AuthService {
       where: {
         OR: [{ email }, { code }],
       },
+      select: {
+        id: true,
+        email: true,
+        code: true,
+        hash: true,
+        role: true,
+      },
     });
 
     if (!user) throw new ForbiddenException('Access denied!');
@@ -77,7 +81,9 @@ export class AuthService {
 
     if (!passwordMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email ?? user.code);
+    const tokens = await this.getTokens(user.id, user.email ?? user.code, [
+      user.role.name,
+    ]);
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
@@ -104,6 +110,14 @@ export class AuthService {
       where: {
         id: userId,
       },
+      select: {
+        id: true,
+        email: true,
+        code: true,
+        hash: true,
+        hashedRt: true,
+        role: true,
+      },
     });
 
     if (!user || !user.hashedRt) throw new ForbiddenException('Access denied!');
@@ -112,7 +126,9 @@ export class AuthService {
 
     if (!rtMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email ?? user.code);
+    const tokens = await this.getTokens(user.id, user.email ?? user.code, [
+      user.role.name,
+    ]);
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
@@ -136,12 +152,16 @@ export class AuthService {
   //   return bcrypt.hash(data, 10);
   // }
 
-  async getTokens(userId: string, email: string): Promise<TTokens> {
+  async getTokens(
+    userId: string,
+    email: string,
+    roles: string[],
+  ): Promise<TTokens> {
     const [at, rt] = await Promise.all([
       // access token
       this.jwtService.signAsync(
-        { sub: userId, email },
-        { secret: jwtConstants.atSecret, expiresIn: 60 * 15 }, // 15 minutes => '15m'
+        { sub: userId, email, roles },
+        // { secret: jwtConstants.atSecret, expiresIn: 60 * 15 }, // 15 minutes => '15m'
       ),
       // refresh token
       this.jwtService.signAsync(
