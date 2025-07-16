@@ -75,13 +75,28 @@ export class TransformInterceptor<T>
           ? this.getPrismaError(request, exception)
           : [HttpStatus.INTERNAL_SERVER_ERROR, 'Error internal server.'];
 
+    interface IHEWithMessage extends HttpException {
+      message: string;
+    }
+
+    const resultMessage =
+      exception instanceof HttpException && exception.getResponse()
+        ? (exception.getResponse() as IHEWithMessage).message
+        : [];
+
+    const uniqueMessages = [...new Set(resultMessage)]; // Eliminar duplicados
+
     response.status(status).json({
       status: false,
       statusCode: status,
       path: request.url,
       message,
-      // result: exception,
-      // result: exception.getResponse(),
+      // result:
+      // exception instanceof HttpException &&
+      // Object.entries(exception).includes('response') &&
+      // exception.reponse,
+      // result: exception instanceof HttpException && exception.getResponse(),
+      result: uniqueMessages,
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     });
   }
