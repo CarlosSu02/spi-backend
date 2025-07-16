@@ -81,7 +81,9 @@ export class TransformInterceptor<T>
 
     const resultMessage =
       exception instanceof HttpException && exception.getResponse()
-        ? (exception.getResponse() as IHEWithMessage).message
+        ? (exception.getResponse() as IHEWithMessage).message === message
+          ? []
+          : (exception.getResponse() as IHEWithMessage).message
         : [];
 
     const uniqueMessages = [...new Set(resultMessage)]; // Eliminar duplicados

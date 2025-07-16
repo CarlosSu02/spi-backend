@@ -72,10 +72,12 @@ export class AuthService {
         code: true,
         hash: true,
         role: true,
+        activeStatus: true,
       },
     });
 
-    if (!user) throw new ForbiddenException('Access denied!');
+    if (!user || (user && !user.activeStatus))
+      throw new ForbiddenException('Access denied!');
 
     const passwordMatches = await argon.verify(user.hash, password);
 
