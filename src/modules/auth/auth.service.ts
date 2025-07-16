@@ -161,7 +161,7 @@ export class AuthService {
       // access token
       this.jwtService.signAsync(
         { sub: userId, email, roles },
-        // { secret: jwtConstants.atSecret, expiresIn: 60 * 15 }, // 15 minutes => '15m'
+        { secret: jwtConstants.atSecret, expiresIn: 60 * 15 }, // 15 minutes => '15m'
       ),
       // refresh token
       this.jwtService.signAsync(
