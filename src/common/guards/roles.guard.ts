@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { TJwtPayload } from 'src/modules/auth/types';
-import { EUserRole } from 'src/modules/users/enums';
+import { EUserRole } from '../enums';
 
 interface IReqWithUser extends Request {
   user: TJwtPayload;
