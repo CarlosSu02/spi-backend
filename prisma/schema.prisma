@@ -48,23 +48,25 @@ model User {
 }
 
 model Teacher {
-  id             String  @id @default(uuid()) @db.Uuid
-  undergradId    String? @db.Uuid
-  postgradId     String? @db.Uuid
-  categoryId     String  @db.Uuid
-  contractTypeId String  @db.Uuid
-  shiftId        String  @db.Uuid
-  userId         String  @db.Uuid
+  id             String @id @default(uuid()) @db.Uuid
+  // undergradId    String? @db.Uuid
+  // postgradId     String? @db.Uuid
+  categoryId     String @db.Uuid
+  contractTypeId String @db.Uuid
+  shiftId        String @db.Uuid
+  userId         String @db.Uuid
 
   // Relations
-  undergrad       Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
-  postgrad        Postgraduate_Degree?          @relation(fields: [postgradId], references: [id])
-  category        Teacher_Category              @relation(fields: [categoryId], references: [id])
-  contractType    Contract_Type                 @relation(fields: [contractTypeId], references: [id])
-  shift           Shift                         @relation(fields: [shiftId], references: [id])
-  user            User                          @relation(fields: [userId], references: [id])
-  positionHeld    Teacher_Department_Position[]
-  academicReports Academic_Assignment_Report[]
+  // undergrad                  Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
+  // postgrad                   Postgraduate_Degree?          @relation(fields: [postgradId], references: [id])
+  category            Teacher_Category              @relation(fields: [categoryId], references: [id])
+  contractType        Contract_Type                 @relation(fields: [contractTypeId], references: [id])
+  shift               Shift                         @relation(fields: [shiftId], references: [id])
+  user                User                          @relation(fields: [userId], references: [id])
+  positionHeld        Teacher_Department_Position[]
+  academicReports     Academic_Assignment_Report[]
+  undergradDegrees    TeacherUndergraduateDegree[]
+  postgraduateDegrees TeacherPostgraduateDegree[]
 
   @@map("teachers")
   @@schema("academic")
@@ -72,10 +74,11 @@ model Teacher {
 
 model Undergraduate_Degree {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
-  teachers Teacher[]
+  // teachers             Teacher[]
+  undergraduateDegrees TeacherUndergraduateDegree[]
 
   @@map("undergraduate_degrees")
   @@schema("academic")
@@ -83,18 +86,46 @@ model Undergraduate_Degree {
 
 model Postgraduate_Degree {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
-  teachers Teacher[]
+  // teachers            Teacher[]
+  postgraduateDegrees TeacherPostgraduateDegree[]
 
   @@map("postgraduate_degrees")
   @@schema("academic")
 }
 
+model TeacherUndergraduateDegree {
+  teacherId       String @db.Uuid
+  undergraduateId String @db.Uuid
+
+  // Relations
+  teacher       Teacher              @relation(fields: [teacherId], references: [id])
+  undergraduate Undergraduate_Degree @relation(fields: [undergraduateId], references: [id])
+
+  @@id([teacherId, undergraduateId])
+  @@map("teacher_undergraduate_degrees")
+  @@schema("academic")
+}
+
+// Tabla intermedia para posgrado
+model TeacherPostgraduateDegree {
+  teacherId      String @db.Uuid
+  postgraduateId String @db.Uuid
+
+  // Relations
+  teacher      Teacher             @relation(fields: [teacherId], references: [id])
+  postgraduate Postgraduate_Degree @relation(fields: [postgraduateId], references: [id])
+
+  @@id([teacherId, postgraduateId])
+  @@map("teacher_postgraduate_degrees")
+  @@schema("academic")
+}
+
 model Teacher_Category {
   id          String @id @default(uuid()) @db.Uuid
-  name        String
+  name        String @unique
   description String
 
   // Relations
@@ -106,7 +137,7 @@ model Teacher_Category {
 
 model Contract_Type {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
   teachers Teacher[]
@@ -117,7 +148,7 @@ model Contract_Type {
 
 model Shift {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
   teachers Teacher[]
@@ -129,11 +160,11 @@ model Shift {
 // # University
 model Center {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
   departments Department[]
-  Building    Building[]
+  buildings   Building[]
 
   @@map("centers")
   @@schema("academic")
@@ -141,7 +172,7 @@ model Center {
 
 model Faculty {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
   departments Department[]
@@ -152,9 +183,9 @@ model Faculty {
 
 model Department {
   id        String @id @default(uuid()) @db.Uuid
-  name      String
-  codigo    String
-  uvs       Int
+  name      String @unique
+  // code   String?
+  uvs       Int?
   centerId  String @db.Uuid
   facultyId String @db.Uuid
 
@@ -206,7 +237,7 @@ model Teacher_Department_Position {
 // ## cargos académicos
 model Position {
   id   String @id @default(uuid()) @db.Uuid
-  name String
+  name String @unique
 
   // Relations
   appointments Teacher_Department_Position[]

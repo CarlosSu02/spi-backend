@@ -1,33 +1,22 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon from 'argon2';
+import {
+  careersSeed,
+  categoriesSeed,
+  centersSeed,
+  contractsSeed,
+  facultiesSeed,
+  positionsSeed,
+  postgraduatesSeed,
+  rolesSeed,
+  shiftsSeed,
+} from './data';
 
 const prisma = new PrismaClient();
 
 async function main() {
   const roles = await prisma.role.createMany({
-    data: [
-      {
-        name: 'ADMIN',
-        description: 'Acceso a todo.',
-      },
-      {
-        name: 'DIRECCION',
-        description: 'Personal de dirección.',
-      },
-      {
-        name: 'RRHH',
-        description: 'Personal de recursos humanos.',
-      },
-      {
-        name: 'COORDINADOR_AREA',
-        description: 'Docente que es coordinador de una carrera/área.',
-      },
-      {
-        name: 'DOCENTE',
-        description:
-          'Todos los docentes, estos deben crear el perfil de docente.',
-      },
-    ],
+    data: rolesSeed,
     skipDuplicates: true,
   });
 
@@ -54,7 +43,7 @@ async function main() {
 
   if (!allRoles) throw new Error('Error: Roles no encontrados.');
 
-  const rolesData = handleRoles(allRoles);
+  const rolesData = handleData(allRoles);
 
   const users = await prisma.user.createMany({
     data: [
@@ -84,6 +73,187 @@ async function main() {
   });
 
   console.log({ users });
+
+  // Pregrados
+  const undergradDegrees = await prisma.undergraduate_Degree.createMany({
+    data: careersSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ undergradDegrees });
+
+  // Postgrados
+  const postgradDegrees = await prisma.postgraduate_Degree.createMany({
+    data: postgraduatesSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ postgradDegrees });
+
+  // Categorias
+  const categories = await prisma.teacher_Category.createMany({
+    data: categoriesSeed,
+    skipDuplicates: true,
+  });
+
+  console.log({ categories });
+
+  // Tipos de contratos
+  const contracts = await prisma.contract_Type.createMany({
+    data: contractsSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ contracts });
+
+  // Jornadas
+  const shifts = await prisma.shift.createMany({
+    data: shiftsSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ shifts });
+
+  // Cargos academicos
+  const positions = await prisma.position.createMany({
+    data: positionsSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ positions });
+
+  // Centro
+  const centers = await prisma.center.createMany({
+    data: centersSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ centers });
+
+  // Facultades
+  const faculties = await prisma.faculty.createMany({
+    data: facultiesSeed.map((name) => ({
+      name,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ faculties });
+
+  const allFaculties: { id: string; name: string }[] =
+    await prisma.faculty.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+  if (!allFaculties) throw new Error('Error: Facultades no encontrados.');
+
+  const facultiesData = handleData(allFaculties);
+
+  const allCenters: { id: string; name: string }[] =
+    await prisma.center.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+  if (!allCenters) throw new Error('Error: Facultades no encontrados.');
+
+  const centersData = handleData(allCenters);
+
+  // Departamentos
+  const departments = await prisma.department.createMany({
+    data: [
+      {
+        name: 'Ingeniería en Sistemas',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ingeniería'],
+      },
+      {
+        name: 'Química y Biología',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias'],
+      },
+      {
+        name: 'Matemáticas',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias'],
+      },
+      {
+        name: 'Enfermería',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias Médicas'],
+      },
+      {
+        name: 'Inglés',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Humanidades y Artes'],
+      },
+      {
+        name: 'Humanidades',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Humanidades y Artes'],
+      },
+      {
+        name: 'Técnico en Producción Agrícola',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ingeniería'],
+      },
+      {
+        name: 'Administración de Empresas',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias Económicas'],
+      },
+      {
+        name: 'Administración de Empresas Agropecuarias',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias'],
+      },
+      {
+        name: 'Pedagogía',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Humanidades y Artes'],
+      },
+      {
+        name: 'Ingeniería Agroindustrial',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ingeniería'],
+      },
+      {
+        name: 'Comercio Internacional',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias Económicas'],
+      },
+      {
+        name: 'Desarrollo Local',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias Sociales'],
+      },
+      {
+        name: 'Administración de Empresas Cafetaleras',
+        centerId: centersData['UNAH Campus Copán'],
+        facultyId: facultiesData['Ciencias Económicas'],
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  console.log({ departments });
 }
 
 main()
@@ -96,7 +266,7 @@ main()
     process.exit(1);
   });
 
-const handleRoles = (array: { id: string; name: string }[]) => {
+const handleData = (array: { id: string; name: string }[]) => {
   // const values: Record<string, string> = {};
   //
   // array.forEach((el) => {
