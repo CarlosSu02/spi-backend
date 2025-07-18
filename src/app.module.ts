@@ -5,9 +5,10 @@ import { AtGuard, RolesGuard } from './common/guards';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TransformInterceptor } from './common/interceptors';
+import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, UsersModule],
+  imports: [AuthModule, PrismaModule, UsersModule, TeachersConfigModule],
   providers: [
     {
       // automatic inject reflector
