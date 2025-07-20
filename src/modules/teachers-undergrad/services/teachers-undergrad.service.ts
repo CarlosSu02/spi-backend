@@ -1,0 +1,96 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TUndergraduateDegree } from '../types';
+import { CreateTeachersUndergradDto } from '../dto/create-teachers-undergrad.dto';
+import { UpdateTeachersUndergradDto } from '../dto/update-teachers-undergrad.dto';
+
+@Injectable()
+export class TeachersUndergradService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(
+    createUndergradDto: CreateTeachersUndergradDto,
+  ): Promise<TUndergraduateDegree> {
+    const newUndergrad = await this.prisma.undergraduate_Degree.create({
+      data: {
+        ...createUndergradDto,
+      },
+    });
+
+    return newUndergrad;
+  }
+
+  async findAll(): Promise<TUndergraduateDegree[]> {
+    const undergrads = await this.prisma.undergraduate_Degree.findMany();
+
+    // if (undergrads.length === 0)
+    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    return undergrads;
+  }
+
+  async findAllArray(): Promise<string[]> {
+    const undergrads = await this.prisma.undergraduate_Degree.findMany({
+      select: { name: true },
+    });
+
+    // return undergrads.length === 0 ? [] : undergrads.map((u) => u.name);
+    return undergrads.map((u) => u.name);
+  }
+
+  async findOne(id: string): Promise<TUndergraduateDegree> {
+    const undergrad = await this.prisma.undergraduate_Degree.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!undergrad)
+      throw new NotFoundException(
+        `El pregrado con id <${id}> no fue encontrado.`,
+      );
+
+    return undergrad;
+  }
+
+  async findOneByName(name: string): Promise<TUndergraduateDegree> {
+    const undergrad = await this.prisma.undergraduate_Degree.findUnique({
+      where: {
+        name,
+      },
+    });
+
+    if (!undergrad)
+      throw new NotFoundException(
+        `El pregrado con nombre <${name}> no fue encontrado.`,
+      );
+
+    return undergrad;
+  }
+
+  async update(
+    id: string,
+    updateUndergradDto: UpdateTeachersUndergradDto,
+  ): Promise<TUndergraduateDegree> {
+    const undergradUpdate = await this.prisma.undergraduate_Degree.update({
+      where: {
+        id,
+      },
+      data: {
+        ...updateUndergradDto,
+      },
+    });
+
+    return undergradUpdate;
+  }
+
+  async remove(id: string): Promise<TUndergraduateDegree> {
+    const undergradDelete = await this.prisma.undergraduate_Degree.delete({
+      where: {
+        id,
+      },
+    });
+
+    return undergradDelete;
+  }
+}
