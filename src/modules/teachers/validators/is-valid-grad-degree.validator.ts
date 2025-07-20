@@ -29,38 +29,41 @@ export class IsValidGradDegreeConstraint
     if (this.cache.has(degreeType))
       return this.cache.get(degreeType)!.includes(gradId);
 
-    let results: { id: string }[];
+    let validIds: string[] = [];
 
     if (degreeType === EDegreeType.UNDERGRAD) {
-      // results = await this.prisma.undergraduate_Degree.findMany({
-      //   select: {
-      //     id: true,
-      //   },
-      // });
-      results = await this.undergradService.findAll();
-
-      const array = results.map((el) => el.id);
-
-      this.cache.set(degreeType, array);
-
-      return array.includes(gradId);
+      validIds = await this.getUndergradIds();
     }
 
     if (degreeType === EDegreeType.POSTGRAD) {
-      results = await this.prisma.postgraduate_Degree.findMany({
-        select: {
-          id: true,
-        },
-      });
-
-      const array = results.map((el) => el.id);
-
-      this.cache.set(degreeType, array);
-
-      return array.includes(gradId);
+      validIds = await this.getPostgradIds();
     }
 
-    return false;
+    if (validIds.length === 0) return false;
+
+    this.cache.set(degreeType, validIds);
+
+    return validIds.includes(gradId);
+  }
+
+  async getUndergradIds(): Promise<string[]> {
+    const undergrads = await this.undergradService.findAll();
+
+    const array = undergrads.map((el) => el.id);
+
+    return array;
+  }
+
+  async getPostgradIds(): Promise<string[]> {
+    const postgrads = await this.prisma.postgraduate_Degree.findMany({
+      select: {
+        id: true,
+      },
+    });
+
+    const array = postgrads.map((el) => el.id);
+
+    return array;
   }
 
   defaultMessage(args: ValidationArguments) {
