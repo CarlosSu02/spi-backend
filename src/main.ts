@@ -2,6 +2,7 @@ import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { PrismaClientExceptionFilter } from './prisma/prisma-client-exception.filter';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,8 @@ async function bootstrap() {
 
   // const reflector = new Reflector();
   // app.useGlobalInterceptors(new TransformInterceptor());
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(process.env.PORT ?? 3000);
 }

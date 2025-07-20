@@ -6,9 +6,18 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TransformInterceptor } from './common/interceptors';
 import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
+import { TeachersUndergradModule } from './modules/teachers-undergrad/teachers-undergrad.module';
+import { TeachersModule } from './modules/teachers/teachers.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule, UsersModule, TeachersConfigModule],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    UsersModule,
+    TeachersConfigModule,
+    TeachersUndergradModule,
+    TeachersModule,
+  ],
   providers: [
     {
       // automatic inject reflector
