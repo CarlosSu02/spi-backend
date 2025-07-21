@@ -9,7 +9,6 @@ import { EConfigType } from '../enums';
 import { ShiftsService } from 'src/modules/teachers-config/services/shifts.service';
 import { ContractTypesService } from 'src/modules/teachers-config/services/contract-types.service';
 import { TeacherCategoriesService } from 'src/modules/teachers-config/services/teacher-categories.service';
-import { IsValidGradDegreeConstraint } from './is-valid-grad-degree.validator';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

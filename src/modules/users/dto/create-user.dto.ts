@@ -1,7 +1,18 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  Length,
+  Validate,
+  ValidateIf,
+} from 'class-validator';
 import { EUserRole } from '../../../common/enums';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateTeacherDto } from 'src/modules/teachers/dto/create-teacher.dto';
+import { TeacherRequiredFieldsForRoleConstraint } from '../validators/teacher-required-fields.validator';
 
-export class CreateUserDto {
+export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
   })
@@ -52,4 +63,11 @@ export class CreateUserDto {
     message: `El rol debe ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
   })
   role: EUserRole;
+
+  // Para no agregar en vada propiedad el ValidateIf
+  @ValidateIf((o: CreateUserDto) =>
+    [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(o.role),
+  )
+  @Validate(TeacherRequiredFieldsForRoleConstraint)
+  dummyFieldForTeacher: string;
 }
