@@ -13,6 +13,7 @@ import { RolesService } from './roles.service';
 import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
 import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
+import { TeachersPostgradService } from 'src/modules/teachers-postgrad/services/teachers-postgrad.service';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +32,8 @@ export class UsersService {
     private readonly roleService: RolesService,
     @Inject(forwardRef(() => TeachersUndergradService))
     private readonly teachersUndergradService: TeachersUndergradService,
+    @Inject(forwardRef(() => TeachersPostgradService))
+    private readonly teachersPostgradService: TeachersPostgradService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -45,6 +48,7 @@ export class UsersService {
       contractTypeId,
       shiftId,
       undergradId,
+      postgradId,
     } = createUserDto;
 
     if (passwordConfirm !== password)
@@ -96,6 +100,18 @@ export class UsersService {
       await this.teachersUndergradService.create({
         userId: newUser.id,
         undergradId,
+      });
+    }
+
+    if (
+      [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
+        roleExists.name as EUserRole,
+      ) &&
+      postgradId
+    ) {
+      await this.teachersPostgradService.create({
+        userId: newUser.id,
+        postgradId,
       });
     }
 

@@ -6,9 +6,13 @@ import { RolesController } from './controllers/roles.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeacherRequiredFieldsForRoleConstraint } from './validators/teacher-required-fields.validator';
 import { TeachersUndergradModule } from '../teachers-undergrad/teachers-undergrad.module';
+import { TeachersPostgradModule } from '../teachers-postgrad/teachers-postgrad.module';
 
 @Module({
-  imports: [forwardRef(() => TeachersUndergradModule)],
+  imports: [
+    forwardRef(() => TeachersUndergradModule),
+    forwardRef(() => TeachersPostgradModule),
+  ],
   controllers: [UsersController, RolesController],
   providers: [
     PrismaService,

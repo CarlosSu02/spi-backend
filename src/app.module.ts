@@ -8,6 +8,7 @@ import { TransformInterceptor } from './common/interceptors';
 import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
 import { TeachersUndergradModule } from './modules/teachers-undergrad/teachers-undergrad.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
+import { TeachersPostgradModule } from './modules/teachers-postgrad/teachers-postgrad.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TeachersModule } from './modules/teachers/teachers.module';
     UsersModule,
     TeachersConfigModule,
     TeachersUndergradModule,
+    TeachersPostgradModule,
     TeachersModule,
   ],
   providers: [
