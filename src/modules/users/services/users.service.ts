@@ -9,6 +9,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { TUser } from '../types';
 import { RolesService } from './roles.service';
 import * as argon from 'argon2';
+import { EUserRole } from 'src/common/enums';
+import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
+import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 
 @Injectable()
 export class UsersService {
@@ -23,13 +26,25 @@ export class UsersService {
   };
 
   constructor(
-    private prisma: PrismaService,
-    private roleService: RolesService,
+    private readonly prisma: PrismaService,
+    private readonly roleService: RolesService,
+    private readonly teachersService: TeachersService,
+    private readonly teachersUndergradService: TeachersUndergradService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { name, code, email, password, passwordConfirm, role } =
-      createUserDto;
+    const {
+      name,
+      code,
+      email,
+      password,
+      passwordConfirm,
+      role,
+      categoryId,
+      contractTypeId,
+      shiftId,
+      undergradId,
+    } = createUserDto;
 
     if (passwordConfirm !== password)
       throw new BadRequestException(
@@ -40,14 +55,33 @@ export class UsersService {
 
     const roleExists = await this.roleService.findOneByName(role);
 
+    const baseData = {
+      name,
+      code,
+      email,
+      hash,
+      roleId: roleExists.id,
+    };
+
+    const data = [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
+      roleExists.name as EUserRole,
+    )
+      ? {
+          ...baseData,
+          teachers: {
+            create: [
+              {
+                category: { connect: { id: categoryId } },
+                contractType: { connect: { id: contractTypeId } },
+                shift: { connect: { id: shiftId } },
+              },
+            ],
+          },
+        }
+      : baseData;
+
     const newUser = await this.prisma.user.create({
-      data: {
-        name,
-        code,
-        email,
-        hash,
-        roleId: roleExists.id,
-      },
+      data,
     });
     //   .catch((err) => {
     //     if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -60,6 +94,18 @@ export class UsersService {
     // .catch((err) => console.log(err));
 
     if (!newUser) throw new BadRequestException('Error al crear el usuario.');
+
+    if (
+      [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
+        roleExists.name as EUserRole,
+      ) &&
+      undergradId
+    ) {
+      await this.teachersUndergradService.create({
+        userId: newUser.id,
+        undergradId,
+      });
+    }
 
     return newUser;
   }

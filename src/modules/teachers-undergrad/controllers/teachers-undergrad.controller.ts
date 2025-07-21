@@ -1,23 +1,22 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
+import { Roles } from 'src/common/decorators';
+import { EUserRole } from 'src/common/enums';
+import { ValidateIdPipe } from 'src/common/pipes';
 import { CreateUndergradDto } from '../dto/create-undergrad.dto';
 import { UpdateUndergradDto } from '../dto/update-undergrad.dto';
 import { UndergradsService } from '../services/undergrads.service';
-import { EUserRole } from 'src/common/enums';
-import { Roles } from 'src/common/decorators';
-import { ValidateIdPipe } from 'src/common/pipes';
-import { TeachersUndergradService } from '../services/teachers-undergrad.service';
 
-@Controller('teachers-undergrad')
+@Controller('undergrads')
 @Roles(
   EUserRole.ADMIN,
   EUserRole.RRHH,
@@ -25,35 +24,32 @@ import { TeachersUndergradService } from '../services/teachers-undergrad.service
   EUserRole.DOCENTE,
   EUserRole.COORDINADOR_AREA,
 )
-export class UndergradsController {
-  constructor(
-    private readonly undergradsService: UndergradsService,
-    private readonly teachersUndegradService: TeachersUndergradService,
-  ) {}
+export class TeachersUndergradController {
+  constructor(private readonly teachersUndergradService: UndergradsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createUndergradDto: CreateUndergradDto) {
-    return this.undergradsService.create(createUndergradDto);
+  create(@Body() createTeachersUndergradDto: CreateUndergradDto) {
+    return this.teachersUndergradService.create(createTeachersUndergradDto);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll() {
-    return this.teachersUndegradService.findAll();
+    return this.teachersUndergradService.findAll();
   }
 
   @Get('array')
   @HttpCode(HttpStatus.OK)
   findAllArray() {
-    return this.undergradsService.findAllArray();
+    return this.teachersUndergradService.findAllArray();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   findOne(@Param(ValidateIdPipe) id: string) {
-    return this.undergradsService.findOne(id);
+    return this.teachersUndergradService.findOne(id);
   }
 
   @Patch(':id')
@@ -61,15 +57,15 @@ export class UndergradsController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param(ValidateIdPipe) id: string,
-    @Body() updateUndergradDto: UpdateUndergradDto,
+    @Body() updateTeachersUndergradDto: UpdateUndergradDto,
   ) {
-    return this.undergradsService.update(id, updateUndergradDto);
+    return this.teachersUndergradService.update(id, updateTeachersUndergradDto);
   }
 
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
   remove(@Param(ValidateIdPipe) id: string) {
-    return this.undergradsService.remove(id);
+    return this.teachersUndergradService.remove(id);
   }
 }

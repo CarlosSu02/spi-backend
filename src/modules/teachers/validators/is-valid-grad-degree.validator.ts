@@ -5,8 +5,8 @@ import {
   ValidationArguments,
   registerDecorator,
 } from 'class-validator';
-import { UndergradsService } from 'src/modules/teachers-undergrad/services/undergrads.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UndergradsService } from 'src/modules/teachers-undergrad/services/undergrads.service';
 import { EDegreeType } from '../enums';
 
 @ValidatorConstraint({ async: true })
@@ -66,7 +66,7 @@ export class IsValidGradDegreeConstraint
     const [degreeType] = args.constraints as EDegreeType[];
     const type = degreeType === EDegreeType.UNDERGRAD;
 
-    return `El ${args.property} <$value> no fue encontrado en <${type ? 'pregrados' : 'postgrados'}>, por favor consulte los disponibles en <${type ? '/teachers-undergrad' : '/teachers-postgrad'}>.`;
+    return `El ${args.property} <$value> no fue encontrado en <${type ? 'pregrados' : 'postgrados'}>, por favor consulte los disponibles en <${type ? '/undergrads' : '/postgrads'}>.`;
   }
 }
 
