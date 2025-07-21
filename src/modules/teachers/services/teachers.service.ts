@@ -20,16 +20,39 @@ export class TeachersService {
 
   // para crear un perfil de docente para un usuario ya creado, siempre y cuando el rol, sea: DOCENTE, COORDINADOR_CARRERA
   async create(createTeacherDto: CreateTeacherDto) {
+    const {
+      categoryId,
+      contractTypeId,
+      shiftId,
+      userId,
+      undergradId,
+      postgradId,
+    } = createTeacherDto;
+
     const newTeacher = await this.prisma.teacher.create({
       data: {
-        ...createTeacherDto,
+        userId,
+        categoryId,
+        contractTypeId,
+        shiftId,
         undergradDegrees: {
           create: [
             {
-              undergraduate: { connect: { id: createTeacherDto.undergradId } },
+              undergraduate: { connect: { id: undergradId } },
             },
           ],
         },
+        ...(postgradId
+          ? {
+              undergradDegrees: {
+                create: [
+                  {
+                    undergraduate: { connect: { id: undergradId } },
+                  },
+                ],
+              },
+            }
+          : {}),
       },
     });
 
@@ -83,6 +106,8 @@ export class TeachersService {
     const { categoryId, contractTypeId, shiftId, undergradId, postgradId } =
       updateTeacherDto;
 
+    await this.findOne(id);
+
     const teacherUpdate = await this.prisma.teacher.update({
       where: {
         id,
@@ -94,7 +119,8 @@ export class TeachersService {
       },
     });
 
-    // falta ver si manda un id en pregrado y postgrado.
+    // Falta ver si manda un id en pregrado y postgrado.
+    // Aunque al ser una tabla mtm, deberia el usuario seleccionar que quiere eliminar primero.
 
     return teacherUpdate;
   }

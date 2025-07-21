@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { UndergradsService } from './services/undergrads.service';
-import { UndergradsController } from './controllers/undergrad.controller';
+import { UndergradsController } from './controllers/undergrads.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeachersUndergradController } from './controllers/teachers-undergrad.controller';
 import { TeachersUndergradService } from './services/teachers-undergrad.service';
