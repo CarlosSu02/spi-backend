@@ -8,12 +8,14 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
 } from '@nestjs/common';
 import { TeachersService } from '../services/teachers.service';
 import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
+import { ExtractIdInterceptor } from 'src/common/interceptors';
 
 @Controller('teachers')
 export class TeachersController {
@@ -23,6 +25,14 @@ export class TeachersController {
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createTeacherDto: CreateTeacherDto) {
+    return this.teachersService.create(createTeacherDto);
+  }
+
+  @Post('my')
+  @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(ExtractIdInterceptor)
+  createMyTeacherProfile(@Body() createTeacherDto: CreateTeacherDto) {
+    createTeacherDto.userId = createTeacherDto.currentUserId!; // no es una ruta publica por lo que siempre existira el currentUserId
     return this.teachersService.create(createTeacherDto);
   }
 

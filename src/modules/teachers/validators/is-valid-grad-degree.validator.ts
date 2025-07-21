@@ -49,9 +49,7 @@ export class IsValidGradDegreeConstraint
   async getUndergradIds(): Promise<string[]> {
     const undergrads = await this.undergradService.findAll();
 
-    const array = undergrads.map((el) => el.id);
-
-    return array;
+    return undergrads.map((el) => el.id);
   }
 
   async getPostgradIds(): Promise<string[]> {
@@ -61,9 +59,7 @@ export class IsValidGradDegreeConstraint
       },
     });
 
-    const array = postgrads.map((el) => el.id);
-
-    return array;
+    return postgrads.map((el) => el.id);
   }
 
   defaultMessage(args: ValidationArguments) {
