@@ -5,7 +5,7 @@ import {
   ValidationArguments,
   registerDecorator,
 } from 'class-validator';
-import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
+import { UndergradsService } from 'src/modules/teachers-undergrad/services/undergrads.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EDegreeType } from '../enums';
 
@@ -20,7 +20,7 @@ export class IsValidGradDegreeConstraint
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly undergradService: TeachersUndergradService,
+    private readonly undergradService: UndergradsService,
   ) {}
 
   async validate(gradId: string, args: ValidationArguments): Promise<boolean> {

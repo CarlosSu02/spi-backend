@@ -1,15 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TUndergraduateDegree } from '../types';
-import { CreateTeachersUndergradDto } from '../dto/create-teachers-undergrad.dto';
-import { UpdateTeachersUndergradDto } from '../dto/update-teachers-undergrad.dto';
+import { CreateUndergradDto } from '../dto/create-undergrad.dto';
+import { UpdateUndergradDto } from '../dto/update-undergrad.dto';
 
 @Injectable()
-export class TeachersUndergradService {
+export class UndergradsService {
   constructor(private prisma: PrismaService) {}
 
   async create(
-    createUndergradDto: CreateTeachersUndergradDto,
+    createUndergradDto: CreateUndergradDto,
   ): Promise<TUndergraduateDegree> {
     const newUndergrad = await this.prisma.undergraduate_Degree.create({
       data: {
@@ -70,7 +70,7 @@ export class TeachersUndergradService {
 
   async update(
     id: string,
-    updateUndergradDto: UpdateTeachersUndergradDto,
+    updateUndergradDto: UpdateUndergradDto,
   ): Promise<TUndergraduateDegree> {
     const undergradUpdate = await this.prisma.undergraduate_Degree.update({
       where: {

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TeachersService } from './services/teachers.service';
 import { TeachersController } from './contollers/teachers.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TeachersUndergradService } from '../teachers-undergrad/services/teachers-undergrad.service';
+import { UndergradsService } from '../teachers-undergrad/services/undergrads.service';
 import {
   IsValidConfigTeacherConstraint,
   IsValidGradDegreeConstraint,
@@ -22,7 +22,7 @@ import { RolesService } from '../users/services/roles.service';
     RolesService,
     UsersService,
     TeachersService,
-    TeachersUndergradService,
+    UndergradsService,
     ShiftsService,
     ContractTypesService,
     TeacherCategoriesService,

@@ -54,7 +54,7 @@ import { IsString, IsNotEmpty, Length } from 'class-validator';
 //   };
 // }
 
-export class CreateTeachersUndergradDto {
+export class CreateUndergradDto {
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
   })

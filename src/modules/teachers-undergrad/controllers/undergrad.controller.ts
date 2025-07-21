@@ -9,9 +9,9 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { CreateTeachersUndergradDto } from '../dto/create-teachers-undergrad.dto';
-import { UpdateTeachersUndergradDto } from '../dto/update-teachers-undergrad.dto';
-import { TeachersUndergradService } from '../services/teachers-undergrad.service';
+import { CreateUndergradDto } from '../dto/create-undergrad.dto';
+import { UpdateUndergradDto } from '../dto/update-undergrad.dto';
+import { UndergradsService } from '../services/undergrads.service';
 import { EUserRole } from 'src/common/enums';
 import { Roles } from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -24,15 +24,13 @@ import { ValidateIdPipe } from 'src/common/pipes';
   EUserRole.DOCENTE,
   EUserRole.COORDINADOR_AREA,
 )
-export class TeachersUndergradController {
-  constructor(
-    private readonly teachersUndergradService: TeachersUndergradService,
-  ) {}
+export class UndergradsController {
+  constructor(private readonly teachersUndergradService: UndergradsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createTeachersUndergradDto: CreateTeachersUndergradDto) {
+  create(@Body() createTeachersUndergradDto: CreateUndergradDto) {
     return this.teachersUndergradService.create(createTeachersUndergradDto);
   }
 
@@ -59,7 +57,7 @@ export class TeachersUndergradController {
   @HttpCode(HttpStatus.OK)
   update(
     @Param(ValidateIdPipe) id: string,
-    @Body() updateTeachersUndergradDto: UpdateTeachersUndergradDto,
+    @Body() updateTeachersUndergradDto: UpdateUndergradDto,
   ) {
     return this.teachersUndergradService.update(id, updateTeachersUndergradDto);
   }
