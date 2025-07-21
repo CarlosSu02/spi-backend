@@ -16,6 +16,7 @@ import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ExtractIdInterceptor } from 'src/common/interceptors';
+import { ValidateIdPipe } from 'src/common/pipes';
 
 @Controller('teachers')
 export class TeachersController {
@@ -56,14 +57,17 @@ export class TeachersController {
     EUserRole.DIRECCION,
   )
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string) {
+  findOne(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.findOne(id);
   }
 
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateTeacherDto: UpdateTeacherDto) {
+  update(
+    @Param(ValidateIdPipe) id: string,
+    @Body() updateTeacherDto: UpdateTeacherDto,
+  ) {
     return this.teachersService.update(id, updateTeacherDto);
   }
 
@@ -71,7 +75,7 @@ export class TeachersController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  remove(@Param('id') id: string) {
+  remove(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.remove(id);
   }
 }

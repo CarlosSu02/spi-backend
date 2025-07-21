@@ -1,31 +1,45 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
-import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
+import { UsersService } from 'src/modules/users/services/users.service';
 
 @Injectable()
 export class TeachersService {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
     // private readonly teachersUndergradService: TeachersUndergradService,
   ) {}
 
   // para crear un perfil de docente para un usuario ya creado, siempre y cuando el rol, sea: DOCENTE, COORDINADOR_CARRERA
-  async create(createTeacherDto: CreateTeacherDto | CreateUserDto) {
-    console.log(createTeacherDto);
+  async create(createTeacherDto: CreateTeacherDto) {
+    const newTeacher = await this.prisma.teacher.create({
+      data: {
+        ...createTeacherDto,
+        undergradDegrees: {
+          create: [
+            {
+              undergraduate: { connect: { id: createTeacherDto.undergradId } },
+            },
+          ],
+        },
+      },
+    });
 
-    // Primero se creara el perfil de docente
-    // const newTeacher = await this.prisma.teacher.create({
-    //
-    // })
-
-    return 'This action adds a new teacher';
+    return newTeacher;
   }
 
   async findAll() {
-    return `This action returns all teachers`;
+    const teachers = await this.prisma.teacher.findMany();
+
+    return teachers;
   }
 
   async findOne(id: string) {
@@ -66,10 +80,39 @@ export class TeachersService {
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
-    return `This action updates a #${id} teacher`;
+    const { categoryId, contractTypeId, shiftId, undergradId, postgradId } =
+      updateTeacherDto;
+
+    const teacherUpdate = await this.prisma.teacher.update({
+      where: {
+        id,
+      },
+      data: {
+        categoryId,
+        contractTypeId,
+        shiftId,
+      },
+    });
+
+    // falta ver si manda un id en pregrado y postgrado.
+
+    return teacherUpdate;
   }
 
-  async remove(id: string) {
-    return `This action removes a #${id} teacher`;
+  // para no eliminarlo en su totalidad, asi quedan los registros.
+  async remove(id: string): Promise<boolean> {
+    const teacher = await this.findOne(id);
+    const user = await this.usersService.findOne(teacher.userId);
+
+    const deleteTeacher = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        activeStatus: !user.activeStatus,
+      },
+    });
+
+    return !!deleteTeacher;
   }
 }

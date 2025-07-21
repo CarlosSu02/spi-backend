@@ -7,4 +7,5 @@ export type TUser = {
   email: string | null;
   // roleId: string;
   role: TRole;
+  activeStatus: boolean;
 };

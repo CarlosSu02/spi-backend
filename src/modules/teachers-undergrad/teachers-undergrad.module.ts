@@ -7,9 +7,9 @@ import { TeachersUndergradService } from './services/teachers-undergrad.service'
 import { TeachersModule } from '../teachers/teachers.module';
 
 @Module({
+  imports: [forwardRef(() => TeachersModule)],
   controllers: [UndergradsController, TeachersUndergradController],
   providers: [PrismaService, UndergradsService, TeachersUndergradService],
   exports: [TeachersUndergradService, UndergradsService],
-  imports: [forwardRef(() => TeachersModule)],
 })
 export class TeachersUndergradModule {}

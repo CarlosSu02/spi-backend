@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +13,6 @@ import { RolesService } from './roles.service';
 import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
 import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
-import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +29,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly roleService: RolesService,
-    private readonly teachersService: TeachersService,
+    @Inject(forwardRef(() => TeachersUndergradService))
     private readonly teachersUndergradService: TeachersUndergradService,
   ) {}
 
@@ -83,15 +84,6 @@ export class UsersService {
     const newUser = await this.prisma.user.create({
       data,
     });
-    //   .catch((err) => {
-    //     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    //       if (err.code === EPrismaClientErrors.UNIQUE.toString())
-    //         throw new ForbiddenException('Credentials incorrect!');
-    //     }
-    //
-    //     throw err;
-    //   });
-    // .catch((err) => console.log(err));
 
     if (!newUser) throw new BadRequestException('Error al crear el usuario.');
 
@@ -126,7 +118,10 @@ export class UsersService {
       where: {
         id,
       },
-      select: this.selectPropsUser,
+      select: {
+        ...this.selectPropsUser,
+        activeStatus: true,
+      },
     });
 
     if (!user)
@@ -139,17 +134,6 @@ export class UsersService {
 
   async findAllUsersWithRole(roleId: string): Promise<TUser[]> {
     await this.roleService.findOne(roleId);
-
-    // const roleExists = await this.prisma.role.findUnique({
-    //   where: {
-    //     id: roleId,
-    //   },
-    // });
-    //
-    // if (!roleExists)
-    //   throw new NotFoundException(
-    //     `El rol con id <${roleId}> no fue encontrado.`,
-    //   );
 
     const users = await this.prisma.user.findMany({
       where: {
