@@ -11,6 +11,7 @@ import { TeachersModule } from './modules/teachers/teachers.module';
 import { TeachersPostgradModule } from './modules/teachers-postgrad/teachers-postgrad.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { CentersModule } from './modules/centers/centers.module';
+import { PositionsModule } from './modules/positions/positions.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CentersModule } from './modules/centers/centers.module';
     TeachersModule,
     DepartmentsModule,
     CentersModule,
+    PositionsModule,
   ],
   providers: [
     {
