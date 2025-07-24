@@ -5,12 +5,16 @@ import {
   categoriesSeed,
   centersSeed,
   contractsSeed,
+  departmentsSeed,
   facultiesSeed,
+  positionsRename,
   positionsSeed,
   postgraduatesSeed,
   rolesSeed,
   shiftsSeed,
+  TPositions,
 } from './data';
+import { coursesSeed } from './data/courses.data';
 
 const prisma = new PrismaClient();
 
@@ -132,6 +136,20 @@ async function main() {
 
   console.log({ positions });
 
+  const allPositions: { id: string; name: string }[] =
+    await prisma.position.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+  if (!allPositions)
+    throw new Error('Error: Cargos académicos no encontrados.');
+
+  // const positionsData = handleData(allPositions);
+  hanldeDataWithTypes(allPositions, positionsRename);
+
   // Centro
   const centers = await prisma.center.createMany({
     data: centersSeed.map((name) => ({
@@ -177,83 +195,22 @@ async function main() {
   const centersData = handleData(allCenters);
 
   // Departamentos
+  const departmentsData = departmentsSeed(centersData, facultiesData);
   const departments = await prisma.department.createMany({
-    data: [
-      {
-        name: 'Ingeniería en Sistemas',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ingeniería'],
-      },
-      {
-        name: 'Química y Biología',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias'],
-      },
-      {
-        name: 'Matemáticas',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias'],
-      },
-      {
-        name: 'Enfermería',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias Médicas'],
-      },
-      {
-        name: 'Inglés',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Humanidades y Artes'],
-      },
-      {
-        name: 'Humanidades',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Humanidades y Artes'],
-      },
-      {
-        name: 'Técnico en Producción Agrícola',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ingeniería'],
-      },
-      {
-        name: 'Administración de Empresas',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias Económicas'],
-      },
-      {
-        name: 'Administración de Empresas Agropecuarias',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias'],
-      },
-      {
-        name: 'Pedagogía',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Humanidades y Artes'],
-      },
-      {
-        name: 'Ingeniería Agroindustrial',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ingeniería'],
-      },
-      {
-        name: 'Comercio Internacional',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias Económicas'],
-      },
-      {
-        name: 'Desarrollo Local',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias Sociales'],
-      },
-      {
-        name: 'Administración de Empresas Cafetaleras',
-        centerId: centersData['UNAH Campus Copán'],
-        facultyId: facultiesData['Ciencias Económicas'],
-      },
-    ],
+    data: Object.values(departmentsData),
     skipDuplicates: true,
   });
 
   console.log({ departments });
+
+  // Clases/Asignaturas
+  const coursesData = coursesSeed(departmentsData);
+  const courses = await prisma.course.createMany({
+    data: Object.values(coursesData),
+    skipDuplicates: true,
+  });
+
+  console.log({ courses });
 }
 
 main()
@@ -278,4 +235,14 @@ const handleData = (array: { id: string; name: string }[]) => {
   const roles = Object.fromEntries(array.map((role) => [role.name, role.id]));
 
   return roles;
+};
+
+const hanldeDataWithTypes = (
+  array: { id: string; name: string }[],
+  obj: { [key: string]: string },
+): Record<string, string> => {
+  const data = Object.fromEntries(
+    array.map((role) => [obj[role.name], role.id]),
+  );
+  return data;
 };

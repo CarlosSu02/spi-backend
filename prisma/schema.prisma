@@ -203,7 +203,7 @@ model Department {
 model Course {
   id           String  @id @default(uuid()) @db.Uuid
   name         String
-  code         String
+  code         String  @unique
   uvs          Int
   activeStatus Boolean @default(true) // por si cambian de clases, solo se desactivan para evitar ser seleccionadas
   departmentId String  @db.Uuid
