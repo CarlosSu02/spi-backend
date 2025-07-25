@@ -7,12 +7,10 @@ import {
   contractsSeed,
   departmentsSeed,
   facultiesSeed,
-  positionsRename,
   positionsSeed,
   postgraduatesSeed,
   rolesSeed,
   shiftsSeed,
-  TPositions,
 } from './data';
 import { coursesSeed } from './data/courses.data';
 
@@ -35,19 +33,19 @@ async function main() {
   //   },
   // });
 
-  const allRoles: { id: string; name: string }[] = await prisma.role.findMany({
-    // where: {
-    //   name: 'ADMIN',
-    // },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  // const allRoles: { id: string; name: string }[] = await prisma.role.findMany({
+  //   // where: {
+  //   //   name: 'ADMIN',
+  //   // },
+  //   select: {
+  //     id: true,
+  //     name: true,
+  //   },
+  // });
+  //
+  // if (!allRoles) throw new Error('Error: Roles no encontrados.');
 
-  if (!allRoles) throw new Error('Error: Roles no encontrados.');
-
-  const rolesData = handleData(allRoles);
+  const rolesData = handleData(rolesSeed);
 
   const users = await prisma.user.createMany({
     data: [
@@ -72,6 +70,13 @@ async function main() {
         hash: await argon.hash('12345'),
         roleId: rolesData.RRHH,
       },
+      {
+        name: 'user4',
+        email: 'rrhh2@gmail.com',
+        code: '78910',
+        hash: await argon.hash('Temporal.12345'),
+        roleId: rolesData.RRHH,
+      },
     ],
     skipDuplicates: true,
   });
@@ -80,9 +85,7 @@ async function main() {
 
   // Pregrados
   const undergradDegrees = await prisma.undergraduate_Degree.createMany({
-    data: careersSeed.map((name) => ({
-      name,
-    })),
+    data: careersSeed,
     skipDuplicates: true,
   });
 
@@ -90,9 +93,7 @@ async function main() {
 
   // Postgrados
   const postgradDegrees = await prisma.postgraduate_Degree.createMany({
-    data: postgraduatesSeed.map((name) => ({
-      name,
-    })),
+    data: postgraduatesSeed,
     skipDuplicates: true,
   });
 
@@ -108,9 +109,7 @@ async function main() {
 
   // Tipos de contratos
   const contracts = await prisma.contract_Type.createMany({
-    data: contractsSeed.map((name) => ({
-      name,
-    })),
+    data: contractsSeed,
     skipDuplicates: true,
   });
 
@@ -118,9 +117,7 @@ async function main() {
 
   // Jornadas
   const shifts = await prisma.shift.createMany({
-    data: shiftsSeed.map((name) => ({
-      name,
-    })),
+    data: shiftsSeed,
     skipDuplicates: true,
   });
 
@@ -128,27 +125,11 @@ async function main() {
 
   // Cargos academicos
   const positions = await prisma.position.createMany({
-    data: positionsSeed.map((name) => ({
-      name,
-    })),
+    data: positionsSeed,
     skipDuplicates: true,
   });
 
   console.log({ positions });
-
-  const allPositions: { id: string; name: string }[] =
-    await prisma.position.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-
-  if (!allPositions)
-    throw new Error('Error: Cargos académicos no encontrados.');
-
-  // const positionsData = handleData(allPositions);
-  hanldeDataWithTypes(allPositions, positionsRename);
 
   // Centro
   const centers = await prisma.center.createMany({
@@ -232,17 +213,7 @@ const handleData = (array: { id: string; name: string }[]) => {
   //
   // return values;
 
-  const roles = Object.fromEntries(array.map((role) => [role.name, role.id]));
+  const data = Object.fromEntries(array.map((role) => [role.name, role.id]));
 
-  return roles;
-};
-
-const hanldeDataWithTypes = (
-  array: { id: string; name: string }[],
-  obj: { [key: string]: string },
-): Record<string, string> => {
-  const data = Object.fromEntries(
-    array.map((role) => [obj[role.name], role.id]),
-  );
   return data;
 };
