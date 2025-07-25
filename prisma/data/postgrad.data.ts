@@ -44,4 +44,5 @@ export const postgraduatesSeed = [
     name: 'Planeación y Desarrollo',
   },
   { id: '3b75670c-08c9-4526-86e9-22cf0fc7bdb0', name: 'Psicología Educativa' },
+  { id: '7b13332b-9051-4ec7-b60a-aa8b5ed37d47', name: 'Seguridad Alimentaria' },
 ];

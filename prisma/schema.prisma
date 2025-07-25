@@ -221,7 +221,7 @@ model Teacher_Department_Position {
   teacherId    String    @db.Uuid
   departmentId String    @db.Uuid
   positionId   String    @db.Uuid
-  startDate    DateTime
+  startDate    DateTime  @default(now()) // por si no se agrega al momento de agregar el dato.
   endDate      DateTime?
 
   // Relations
@@ -230,7 +230,7 @@ model Teacher_Department_Position {
   department Department @relation(fields: [departmentId], references: [id])
 
   @@unique([teacherId, departmentId, positionId])
-  @@map("teacher_department_positions")
+  @@map("teacher_department_position")
   @@schema("academic")
 }
 
