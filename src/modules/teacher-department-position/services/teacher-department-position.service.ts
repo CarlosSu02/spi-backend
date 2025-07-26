@@ -13,6 +13,36 @@ import { formatInTimeZone } from 'date-fns-tz';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
+  private readonly selectOptionsTDP = {
+    id: true,
+    startDate: true,
+    endDate: true,
+    teacher: {
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
+    },
+    position: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+    department: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  };
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly teachersService: TeachersService,
@@ -37,6 +67,9 @@ export class TeacherDepartmentPositionService {
             { departmentId: departmentId },
           ],
         },
+        select: {
+          endDate: true,
+        },
       });
 
     if (teacherDeptPosExists && teacherDeptPosExists.endDate === null)
@@ -60,15 +93,8 @@ export class TeacherDepartmentPositionService {
   async findAll(): Promise<TTeacherDeptPos[]> {
     const teacherDeptPos =
       await this.prisma.teacher_Department_Position.findMany({
-        include: {
-          teacher: {
-            include: {
-              user: true,
-            },
-          },
-          position: true,
-          department: true,
-        },
+        // Se puede usar include tambien...
+        select: this.selectOptionsTDP,
       });
 
     // if (teacherDeptPoss.length === 0)
@@ -83,15 +109,7 @@ export class TeacherDepartmentPositionService {
         where: {
           id,
         },
-        include: {
-          teacher: {
-            include: {
-              user: true,
-            },
-          },
-          position: true,
-          department: true,
-        },
+        select: this.selectOptionsTDP,
       });
 
     if (!teacherDeptPos)
