@@ -7,6 +7,7 @@ import {
   IsValidCenterConfigConstraint,
   IsValidNameDepartmentConstraint,
 } from './validators';
+import { IsValidDepartmentIdConstraint } from './validators/is-valid-department-id.validator';
 
 @Module({
   imports: [CentersModule],
@@ -16,11 +17,13 @@ import {
     DepartmentsService,
     IsValidCenterConfigConstraint,
     IsValidNameDepartmentConstraint,
+    IsValidDepartmentIdConstraint,
   ],
   exports: [
     DepartmentsService,
     IsValidCenterConfigConstraint,
     IsValidNameDepartmentConstraint,
+    IsValidDepartmentIdConstraint,
   ],
 })
 export class DepartmentsModule {}
