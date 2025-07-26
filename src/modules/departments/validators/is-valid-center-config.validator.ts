@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 import { ECenterConfig } from '../enums';
 import { CentersService } from 'src/modules/centers/services/centers.service';
-import { FacultiesService } from 'src/modules/centers/services/faculties.service';
+import { FacultiesService } from '../services/faculties.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

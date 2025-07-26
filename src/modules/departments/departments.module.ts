@@ -8,19 +8,23 @@ import {
   IsValidNameDepartmentConstraint,
 } from './validators';
 import { IsValidDepartmentIdConstraint } from './validators/is-valid-department-id.validator';
+import { FacultiesService } from './services/faculties.service';
+import { FacultiesController } from './controllers/faculties.controller';
 
 @Module({
   imports: [CentersModule],
-  controllers: [DepartmentsController],
+  controllers: [DepartmentsController, FacultiesController],
   providers: [
     PrismaService,
     DepartmentsService,
+    FacultiesService,
     IsValidCenterConfigConstraint,
     IsValidNameDepartmentConstraint,
     IsValidDepartmentIdConstraint,
   ],
   exports: [
     DepartmentsService,
+    FacultiesService,
     IsValidCenterConfigConstraint,
     IsValidNameDepartmentConstraint,
     IsValidDepartmentIdConstraint,
