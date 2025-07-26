@@ -13,6 +13,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
 import { CentersModule } from './modules/centers/centers.module';
 import { PositionsModule } from './modules/positions/positions.module';
 import { TeacherDepartmentPositionModule } from './modules/teacher-department-position/teacher-department-position.module';
+import { InfraestructureModule } from './modules/infraestructure/infraestructure.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TeacherDepartmentPositionModule } from './modules/teacher-department-po
     CentersModule,
     PositionsModule,
     TeacherDepartmentPositionModule,
+    InfraestructureModule,
   ],
   providers: [
     {
