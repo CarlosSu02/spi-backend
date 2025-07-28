@@ -1,7 +1,8 @@
 import { IsUUID, Validate } from 'class-validator';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { EDegreeType } from 'src/modules/teachers/enums';
 import {
-  IsValidGradDegree,
+  IsValidGradDegreeConstraint,
   IsValidUserIdConstraint,
 } from 'src/modules/teachers/validators';
 
@@ -20,6 +21,10 @@ export class CreateTeacherPostgradDto {
     each: true,
     message: 'La propiedad <postgradId> debe ser un UUID válido.',
   })
-  @IsValidGradDegree(EDegreeType.POSTGRAD)
+  // @IsValidGradDegree(EDegreeType.POSTGRAD)
+  @ValidatorConstraintDecorator(
+    EDegreeType.POSTGRAD,
+    IsValidGradDegreeConstraint,
+  )
   postgradId: string;
 }

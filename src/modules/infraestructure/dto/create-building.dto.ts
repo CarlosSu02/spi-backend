@@ -6,8 +6,9 @@ import {
   Length,
   IsUUID,
 } from 'class-validator';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { ECenterConfig } from 'src/modules/departments/enums';
-import { IsValidCenterConfig } from 'src/modules/departments/validators';
+import { IsValidCenterConfigConstraint } from 'src/modules/departments/validators';
 
 export class CreateBuildingDto {
   @IsString({
@@ -35,6 +36,10 @@ export class CreateBuildingDto {
   })
   @IsNotEmpty({ message: 'La propiedad <centerId> no debe estar vacía.' })
   // FIXME: se debe arreglar esto
-  @IsValidCenterConfig(ECenterConfig.CENTER)
+  // @IsValidCenterConfig(ECenterConfig.CENTER)
+  @ValidatorConstraintDecorator(
+    ECenterConfig.CENTER,
+    IsValidCenterConfigConstraint,
+  )
   centerId: string;
 }

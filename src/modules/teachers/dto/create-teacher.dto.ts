@@ -7,17 +7,22 @@ import {
 } from 'class-validator';
 import { EConfigType, EDegreeType } from '../enums';
 import {
-  IsValidConfigTeacher,
-  IsValidGradDegree,
+  IsValidConfigTeacherConstraint,
+  IsValidGradDegreeConstraint,
   IsValidUserIdConstraint,
 } from '../validators';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
 
 export class CreateTeacherDto {
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <undergradId> debe ser un UUID válido.',
   })
-  @IsValidGradDegree(EDegreeType.UNDERGRAD)
+  // @IsValidGradDegree(EDegreeType.UNDERGRAD)
+  @ValidatorConstraintDecorator(
+    EDegreeType.UNDERGRAD,
+    IsValidGradDegreeConstraint,
+  )
   undergradId: string;
 
   @IsOptional()
@@ -25,7 +30,11 @@ export class CreateTeacherDto {
     each: true,
     message: 'La propiedad <undergradId> debe ser un UUID válido.',
   })
-  @IsValidGradDegree(EDegreeType.POSTGRAD)
+  // @IsValidGradDegree(EDegreeType.POSTGRAD)
+  @ValidatorConstraintDecorator(
+    EDegreeType.POSTGRAD,
+    IsValidGradDegreeConstraint,
+  )
   postgradId?: string;
 
   @IsUUID('all', {
@@ -35,7 +44,11 @@ export class CreateTeacherDto {
   @IsNotEmpty({
     message: 'La propiedad <categoryId> no debe estar vacía.',
   })
-  @IsValidConfigTeacher(EConfigType.CATEGORY)
+  // @IsValidConfigTeacher(EConfigType.CATEGORY)
+  @ValidatorConstraintDecorator(
+    EConfigType.CATEGORY,
+    IsValidConfigTeacherConstraint,
+  )
   categoryId: string;
 
   @IsUUID('all', {
@@ -45,7 +58,11 @@ export class CreateTeacherDto {
   @IsNotEmpty({
     message: 'La propiedad <contractTypeId> no debe estar vacía.',
   })
-  @IsValidConfigTeacher(EConfigType.CONTRACT)
+  // @IsValidConfigTeacher(EConfigType.CONTRACT)
+  @ValidatorConstraintDecorator(
+    EConfigType.CONTRACT,
+    IsValidConfigTeacherConstraint,
+  )
   contractTypeId: string;
 
   @IsUUID('all', {
@@ -55,7 +72,11 @@ export class CreateTeacherDto {
   @IsNotEmpty({
     message: 'La propiedad <shiftId> no debe estar vacía.',
   })
-  @IsValidConfigTeacher(EConfigType.SHIFT)
+  // @IsValidConfigTeacher(EConfigType.SHIFT)
+  @ValidatorConstraintDecorator(
+    EConfigType.SHIFT,
+    IsValidConfigTeacherConstraint,
+  )
   shiftId: string;
 
   @ValidateIf((o: CreateTeacherDto) => !o.currentUserId)

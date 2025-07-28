@@ -9,9 +9,11 @@ import {
 } from 'class-validator';
 import { ECenterConfig } from '../enums';
 import {
-  IsValidCenterConfig,
+  IsValidCenterConfigConstraint,
+  // IsValidCenterConfig,
   IsValidNameDepartmentConstraint,
 } from '../validators';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
 
 export class CreateDepartmentDto {
   @IsString({
@@ -32,13 +34,21 @@ export class CreateDepartmentDto {
     each: true,
     message: 'La propiedad <centerId> debe ser un UUID válido.',
   })
-  @IsValidCenterConfig(ECenterConfig.CENTER)
+  // @IsValidCenterConfig(ECenterConfig.CENTER)
+  @ValidatorConstraintDecorator(
+    ECenterConfig.CENTER,
+    IsValidCenterConfigConstraint,
+  )
   centerId: string;
 
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <facultyId> debe ser un UUID válido.',
   })
-  @IsValidCenterConfig(ECenterConfig.FACULTY)
+  // @IsValidCenterConfig(ECenterConfig.FACULTY)
+  @ValidatorConstraintDecorator(
+    ECenterConfig.FACULTY,
+    IsValidCenterConfigConstraint,
+  )
   facultyId: string;
 }

@@ -86,13 +86,13 @@ export class IsValidConfigTeacherConstraint
   }
 }
 
-export function IsValidConfigTeacher(configType: EConfigType) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      constraints: [configType],
-      validator: IsValidConfigTeacherConstraint,
-    });
-  };
-}
+// export function IsValidConfigTeacher(configType: EConfigType) {
+//   return function (object: object, propertyName: string) {
+//     registerDecorator({
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       constraints: [configType],
+//       validator: IsValidConfigTeacherConstraint,
+//     });
+//   };
+// }

@@ -10,6 +10,7 @@ import { ConnectivityService } from './services/connectivity.service';
 import { ClassroomController } from './controllers/classroom.controller';
 import { ClassroomService } from './services/classroom.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { IsValidIdsClassroomConfigConstraint } from './validators';
 
 @Module({
   controllers: [
@@ -26,6 +27,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
     RoomTypeService,
     ConnectivityService,
     AudioEquipmentService,
+    IsValidIdsClassroomConfigConstraint,
   ],
   exports: [
     BuildingService,

@@ -3,7 +3,6 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-  registerDecorator,
 } from 'class-validator';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UndergradsService } from 'src/modules/teachers-undergrad/services/undergrads.service';
@@ -70,13 +69,13 @@ export class IsValidGradDegreeConstraint
   }
 }
 
-export function IsValidGradDegree(degreeType: EDegreeType) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      constraints: [degreeType],
-      validator: IsValidGradDegreeConstraint,
-    });
-  };
-}
+// export function IsValidGradDegree(degreeType: EDegreeType) {
+//   return function (object: object, propertyName: string) {
+//     registerDecorator({
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       constraints: [degreeType],
+//       validator: IsValidGradDegreeConstraint,
+//     });
+//   };
+// }

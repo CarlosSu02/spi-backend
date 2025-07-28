@@ -6,8 +6,12 @@ import {
   IsUUID,
   Length,
 } from 'class-validator';
+import { IsValidIdsClassroomConfigConstraint } from '../validators';
+import { EClassroomConfig } from '../enums';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
 
 // TODO: AGREGAR LOS VALIDATORS-CONTRAINTS PARA LOS ID'S. 2025-07-26 16:44
+// Uno solo, con enum
 export class CreateClassroomDto {
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
@@ -50,23 +54,43 @@ export class CreateClassroomDto {
     message: 'La propiedad <buildingId> debe ser un UUID válido.',
   })
   @IsNotEmpty({ message: 'La propiedad <buildingId> no debe estar vacía.' })
+  // @IsValidIdsClassroomConfig(EClassroomConfig.BUILDING)
+  @ValidatorConstraintDecorator(
+    EClassroomConfig.BUILDING,
+    IsValidIdsClassroomConfigConstraint,
+  )
   buildingId: string;
 
   @IsUUID('all', {
     message: 'La propiedad <roomTypeId> debe ser un UUID válido.',
   })
   @IsNotEmpty({ message: 'La propiedad <roomTypeId> no debe estar vacía.' })
+  // @IsValidIdsClassroomConfig(EClassroomConfig.ROOM_TYPE)
+  @ValidatorConstraintDecorator(
+    EClassroomConfig.ROOM_TYPE,
+    IsValidIdsClassroomConfigConstraint,
+  )
   roomTypeId: string;
 
   @IsUUID('all', {
     message: 'La propiedad <connectivityId> debe ser un UUID válido.',
   })
   @IsOptional()
+  // @IsValidIdsClassroomConfig(EClassroomConfig.CONNECTIVITY)
+  @ValidatorConstraintDecorator(
+    EClassroomConfig.CONNECTIVITY,
+    IsValidIdsClassroomConfigConstraint,
+  )
   connectivityId?: string;
 
   @IsUUID('all', {
     message: 'La propiedad <audioEquipmentId> debe ser un UUID válido.',
   })
   @IsOptional()
+  // @IsValidIdsClassroomConfig(EClassroomConfig.AUDIO_EQUIPMENT)
+  @ValidatorConstraintDecorator(
+    EClassroomConfig.AUDIO_EQUIPMENT,
+    IsValidIdsClassroomConfigConstraint,
+  )
   audioEquipmentId?: string;
 }

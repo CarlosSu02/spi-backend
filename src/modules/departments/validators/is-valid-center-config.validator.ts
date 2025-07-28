@@ -9,6 +9,7 @@ import { ECenterConfig } from '../enums';
 import { CentersService } from 'src/modules/centers/services/centers.service';
 import { FacultiesService } from '../services/faculties.service';
 
+//  FIXME: se debe arreglar esto
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsValidCenterConfigConstraint
@@ -71,13 +72,13 @@ export class IsValidCenterConfigConstraint
   }
 }
 
-export function IsValidCenterConfig(configType: ECenterConfig) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      constraints: [configType],
-      validator: IsValidCenterConfigConstraint,
-    });
-  };
-}
+// export function IsValidCenterConfig(configType: ECenterConfig) {
+//   return function (object: object, propertyName: string) {
+//     registerDecorator({
+//       target: object.constructor,
+//       propertyName: propertyName,
+//       constraints: [configType],
+//       validator: IsValidCenterConfigConstraint,
+//     });
+//   };
+// }
