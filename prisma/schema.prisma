@@ -284,6 +284,7 @@ model Classroom {
   audioEquipment   Audio_Equipment?   @relation(fields: [audioEquipmentId], references: [id])
   airConditioners  AirConditioner[]
   courseClassrooms Course_Classroom[]
+  PC_Equipment     PC_Equipment[]
 
   @@map("classrooms")
   @@schema("infraestructure")
@@ -351,12 +352,12 @@ model AirConditioner {
   description String?
   brandId     String  @db.Uuid
   conditionId String  @db.Uuid
-  spaceId     String? @db.Uuid
+  classroomId String? @db.Uuid
 
   // Relations
   brand     Brand      @relation(fields: [brandId], references: [id])
   condition Condition  @relation(fields: [conditionId], references: [id])
-  space     Classroom? @relation(fields: [spaceId], references: [id])
+  classroom Classroom? @relation(fields: [classroomId], references: [id])
 
   @@map("air_conditioners")
   @@schema("inventory")
@@ -373,7 +374,7 @@ model PC_Equipment {
   monitorTypeId   String  @db.Uuid
   monitorSizeId   String  @db.Uuid
   pcTypeId        String  @db.Uuid
-  spaceId         String? @db.Uuid
+  classroomId     String? @db.Uuid
   departmentId    String? @db.Uuid
 
   // Relations
@@ -382,6 +383,7 @@ model PC_Equipment {
   monitorType Monitor_Type @relation(fields: [monitorTypeId], references: [id])
   monitorSize Monitor_Size @relation(fields: [monitorSizeId], references: [id])
   pcType      PC_Type      @relation(fields: [pcTypeId], references: [id])
+  classroom   Classroom?   @relation(fields: [classroomId], references: [id])
 
   @@map("pc_equipments")
   @@schema("inventory")
