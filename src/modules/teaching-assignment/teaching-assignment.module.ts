@@ -1,0 +1,30 @@
+import { Module } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { AcademicPeriodsController } from './controllers/academic-periods.controller';
+import { AssignmentReportsController } from './controllers/academic-assignment-reports.controller';
+import { AcademicPeriodsService } from './services/academic-periods.service';
+import { AcademicAssignmentReportsService } from './services/academic-assignment-reports.service';
+import { TeachingSessionsService } from './services/teaching-sessions.service';
+import { TeachingSessionsController } from './controllers/teaching-sessions.controller';
+import { TeachersModule } from '../teachers/teachers.module';
+
+@Module({
+  imports: [TeachersModule],
+  controllers: [
+    AcademicPeriodsController,
+    AssignmentReportsController,
+    TeachingSessionsController,
+  ],
+  providers: [
+    PrismaService,
+    AcademicPeriodsService,
+    AcademicAssignmentReportsService,
+    TeachingSessionsService,
+  ],
+  exports: [
+    AcademicPeriodsService,
+    AcademicAssignmentReportsService,
+    TeachingSessionsService,
+  ],
+})
+export class TeachingAssignmentModule {}
