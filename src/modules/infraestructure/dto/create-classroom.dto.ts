@@ -9,6 +9,8 @@ import {
 import { IsValidIdsClassroomConfigConstraint } from '../validators';
 import { EClassroomConfig } from '../enums';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
+import { IsValidIdsInventoryConfigConstraint } from 'src/modules/inventory/validators';
+import { EInventoryConfig } from 'src/modules/inventory/enums';
 
 // TODO: AGREGAR LOS VALIDATORS-CONTRAINTS PARA LOS ID'S. 2025-07-26 16:44
 // Uno solo, con enum
@@ -29,6 +31,10 @@ export class CreateClassroomDto {
   @IsInt({ message: 'La propiedad <tables> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <tables> no debe estar vacía.' })
   tables: number;
+
+  @IsInt({ message: 'La propiedad <projectors> debe ser un número entero.' })
+  @IsNotEmpty({ message: 'La propiedad <projectors> no debe estar vacía.' })
+  projectors: number;
 
   @IsInt({ message: 'La propiedad <powerOutlets> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <powerOutlets> no debe estar vacía.' })
@@ -93,4 +99,15 @@ export class CreateClassroomDto {
     IsValidIdsClassroomConfigConstraint,
   )
   audioEquipmentId?: string;
+
+  @IsUUID('all', {
+    message: 'La propiedad <audioEquipmentId> debe ser un UUID válido.',
+  })
+  @IsOptional()
+  // @IsValidIdsClassroomConfig(EClassroomConfig.AUDIO_EQUIPMENT)
+  @ValidatorConstraintDecorator(
+    EInventoryConfig.CONDITION,
+    IsValidIdsInventoryConfigConstraint,
+  )
+  conditionId?: string;
 }

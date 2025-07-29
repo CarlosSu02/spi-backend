@@ -4,6 +4,7 @@ export type TClassroom = {
   name: string;
   desks: number;
   tables: number;
+  projectors: number;
   powerOutlets: number;
   lights: number;
   blackboards: number;
@@ -13,6 +14,7 @@ export type TClassroom = {
   roomTypeId: string;
   connectivityId?: string | null;
   audioEquipmentId?: string | null;
+  conditionId?: string | null;
   // building?: TBuilding;
   // roomType?: TRoomType;
   // connectivity?: TConnectivity;

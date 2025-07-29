@@ -2,7 +2,7 @@ export type TBuilding = {
   id: string;
   name: string;
   color?: string | null;
-  floors?: number | null;
+  floors?: string | null;
   centerId: string;
   // center?: TCenter;
   // classrooms?: TClassroom[];

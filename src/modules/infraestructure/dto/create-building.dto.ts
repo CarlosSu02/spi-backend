@@ -1,7 +1,6 @@
 import {
   IsNotEmpty,
   IsString,
-  IsInt,
   IsOptional,
   Length,
   IsUUID,
@@ -26,9 +25,11 @@ export class CreateBuildingDto {
   @IsOptional()
   color?: string;
 
-  @IsInt({ message: 'La propiedad <floors> debe ser un número entero.' })
+  @IsString({
+    message: 'La propiedad <floors> debe ser una cadena de caracteres.',
+  })
   @IsOptional()
-  floors?: number;
+  floors?: string;
 
   @IsUUID('all', {
     each: true,
