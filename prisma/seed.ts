@@ -1,18 +1,29 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon from 'argon2';
 import {
+  brandsSeed,
   careersSeed,
   categoriesSeed,
   centersSeed,
+  conditionsSeed,
   contractsSeed,
+  coursesSeed,
   departmentsSeed,
   facultiesSeed,
+  monitorSizesSeed,
+  monitorTypesSeed,
+  pcTypesSeed,
   positionsSeed,
   postgraduatesSeed,
   rolesSeed,
   shiftsSeed,
 } from './data';
-import { coursesSeed } from './data/courses.data';
+import {
+  audioEquipmentsSeed,
+  buildingsSeed,
+  connectivitiesSeed,
+  roomTypesSeed,
+} from './data/infraestructure.data';
 
 const prisma = new PrismaClient();
 
@@ -133,9 +144,7 @@ async function main() {
 
   // Centro
   const centers = await prisma.center.createMany({
-    data: centersSeed.map((name) => ({
-      name,
-    })),
+    data: Object.values(centersSeed),
     skipDuplicates: true,
   });
 
@@ -143,55 +152,123 @@ async function main() {
 
   // Facultades
   const faculties = await prisma.faculty.createMany({
-    data: facultiesSeed.map((name) => ({
-      name,
-    })),
+    data: Object.values(facultiesSeed),
     skipDuplicates: true,
   });
 
   console.log({ faculties });
 
-  const allFaculties: { id: string; name: string }[] =
-    await prisma.faculty.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+  // const allFaculties: { id: string; name: string }[] =
+  //   await prisma.faculty.findMany({
+  //     select: {
+  //       id: true,
+  //       name: true,
+  //     },
+  //   });
 
-  if (!allFaculties) throw new Error('Error: Facultades no encontrados.');
+  // if (!allFaculties) throw new Error('Error: Facultades no encontrados.');
 
-  const facultiesData = handleData(allFaculties);
+  // const facultiesData = handleData(allFaculties);
 
-  const allCenters: { id: string; name: string }[] =
-    await prisma.center.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    });
-
-  if (!allCenters) throw new Error('Error: Facultades no encontrados.');
-
-  const centersData = handleData(allCenters);
+  // const allCenters: { id: string; name: string }[] =
+  //   await prisma.center.findMany({
+  //     select: {
+  //       id: true,
+  //       name: true,
+  //     },
+  //   });
+  //
+  // if (!allCenters) throw new Error('Error: Facultades no encontrados.');
+  //
+  // const centersData = handleData(allCenters);
 
   // Departamentos
-  const departmentsData = departmentsSeed(centersData, facultiesData);
   const departments = await prisma.department.createMany({
-    data: Object.values(departmentsData),
+    data: Object.values(departmentsSeed),
     skipDuplicates: true,
   });
 
   console.log({ departments });
 
   // Clases/Asignaturas
-  const coursesData = coursesSeed(departmentsData);
   const courses = await prisma.course.createMany({
-    data: Object.values(coursesData),
+    data: Object.values(coursesSeed),
     skipDuplicates: true,
   });
 
   console.log({ courses });
+
+  // Brands
+  const brands = await prisma.brand.createMany({
+    data: Object.values(brandsSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ brands });
+
+  // Conditions
+  const conditions = await prisma.condition.createMany({
+    data: Object.values(conditionsSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ conditions });
+
+  // Monitor Types
+  const monitorTypes = await prisma.monitor_Type.createMany({
+    data: Object.values(monitorTypesSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ monitorTypes });
+
+  // Monitor Sizes
+  const monitorSizes = await prisma.monitor_Size.createMany({
+    data: Object.values(monitorSizesSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ monitorSizes });
+
+  // PC Types
+  const pcTypes = await prisma.pC_Type.createMany({
+    data: Object.values(pcTypesSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ pcTypes });
+
+  // Connectivities
+  const connectivities = await prisma.connectivity.createMany({
+    data: Object.values(connectivitiesSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ connectivities });
+
+  // RoomTypes
+  const roomTypes = await prisma.room_Type.createMany({
+    data: Object.values(roomTypesSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ roomTypes });
+
+  // AudioEquipments
+  const audioEquipments = await prisma.audio_Equipment.createMany({
+    data: Object.values(audioEquipmentsSeed),
+    skipDuplicates: true,
+  });
+
+  console.log({ audioEquipments });
+
+  // Buildings
+  const buildings = await prisma.building.createMany({
+    data: buildingsSeed,
+    skipDuplicates: true,
+  });
+
+  console.log({ buildings });
 }
 
 main()

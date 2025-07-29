@@ -251,7 +251,7 @@ model Building {
   id       String  @id @default(uuid()) @db.Uuid
   name     String
   color    String?
-  floors   Int?
+  floors   String?
   centerId String  @db.Uuid
   center   Center  @relation(fields: [centerId], references: [id])
 
@@ -267,6 +267,7 @@ model Classroom {
   name             String
   desks            Int
   tables           Int
+  projectors       Int
   powerOutlets     Int
   lights           Int
   blackboards      Int
@@ -276,12 +277,14 @@ model Classroom {
   roomTypeId       String  @db.Uuid
   connectivityId   String? @db.Uuid
   audioEquipmentId String? @db.Uuid
+  conditionId      String? @db.Uuid
 
   // Relations
   building         Building           @relation(fields: [buildingId], references: [id])
   roomType         Room_Type          @relation(fields: [roomTypeId], references: [id])
   connectivity     Connectivity?      @relation(fields: [connectivityId], references: [id])
   audioEquipment   Audio_Equipment?   @relation(fields: [audioEquipmentId], references: [id])
+  condition        Condition?         @relation(fields: [conditionId], references: [id])
   airConditioners  AirConditioner[]
   courseClassrooms Course_Classroom[]
   PC_Equipment     PC_Equipment[]
@@ -342,6 +345,7 @@ model Condition {
   // Relations
   pcEquipments    PC_Equipment[]
   airConditioners AirConditioner[]
+  Classroom       Classroom[]
 
   @@map("conditions")
   @@schema("inventory")

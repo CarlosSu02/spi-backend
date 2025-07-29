@@ -5,3 +5,6 @@ export * from './cat-contract-shift.data';
 export * from './positions.data';
 export * from './center-faculty.data';
 export * from './departments.data';
+export * from './inventory.data';
+export * from './inventory.data';
+export * from './courses.data';
