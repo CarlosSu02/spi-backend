@@ -7,6 +7,7 @@ import { AcademicAssignmentReportsService } from './services/academic-assignment
 import { TeachingSessionsService } from './services/teaching-sessions.service';
 import { TeachingSessionsController } from './controllers/teaching-sessions.controller';
 import { TeachersModule } from '../teachers/teachers.module';
+import { IsValidIdsTeachingAssignmentConfigConstraint } from './validators';
 
 @Module({
   imports: [TeachersModule],
@@ -20,6 +21,7 @@ import { TeachersModule } from '../teachers/teachers.module';
     AcademicPeriodsService,
     AcademicAssignmentReportsService,
     TeachingSessionsService,
+    IsValidIdsTeachingAssignmentConfigConstraint,
   ],
   exports: [
     AcademicPeriodsService,
