@@ -16,6 +16,7 @@ import { TeacherDepartmentPositionModule } from './modules/teacher-department-po
 import { InfraestructureModule } from './modules/infraestructure/infraestructure.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { TeachingAssignmentModule } from './modules/teaching-assignment/teaching-assignment.module';
+import { ExcelFilesModule } from './modules/excel-files/excel-files.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TeachingAssignmentModule } from './modules/teaching-assignment/teaching
     InfraestructureModule,
     InventoryModule,
     TeachingAssignmentModule,
+    ExcelFilesModule,
   ],
   providers: [
     {

@@ -7,6 +7,22 @@ export class ExcelFilesService<Type, Dto> {
   // para que sea reutilizable
   private properties: Type;
 
+  handleFileUpload(file: Express.Multer.File): Express.Multer.File {
+    if (!file) throw new BadRequestException('El archivo es requerido.');
+
+    if (!file.originalname.match(/\.(xlsx|xls)$/))
+      throw new BadRequestException(
+        'El archivo debe ser un Excel, formato permtido: (.xlsx o .xls)',
+      );
+
+    // Por si es necesario validar el tamaño del archivo
+    // const maxFileSize = 5 * 1024 * 1024; // 5 MB
+    // if (file.size > maxFileSize)
+    //   throw new BadRequestException('El archivo no debe exceder los 5 MB.');
+
+    return file;
+  }
+
   async processFile(
     properties: Type,
     buffer: Buffer,
@@ -17,8 +33,8 @@ export class ExcelFilesService<Type, Dto> {
       const workbook = await XlsxPopulate.fromDataAsync(buffer);
       const sheet = workbook.sheet(0);
 
-      const title = sheet.cell('A1').value()?.toString() || '';
-      const subtitle = sheet.cell('A2').value()?.toString() || '';
+      const title: string = sheet.cell('A1').value()?.toString() || '';
+      const subtitle: string = sheet.cell('A2').value()?.toString() || '';
 
       const headers = this.getHeaders(sheet);
       const records = this.getData(sheet, headers);

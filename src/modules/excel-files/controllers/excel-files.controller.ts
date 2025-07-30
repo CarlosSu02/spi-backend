@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   Post,
   UploadedFile,
@@ -25,19 +24,21 @@ export class ExcelFilesController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
+  uploadFile(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ExcelResponseDto<AcademicAssignmentReportDto>> {
-    if (!file) throw new BadRequestException('El archivo es requerido.');
+    // if (!file) throw new BadRequestException('El archivo es requerido.');
+    //
+    // if (!file.originalname.match(/\.(xlsx|xls)$/))
+    //   throw new BadRequestException(
+    //     'El archivo debe ser un Excel, formato permtido: (.xlsx o .xls)',
+    // );
 
-    if (!file.originalname.match(/\.(xlsx|xls)$/))
-      throw new BadRequestException(
-        'El archivo debe ser un Excel, formato permtido: (.xlsx o .xls)',
-      );
+    const handledFile = this.excelFilesService.handleFileUpload(file);
 
-    return await this.excelFilesService.processFile(
+    return this.excelFilesService.processFile(
       propertiesAcademicAssignmentReport,
-      file.buffer,
+      handledFile.buffer,
     );
   }
 }
