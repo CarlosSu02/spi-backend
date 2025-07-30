@@ -454,8 +454,8 @@ model Course_Classroom {
 }
 
 model Modality {
-  id String @id @default(uuid()) @db.Uuid
-  Id String
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
 
   // Relations
   courseClassrooms Course_Classroom[]

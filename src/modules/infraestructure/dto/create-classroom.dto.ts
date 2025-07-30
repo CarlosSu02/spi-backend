@@ -12,8 +12,6 @@ import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidIdsInventoryConfigConstraint } from 'src/modules/inventory/validators';
 import { EInventoryConfig } from 'src/modules/inventory/enums';
 
-// TODO: AGREGAR LOS VALIDATORS-CONTRAINTS PARA LOS ID'S. 2025-07-26 16:44
-// Uno solo, con enum
 export class CreateClassroomDto {
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
