@@ -8,9 +8,19 @@ import { TeachingSessionsService } from './services/teaching-sessions.service';
 import { TeachingSessionsController } from './controllers/teaching-sessions.controller';
 import { TeachersModule } from '../teachers/teachers.module';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from './validators';
+import { ExcelFilesModule } from '../excel-files/excel-files.module';
+import { TeacherDepartmentPositionModule } from '../teacher-department-position/teacher-department-position.module';
+import { PositionsModule } from '../positions/positions.module';
+import { DepartmentsModule } from '../departments/departments.module';
 
 @Module({
-  imports: [TeachersModule],
+  imports: [
+    TeachersModule,
+    TeacherDepartmentPositionModule,
+    PositionsModule,
+    DepartmentsModule,
+    ExcelFilesModule,
+  ],
   controllers: [
     AcademicPeriodsController,
     AssignmentReportsController,

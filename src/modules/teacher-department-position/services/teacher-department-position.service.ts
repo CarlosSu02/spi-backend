@@ -120,6 +120,34 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPos;
   }
 
+  async findOneByTeacherCodeAndDepartmentId(
+    teacherCode: string,
+    departmentId: string,
+  ): Promise<TTeacherDeptPos | null> {
+    const teacher = await this.teachersService.findOneByCode(teacherCode);
+
+    const teacherDeptPosExists =
+      await this.prisma.teacher_Department_Position.findFirst({
+        where: {
+          AND: [
+            {
+              teacherId: teacher.id,
+            },
+            { departmentId: departmentId },
+          ],
+        },
+        select: {
+          id: true,
+          teacherId: true,
+          departmentId: true,
+          startDate: true,
+          endDate: true,
+        },
+      });
+
+    return teacherDeptPosExists;
+  }
+
   async update(
     id: string,
     updateTeacherDepartmentPositionDto: UpdateTeacherDepartmentPositionDto,

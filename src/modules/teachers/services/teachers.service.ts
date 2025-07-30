@@ -8,6 +8,8 @@ import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/modules/users/services/users.service';
+import { async } from 'rxjs';
+import { TOutputTeacher } from '../types';
 
 @Injectable()
 export class TeachersService {
@@ -59,10 +61,38 @@ export class TeachersService {
     return newTeacher;
   }
 
-  async findAll() {
-    const teachers = await this.prisma.teacher.findMany();
+  async findAll(): Promise<TOutputTeacher[]> {
+    const teachers = await this.prisma.teacher.findMany({
+      select: {
+        id: true,
+        categoryId: true,
+        contractTypeId: true,
+        shiftId: true,
+        user: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
+    });
 
-    return teachers;
+    // const mappedTeachers = teachers.map((teacher) => ({
+    // id: teacher.id,
+    // })
+
+    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
+      id: teacher.id,
+      name: teacher.user.name,
+      code: teacher.user.code,
+      categoryId: teacher.categoryId,
+      contractTypeId: teacher.contractTypeId,
+      shiftId: teacher.shiftId,
+      userId: teacher.user.id,
+    }));
+
+    return mappedTeachers;
   }
 
   async findOne(id: string) {
@@ -91,6 +121,12 @@ export class TeachersService {
         shiftId: true,
         contractTypeId: true,
         categoryId: true,
+        user: {
+          select: {
+            id: true,
+            code: true,
+          },
+        },
       },
     });
 
@@ -100,6 +136,62 @@ export class TeachersService {
       );
 
     return teacher;
+  }
+
+  // async findTeacherByUserId(userId: string) {
+  //   const teacher = await this.prisma.user.findUnique({
+  //     where: {
+  //       id: userId,
+  //     },
+  //     select: {
+  //       id: true,
+  //       userId: true,
+  //       shiftId: true,
+  //       contractTypeId: true,
+  //       categoryId: true,
+  //     },
+  //   });
+  //
+  //   if (!teacher)
+  //     throw new NotFoundException(
+  //       `El docente con userId <${userId}> no fue encontrado.`,
+  //     );
+  //
+  //   return teacher;
+  // }
+
+  async findOneByCode(code: string) {
+    const teacher = await this.prisma.user.findUnique({
+      where: {
+        code,
+      },
+      select: {
+        id: true,
+        name: true,
+        teachers: {
+          select: {
+            id: true,
+            userId: true,
+            // positionHeld: {
+            //   select: {
+            //     departmentId: true,
+            //   },
+            // },
+          },
+        },
+      },
+    });
+
+    if (!teacher)
+      throw new NotFoundException(
+        `El docente con el código <${code}> no fue encontrado.`,
+      );
+
+    return {
+      id: teacher.teachers[0].id,
+      userId: teacher.id,
+      name: teacher.name,
+    };
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {

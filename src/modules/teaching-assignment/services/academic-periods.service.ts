@@ -44,6 +44,35 @@ export class AcademicPeriodsService {
     return academicPeriod;
   }
 
+  async findOneByYearPacModality(
+    year: number,
+    pac: number,
+    pac_modality: 'Trimestre' | 'Semestre',
+  ): Promise<TAcademicPeriod> {
+    const academicPeriod = await this.prisma.academic_Period.findFirst({
+      where: {
+        AND: [
+          {
+            year,
+          },
+          {
+            pac,
+          },
+          {
+            pac_modality,
+          },
+        ],
+      },
+    });
+
+    if (!academicPeriod)
+      throw new NotFoundException(
+        `El periodo académico con los parámetros year <${year}>, pac <${pac}>, pac_modality <${pac_modality}> no fue encontrado.`,
+      );
+
+    return academicPeriod;
+  }
+
   async update(
     id: string,
     updateAcademicPeriodDto: UpdateAcademicPeriodDto,

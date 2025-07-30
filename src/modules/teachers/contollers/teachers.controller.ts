@@ -61,6 +61,18 @@ export class TeachersController {
     return this.teachersService.findOne(id);
   }
 
+  @Get('teacher/:id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+  )
+  @HttpCode(HttpStatus.OK)
+  findTeacherByUserId(@Param(ValidateIdPipe) id: string) {
+    return this.teachersService.findOneByUserId(id);
+  }
+
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)

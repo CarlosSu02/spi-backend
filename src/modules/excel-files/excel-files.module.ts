@@ -5,5 +5,6 @@ import { ExcelFilesController } from './controllers/excel-files.controller';
 @Module({
   controllers: [ExcelFilesController],
   providers: [ExcelFilesService],
+  exports: [ExcelFilesService],
 })
 export class ExcelFilesModule {}

@@ -8,21 +8,32 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AcademicAssignmentReportsService } from '../services/academic-assignment-reports.service';
 import {
+  AcademicAssignmentDto,
   CreateAcademicAssignmentReportDto,
+  propertiesAcademicAssignment,
+  TAcademicAssignment,
   UpdateAcademicAssignmentReportDto,
 } from '../dto';
 import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('academic-assignment-reports')
 export class AssignmentReportsController {
   constructor(
     private readonly academicAssignmentReportsService: AcademicAssignmentReportsService,
+    private readonly excelFilesService: ExcelFilesService<
+      TAcademicAssignment,
+      AcademicAssignmentDto
+    >,
   ) {}
 
   @Post()
@@ -143,5 +154,37 @@ export class AssignmentReportsController {
   )
   remove(@Param(ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.remove(id);
+  }
+
+  // Archivo Excel
+  @Post('file')
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se han creado los informes de asignación académica.')
+  @ApiOperation({
+    summary: 'Crea múltiples informes de asignación académica desde un archivo',
+    description:
+      'Debería crear múltiples informes de asignación académica a partir de un archivo Excel.',
+  })
+  @ApiParam({
+    name: 'file',
+    description: 'Archivo Excel con los datos de los informes de asignación.',
+    type: 'file',
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const handledFile = this.excelFilesService.handleFileUpload(file);
+
+    const data = await this.excelFilesService.processFile(
+      propertiesAcademicAssignment,
+      handledFile.buffer,
+    );
+
+    return this.academicAssignmentReportsService.createFromExcel(data);
   }
 }
