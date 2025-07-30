@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon from 'argon2';
 import {
+  academicPeriodsSeed,
   brandsSeed,
   careersSeed,
   categoriesSeed,
@@ -269,6 +270,14 @@ async function main() {
   });
 
   console.log({ buildings });
+
+  // Periodos Academicos
+  const academicPeriods = await prisma.academic_Period.createMany({
+    data: academicPeriodsSeed,
+    skipDuplicates: true,
+  });
+
+  console.log({ academicPeriods });
 }
 
 main()
