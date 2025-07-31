@@ -18,13 +18,22 @@ export interface IResponse<T> {
   statusCode: number;
   path: string;
   message: string;
-  result: T;
+  data: T;
   meta?: {
     total?: number;
     page?: number;
     limit?: number;
   };
   timestamp: string;
+}
+
+interface IResponseWithMeta<T> {
+  data: T;
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+  };
 }
 
 @Injectable()
@@ -46,7 +55,7 @@ export class TransformInterceptor<T>
     next: CallHandler,
   ): Observable<IResponse<T>> {
     return next.handle().pipe(
-      map((res: unknown) => this.responseHandler(res, context)),
+      map((res) => this.responseHandler<T>(res, context)),
       catchError((err: HttpException | Prisma.PrismaClientKnownRequestError) =>
         throwError(() => this.errorHandler(err, context)),
       ),
@@ -98,12 +107,15 @@ export class TransformInterceptor<T>
       // Object.entries(exception).includes('response') &&
       // exception.reponse,
       // result: exception instanceof HttpException && exception.getResponse(),
-      result: uniqueMessages,
+      data: uniqueMessages,
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     });
   }
 
-  responseHandler(res: any, context: ExecutionContext) {
+  responseHandler<T>(
+    res: IResponseWithMeta<T>,
+    context: ExecutionContext,
+  ): IResponse<T> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -119,7 +131,8 @@ export class TransformInterceptor<T>
       statusCode: response.statusCode,
       path: request.url,
       message,
-      result: res,
+      data: res?.data ?? (res as T),
+      meta: res?.meta,
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     };
   }
