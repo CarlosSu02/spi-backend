@@ -3,6 +3,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { TClassroom, TCreateClassroom, TUpdateClassroom } from '../types';
+import { QueryPaginationDto } from 'src/common/dto';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class ClassroomService {
@@ -24,6 +27,17 @@ export class ClassroomService {
     const classrooms = await this.prisma.classroom.findMany();
 
     return classrooms;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TClassroom>> {
+    const [classrooms, count] = await Promise.all([
+      this.prisma.classroom.findMany(),
+      this.prisma.classroom.count(),
+    ]);
+
+    return paginateOutput<TClassroom>(classrooms, count, query);
   }
 
   async findOne(id: string): Promise<TClassroom> {

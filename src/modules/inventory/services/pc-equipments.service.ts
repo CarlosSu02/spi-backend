@@ -2,6 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePcEquipmentDto, UpdatePcEquipmentDto } from '../dto';
 import { TCreatePcEquipment, TPcEquipment, TUpdatePcEquipment } from '../types';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
+import { paginate, paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class PcEquipmentsService {
@@ -23,6 +26,19 @@ export class PcEquipmentsService {
     const pcEquipments = await this.prisma.pC_Equipment.findMany();
 
     return pcEquipments;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TPcEquipment>> {
+    const [pcEquipments, count] = await Promise.all([
+      this.prisma.pC_Equipment.findMany({
+        ...paginate(query),
+      }),
+      this.prisma.pC_Equipment.count(),
+    ]);
+
+    return paginateOutput<TPcEquipment>(pcEquipments, count, query);
   }
 
   async findOne(id: string): Promise<TPcEquipment> {

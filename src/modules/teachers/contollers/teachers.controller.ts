@@ -9,14 +9,17 @@ import {
   HttpCode,
   HttpStatus,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { TeachersService } from '../services/teachers.service';
 import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
-import { Roles } from 'src/common/decorators';
+import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ExtractIdInterceptor } from 'src/common/interceptors';
 import { ValidateIdPipe } from 'src/common/pipes';
+import { ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('teachers')
 export class TeachersController {
@@ -25,12 +28,14 @@ export class TeachersController {
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado un perfil de docente.')
   create(@Body() createTeacherDto: CreateTeacherDto) {
     return this.teachersService.create(createTeacherDto);
   }
 
   @Post('my')
   @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado un perfil de docente.')
   @UseInterceptors(ExtractIdInterceptor)
   createMyTeacherProfile(@Body() createTeacherDto: CreateTeacherDto) {
     createTeacherDto.userId = createTeacherDto.currentUserId!; // no es una ruta publica por lo que siempre existira el currentUserId
@@ -45,8 +50,25 @@ export class TeachersController {
     EUserRole.DIRECCION,
   )
   @HttpCode(HttpStatus.OK)
-  findAll() {
-    return this.teachersService.findAll();
+  @ResponseMessage('Listado de docentes.')
+  @ApiOperation({
+    summary: 'Obtener todos los docentes',
+    description: 'Devuelve una lista de todos los docentes.',
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'Número de página para la paginación',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'size',
+    type: Number,
+    description: 'Número de elementos por página',
+    required: false,
+  })
+  findAll(@Query() query: QueryPaginationDto) {
+    return this.teachersService.findAllWithPagination(query);
   }
 
   @Get(':id')
@@ -57,6 +79,7 @@ export class TeachersController {
     EUserRole.DIRECCION,
   )
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha encontrado el docente.')
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.findOne(id);
   }
@@ -69,6 +92,7 @@ export class TeachersController {
     EUserRole.DIRECCION,
   )
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha encontrado el docente por ID de usuario.')
   findTeacherByUserId(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.findOneByUserId(id);
   }
@@ -87,6 +111,7 @@ export class TeachersController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha eliminado el docente.')
   remove(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.remove(id);
   }

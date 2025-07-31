@@ -2,7 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto, UpdateCourseDto } from '../dto';
 import { TCreateCourse, TCourse, TUpdateCourse } from '../types';
-import { normalizeText } from 'src/common/utils';
+import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Injectable()
 export class CoursesService {
@@ -22,6 +24,19 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany();
 
     return courses;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TCourse>> {
+    const [courses, count] = await Promise.all([
+      this.prisma.course.findMany({
+        ...paginate(query),
+      }),
+      this.prisma.course.count(),
+    ]);
+
+    return paginateOutput<TCourse>(courses, count, query);
   }
 
   async findOne(id: string): Promise<TCourse> {

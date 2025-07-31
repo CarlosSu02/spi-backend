@@ -9,7 +9,10 @@ import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/modules/users/services/users.service';
 import { async } from 'rxjs';
-import { TOutputTeacher } from '../types';
+import { TOutputTeacher, TTeacher } from '../types';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
+import { paginate, paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class TeachersService {
@@ -93,6 +96,46 @@ export class TeachersService {
     }));
 
     return mappedTeachers;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TOutputTeacher>> {
+    const [teachers, count] = await Promise.all([
+      this.prisma.teacher.findMany({
+        ...paginate(query),
+        select: {
+          id: true,
+          categoryId: true,
+          contractTypeId: true,
+          shiftId: true,
+          user: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+            },
+          },
+        },
+      }),
+      this.prisma.teacher.count(),
+    ]);
+
+    // const mappedTeachers = teachers.map((teacher) => ({
+    // id: teacher.id,
+    // })
+
+    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
+      id: teacher.id,
+      name: teacher.user.name,
+      code: teacher.user.code,
+      categoryId: teacher.categoryId,
+      contractTypeId: teacher.contractTypeId,
+      shiftId: teacher.shiftId,
+      userId: teacher.user.id,
+    }));
+
+    return paginateOutput<TOutputTeacher>(mappedTeachers, count, query);
   }
 
   async findOne(id: string) {

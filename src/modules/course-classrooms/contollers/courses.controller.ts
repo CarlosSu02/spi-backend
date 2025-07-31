@@ -8,19 +8,27 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { CreateCourseDto, UpdateCourseDto } from '../dto';
 import { CoursesService } from '../services/courses.service';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado una asignatura.')
   @ApiOperation({
@@ -32,12 +40,6 @@ export class CoursesController {
   //   description:
   //     'Datos necesarios para crear una asignatura.',
   // })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   create(
     @Body()
     createCourseDto: CreateCourseDto,
@@ -46,12 +48,6 @@ export class CoursesController {
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de secciones de asignatura.')
-  @ApiOperation({
-    summary: 'Obtener todos las secciones de asignatura',
-    description: 'Devuelve una lista de todas las secciones de asignatura.',
-  })
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -59,11 +55,42 @@ export class CoursesController {
     EUserRole.COORDINADOR_AREA,
     EUserRole.DOCENTE,
   )
-  findAll() {
-    return this.coursesService.findAll();
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de asignaturas.')
+  @ApiOperation({
+    summary: 'Obtener todos las asignatura',
+    description: 'Devuelve una lista de todas las asignatura.',
+  })
+  // @ApiQuery({
+  //   name: 'query',
+  //   description: 'Parámetros de paginación y filtrado',
+  //   type: QueryPaginationDto,
+  //   required: true,
+  // })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'Número de página para la paginación',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'size',
+    type: Number,
+    description: 'Número de elementos por página',
+    required: false,
+  })
+  findAll(@Query() query: QueryPaginationDto) {
+    return this.coursesService.findAllWithPagination(query);
   }
 
   @Get(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información de la asignatura.')
   @ApiOperation({
@@ -75,6 +102,11 @@ export class CoursesController {
     type: String,
     format: 'uuid',
   })
+  findOne(@Param(ValidateIdPipe) id: string) {
+    return this.coursesService.findOne(id);
+  }
+
+  @Get('code/:code')
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -82,11 +114,6 @@ export class CoursesController {
     EUserRole.COORDINADOR_AREA,
     EUserRole.DOCENTE,
   )
-  findOne(@Param(ValidateIdPipe) id: string) {
-    return this.coursesService.findOne(id);
-  }
-
-  @Get('code/:code')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información de la asignatura.')
   @ApiOperation({
@@ -97,18 +124,17 @@ export class CoursesController {
   //   description: 'Código de la asignatura a obtener',
   //   type: String,
   // })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-    EUserRole.DOCENTE,
-  )
   findOneByCode(@Param('code') code: string) {
     return this.coursesService.findOneByCode(code);
   }
 
   @Patch(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado la asignatura.')
   @ApiOperation({
@@ -120,12 +146,6 @@ export class CoursesController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   update(
     @Param(ValidateIdPipe) id: string,
     @Body()
@@ -135,6 +155,12 @@ export class CoursesController {
   }
 
   @Delete(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado una asignatura.')
   @ApiOperation({
@@ -146,12 +172,6 @@ export class CoursesController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   remove(@Param(ValidateIdPipe) id: string) {
     return this.coursesService.remove(id);
   }
