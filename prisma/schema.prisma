@@ -475,6 +475,7 @@ model Academic_Period {
   // Relations
   assignmentReports Academic_Assignment_Report[]
 
+  @@unique([year, pac, pac_modality])
   @@map("academic_periods")
   @@schema("academic")
 }
