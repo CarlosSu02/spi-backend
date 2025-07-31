@@ -10,6 +10,7 @@ import {
   HttpStatus,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { AcademicAssignmentReportsService } from '../services/academic-assignment-reports.service';
 import {
@@ -19,12 +20,13 @@ import {
   TAcademicAssignment,
   UpdateAcademicAssignmentReportDto,
 } from '../dto';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('academic-assignment-reports')
 export class AssignmentReportsController {
@@ -37,6 +39,12 @@ export class AssignmentReportsController {
   ) {}
 
   @Post()
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un informe de asignación académica.')
   @ApiOperation({
@@ -48,12 +56,6 @@ export class AssignmentReportsController {
   //   description:
   //     'Datos necesarios para crear un informe de asignación académica.',
   // })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   create(
     @Body()
     createAcademicAssignmentReportDto: CreateAcademicAssignmentReportDto,
@@ -64,13 +66,6 @@ export class AssignmentReportsController {
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de informes de asignación académica.')
-  @ApiOperation({
-    summary: 'Obtener todos los informes de asignación académica',
-    description:
-      'Devuelve una lista de todos los informes de asignación académica.',
-  })
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -78,11 +73,25 @@ export class AssignmentReportsController {
     EUserRole.COORDINADOR_AREA,
     EUserRole.DOCENTE,
   )
-  findAll() {
-    return this.academicAssignmentReportsService.findAll();
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de informes de asignación académica.')
+  @ApiPagination({
+    summary: 'Obtener todos los informes de asignación académica',
+    description:
+      'Devuelve una lista de todos los informes de asignación académica.',
+  })
+  findAll(@Query() query: QueryPaginationDto) {
+    return this.academicAssignmentReportsService.findAllWithPagination(query);
   }
 
   @Get(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información del informe de asignación académica.')
   @ApiOperation({
@@ -94,18 +103,17 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-    EUserRole.DOCENTE,
-  )
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado un informe de asignación académica.')
   @ApiOperation({
@@ -117,12 +125,6 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   update(
     @Param(ValidateIdPipe) id: string,
     @Body()
@@ -135,6 +137,12 @@ export class AssignmentReportsController {
   }
 
   @Delete(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado un informe de asignación académica.')
   @ApiOperation({
@@ -146,18 +154,19 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   remove(@Param(ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.remove(id);
   }
 
   // Archivo Excel
   @Post('file')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
+  @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se han creado los informes de asignación académica.')
   @ApiOperation({
@@ -165,18 +174,20 @@ export class AssignmentReportsController {
     description:
       'Debería crear múltiples informes de asignación académica a partir de un archivo Excel.',
   })
-  @ApiParam({
-    name: 'file',
+  @ApiBody({
+    required: true,
     description: 'Archivo Excel con los datos de los informes de asignación.',
-    type: 'file',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
-  @UseInterceptors(FileInterceptor('file'))
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
+  @ApiConsumes('multipart/form-data')
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     const handledFile = this.excelFilesService.handleFileUpload(file);
 

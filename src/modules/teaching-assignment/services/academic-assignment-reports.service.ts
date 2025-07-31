@@ -22,7 +22,9 @@ import { CreateTeacherDepartmentPositionDto } from 'src/modules/teacher-departme
 import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
 import { AcademicPeriodsService } from './academic-periods.service';
 import { DepartmentsService } from 'src/modules/departments/services/departments.service';
-import { normalizeText } from 'src/common/utils';
+import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
 
 interface ParsedTitle {
   year: number;
@@ -92,6 +94,23 @@ export class AcademicAssignmentReportsService {
       await this.prisma.academic_Assignment_Report.findMany();
 
     return academicAssignmentReports;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TAcademicAssignmentReport>> {
+    const [academicAssignmentReports, count] = await Promise.all([
+      this.prisma.academic_Assignment_Report.findMany({
+        ...paginate(query),
+      }),
+      this.prisma.academic_Assignment_Report.count(),
+    ]);
+
+    return paginateOutput<TAcademicAssignmentReport>(
+      academicAssignmentReports,
+      count,
+      query,
+    );
   }
 
   async findOne(id: string): Promise<TAcademicAssignmentReport> {
