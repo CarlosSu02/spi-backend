@@ -15,6 +15,7 @@ import {
   GetCurrentUserId,
   Public,
 } from 'src/common/decorators';
+import { ApiBearerAuth, ApiHeader, ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -47,6 +48,22 @@ export class AuthController {
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('jwt-refresh')
+  @ApiOperation({
+    summary: 'Refresh token.',
+    description:
+      'Este permite obtener un nuevo access token usando el refresh token. En Swagger debe agregar el token de tipo Bearer en el header.',
+  })
+  // @ApiHeader({
+  //   name: 'Authorization',
+  //   description: 'Bearer token with the format "Bearer <refreshToken>"',
+  //   required: true,
+  //   example: 'Bearer your_refresh_token_here',
+  //   schema: {
+  //     type: 'string',
+  //     format: 'Bearer <refreshToken>',
+  //   },
+  // })
   refresh(
     @GetCurrentUserId() userId: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
