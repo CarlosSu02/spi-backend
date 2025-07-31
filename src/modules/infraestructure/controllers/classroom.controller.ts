@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { ClassroomService } from '../services/classroom.service';
@@ -39,21 +39,9 @@ export class ClassroomController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de aulas.')
-  @ApiOperation({
+  @ApiPagination({
     summary: 'Obtener todas las aulas',
     description: 'Devuelve una lista de todas las aulas.',
-  })
-  @ApiQuery({
-    name: 'page',
-    type: Number,
-    description: 'Número de página para la paginación',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'size',
-    type: Number,
-    description: 'Número de elementos por página',
-    required: false,
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.classroomService.findAllWithPagination(query);

@@ -10,12 +10,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { PcEquipmentsService } from '../services/pc-equipments.service';
 import { CreatePcEquipmentDto, UpdatePcEquipmentDto } from '../dto';
-import { ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('pc-equipments')
@@ -39,21 +38,9 @@ export class PcEquipmentsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de equipos de computo.')
-  @ApiOperation({
+  @ApiPagination({
     summary: 'Obtener todos los equipos de computo',
     description: 'Devuelve una lista de todos los equipos de computo.',
-  })
-  @ApiQuery({
-    name: 'page',
-    type: Number,
-    description: 'Número de página para la paginación',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'size',
-    type: Number,
-    description: 'Número de elementos por página',
-    required: false,
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.pcEquipmentsService.findAllWithPagination(query);

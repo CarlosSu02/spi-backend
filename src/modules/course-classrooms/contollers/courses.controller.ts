@@ -10,8 +10,8 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { CreateCourseDto, UpdateCourseDto } from '../dto';
@@ -57,27 +57,9 @@ export class CoursesController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de asignaturas.')
-  @ApiOperation({
+  @ApiPagination({
     summary: 'Obtener todos las asignatura',
     description: 'Devuelve una lista de todas las asignatura.',
-  })
-  // @ApiQuery({
-  //   name: 'query',
-  //   description: 'Parámetros de paginación y filtrado',
-  //   type: QueryPaginationDto,
-  //   required: true,
-  // })
-  @ApiQuery({
-    name: 'page',
-    type: Number,
-    description: 'Número de página para la paginación',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'size',
-    type: Number,
-    description: 'Número de elementos por página',
-    required: false,
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.coursesService.findAllWithPagination(query);

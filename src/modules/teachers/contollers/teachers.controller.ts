@@ -14,11 +14,10 @@ import {
 import { TeachersService } from '../services/teachers.service';
 import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ExtractIdInterceptor } from 'src/common/interceptors';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('teachers')
@@ -51,21 +50,9 @@ export class TeachersController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de docentes.')
-  @ApiOperation({
+  @ApiPagination({
     summary: 'Obtener todos los docentes',
     description: 'Devuelve una lista de todos los docentes.',
-  })
-  @ApiQuery({
-    name: 'page',
-    type: Number,
-    description: 'Número de página para la paginación',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'size',
-    type: Number,
-    description: 'Número de elementos por página',
-    required: false,
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.teachersService.findAllWithPagination(query);
