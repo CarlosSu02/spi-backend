@@ -5,24 +5,8 @@ import {
   TCreateCourseClassroom,
   TCourseClassroom,
   TUpdateCourseClassroom,
+  TCourseClassroomSelectPeriod,
 } from '../types';
-
-interface ICourseClassroomSelectPeriod
-  extends Omit<
-    TCourseClassroom,
-    | 'section'
-    | 'studentCount'
-    | 'modalityId'
-    | 'nearGraduation'
-    | 'teachingSessionId'
-  > {
-  teachingSession: {
-    assignmentReport: {
-      teacherId: string;
-      periodId: string;
-    };
-  };
-}
 
 @Injectable()
 export class CourseClassroomsService {
@@ -48,7 +32,7 @@ export class CourseClassroomsService {
 
   async findAllWithSelectAndPeriodId(
     periodId: string,
-  ): Promise<ICourseClassroomSelectPeriod[]> {
+  ): Promise<TCourseClassroomSelectPeriod[]> {
     const courseClassrooms = await this.prisma.course_Classroom.findMany({
       where: {
         // courseId: course.id,

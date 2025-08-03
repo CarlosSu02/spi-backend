@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCourseDto, UpdateCourseDto } from '../dto';
-import { TCreateCourse, TCourse, TUpdateCourse } from '../types';
+import {
+  TCreateCourse,
+  TCourse,
+  TUpdateCourse,
+  TOutputCourseWithSelect,
+} from '../types';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
-import { TDepartment } from 'src/modules/departments/types';
 
 @Injectable()
 export class CoursesService {
@@ -27,15 +31,7 @@ export class CoursesService {
     return courses;
   }
 
-  async findAllWithSelect(): Promise<
-    {
-      id: string;
-      code: string;
-      departmentId: string;
-      activeStatus: boolean;
-      department: Omit<TDepartment, 'uvs' | 'centerId' | 'facultyId'>;
-    }[]
-  > {
+  async findAllWithSelect(): Promise<TOutputCourseWithSelect[]> {
     const courses = await this.prisma.course.findMany({
       select: {
         id: true,

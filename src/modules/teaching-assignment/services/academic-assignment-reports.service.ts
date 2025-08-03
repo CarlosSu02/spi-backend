@@ -27,13 +27,22 @@ import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { CoursesService } from 'src/modules/course-classrooms/services/courses.service';
-import { TCreateCourseClassroom } from 'src/modules/course-classrooms/types';
+import {
+  TCourseClassroomSelectPeriod,
+  TCreateCourseClassroom,
+  TModality,
+  TOutputCourseWithSelect,
+} from 'src/modules/course-classrooms/types';
 import { ModalitiesService } from 'src/modules/course-classrooms/services/modalities.service';
 import { EClassModality } from 'src/modules/course-classrooms/enums';
 import { formatISO } from 'date-fns';
 import { ClassroomService } from 'src/modules/infraestructure/services/classroom.service';
 import { TeachingSessionsService } from './teaching-sessions.service';
 import { CourseClassroomsService } from 'src/modules/course-classrooms/services/course-classrooms.service';
+import { TOutputTeacher } from 'src/modules/teachers/types';
+import { TDepartment } from 'src/modules/departments/types';
+import { TClassroom } from 'src/modules/infraestructure/types';
+import { Prisma } from '@prisma/client';
 
 interface ParsedTitle {
   year: number;
@@ -197,7 +206,7 @@ export class AcademicAssignmentReportsService {
     return academicAssignmentReportDelete;
   }
 
-  async removeAll(id: string): Promise<boolean> {
+  async removeAll(id: string): Promise<Prisma.BatchPayload> {
     const academicAssignmentReportDelete =
       await this.prisma.academic_Assignment_Report.deleteMany({
         where: {
@@ -205,48 +214,59 @@ export class AcademicAssignmentReportsService {
         },
       });
 
-    return !!academicAssignmentReportDelete;
+    return academicAssignmentReportDelete;
   }
 
   // Con el archivo de excel
   async createFromExcel(data: ExcelResponseDto<AcademicAssignmentDto>) {
     const { year, pac, pac_modality } = this.parseAcademicTitle(data.subtitle);
+
     const academicPeriod =
       await this.academicPeriodsService.findOneByYearPacModality(
         year,
         pac,
         pac_modality,
       );
-
     const academicPeriodTitle = `Periodo Académico ${pac} ${pac_modality} ${year}`;
-
-    // console.log('Academic Period:', academicPeriod.id);
 
     // En cuestion de rendimiento, es mejor hacer las consultas
     // de todos los datos necesarios antes de iterar sobre el archivo
     // y no hacer una consulta cada vez que se itere sobre un item
     // Aca se evita realizar hasta quiza +100 consultas a la base de datos
-    const teachers = await this.teachersService.findAll();
-    const teachersMap = new Map(teachers.map((t) => [t.code, t]));
+    const [
+      teachers,
+      departments,
+      allCourses,
+      modalities,
+      existingCourseClassrooms,
+      classrooms,
+    ] = await Promise.all([
+      this.teachersService.findAll(),
+      this.departmentsService.findAll(),
+      this.coursesService.findAllWithSelect(),
+      this.modalitiesService.findAll(),
+      this.courseClassroomsService.findAllWithSelectAndPeriodId(
+        academicPeriod.id,
+      ),
+      this.classroomService.findAll(),
+    ]);
 
-    const departments = await this.departmentsService.findAll();
+    const teachersMap = new Map(teachers.map((t) => [t.code, t]));
     const departmentsMap = new Map(
       departments.map((d) => [normalizeText(d.name), d]),
     );
-
-    const allCourses = await this.coursesService.findAllWithSelect();
     const allCoursesMap = new Map(allCourses.map((c) => [c.code, c]));
-
-    const modalities = await this.modalitiesService.findAll();
-    const existingCourseClassrooms =
-      await this.courseClassroomsService.findAllWithSelectAndPeriodId(
-        academicPeriod.id,
-      );
-
-    const classrooms = await this.classroomService.findAll();
     const classroomsMap = new Map(
       classrooms.map((c) => [normalizeText(c.name), c]),
     );
+    const existingCourseClassroomsMap = new Map<
+      string,
+      TCourseClassroomSelectPeriod
+    >();
+    existingCourseClassrooms.forEach((cc) => {
+      const key = `${cc.courseId}|${cc.days}|${cc.teachingSession.assignmentReport.teacherId}`;
+      existingCourseClassroomsMap.set(key, cc);
+    });
 
     const allData = data.data;
     const coursesGroupByTeacherCodeEntries: Record<
@@ -259,133 +279,59 @@ export class AcademicAssignmentReportsService {
 
     for (const item of allData) {
       const {
-        id,
         teacherCode,
         courseCode,
         section,
         days,
         studentCount,
         classroomName,
-        department,
+        departmentName,
         observation,
       } = item;
 
-      // Comparar si ya existe en el arreglo otra clase con el mismo docente y asignatura
-      if (
-        allData.some(
-          (cc) =>
-            cc.id !== id && // Excluir el mismo id
-            cc.teacherCode === teacherCode &&
-            cc.courseCode === courseCode &&
-            cc.section === section &&
-            cc.days === days,
-        )
-      )
-        throw new BadRequestException(
-          `Ya existe una clase con el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico <${academicPeriodTitle}> con la sección <${section}> y días <${days}>. Por favor, verifique el archivo.`,
-        );
+      this.validateUniqueClass(allData, item);
 
-      const teacher = teachersMap.get(teacherCode);
-
-      if (!teacher)
-        throw new NotFoundException(
-          `No se encontró el docente con código <${teacherCode}>.`,
-        );
-
-      const departmentObj = departmentsMap.get(normalizeText(department));
-
-      if (!departmentObj)
-        throw new NotFoundException(
-          `No se encontró el departamento con nombre <${department}>.`,
-        );
-
-      const course = allCoursesMap.get(courseCode);
-
-      if (!course)
-        throw new NotFoundException(
-          `No se encontró la asignatura con código <${courseCode}>.`,
-        );
-
-      // Si la asignatura no se encuentra activa, lanzamos un error,
-      // ya que puede ser una clase de un pensum anterior
-      if (!course.activeStatus)
-        throw new BadRequestException(
-          `La asignatura con código <${courseCode}> no está activa.`,
-        );
-
-      // Si la asignatura no pertenece al departamento, lanzamos un error
-      if (course.departmentId !== departmentObj.id)
-        throw new BadRequestException(
-          `La asignatura con código <${courseCode}> no pertenece al departamento <${department}>.`,
-        );
+      const teacher = this.findTeacher(teachersMap, teacherCode);
+      const department = this.findDepartment(departmentsMap, departmentName);
+      const course = this.findCourse(allCoursesMap, courseCode, department);
 
       // existingClass - todos los de existingCourseClassrooms son del periodo académico actual
       // Este if verifica si ya existe una clase para el docente y la asignatura
-      const existingCourseClassroom = existingCourseClassrooms.find(
-        (cc) =>
-          cc.courseId === course.id &&
-          cc.days === days.toString() &&
-          cc.teachingSession.assignmentReport.teacherId === teacher.id,
+      const existingKey = `${course.id}|${days}|${teacher.id}`;
+      this.validateCourseClassroom(
+        existingCourseClassroomsMap,
+        existingKey,
+        teacherCode,
+        courseCode,
+        academicPeriodTitle,
+        academicPeriod.id,
       );
-      if (
-        existingCourseClassroom &&
-        existingCourseClassroom.teachingSession.assignmentReport.periodId ===
-          academicPeriod.id
-      )
-        throw new BadRequestException(
-          `Ya existe una clase para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
-        );
 
       // Salones de clase
-      if (
-        classroomName === undefined ||
-        classroomName === null ||
-        classroomName === ''
-      )
+      if (!classroomName || classroomName === null || classroomName === '')
         throw new BadRequestException(
           `El nombre del salón de clase no puede estar vacío para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico <${academicPeriodTitle}>.`,
         );
 
-      const classroomObj = classroomsMap.get(
-        normalizeText(classroomName.toString()),
-      );
-
-      if (!classroomObj)
-        throw new NotFoundException(
-          `No se encontró el salón de clase con nombre <${classroomName}>.`,
-        );
+      const classroom = this.findClassroom(classroomsMap, classroomName);
 
       // Agrupamos las clases por docente, ya que en este punto ya están validadas
-      const entry = coursesGroupByTeacherCodeEntries[teacherCode];
-
-      coursesGroupByTeacherCodeEntries[teacherCode] = {
-        teacherId: teacher.id,
-        userId: teacher.userId,
-        departmentId: departmentObj.id,
-        periodId: academicPeriod.id,
-        // courses: entry && entry.courses ? entry.courses : [],
-        courses:
-          entry && Object.prototype.hasOwnProperty.call(entry, 'courses')
-            ? entry.courses
-            : [],
-      };
+      if (!coursesGroupByTeacherCodeEntries[teacherCode]) {
+        coursesGroupByTeacherCodeEntries[teacherCode] = {
+          teacherId: teacher.id,
+          userId: teacher.userId,
+          departmentId: department.id,
+          periodId: academicPeriod.id,
+          courses: [],
+        };
+      }
 
       coursesGroupByTeacherCodeEntries[teacherCode].courses.push({
         courseId: course.id,
         section,
         days: days.toString(),
-        classroomId: classroomObj.id,
-        modalityId:
-          normalizeText(classroomName.toString()) ===
-          normalizeText(EClassModality.TELEDUCATION)
-            ? modalities.find(
-                (m) =>
-                  normalizeText(m.name as EClassModality) ===
-                  normalizeText(EClassModality.TELEDUCATION),
-              )!.id
-            : modalities.find(
-                (m) => (m.name as EClassModality) === EClassModality.PRESENTIAL,
-              )!.id,
+        classroomId: classroom.id,
+        modalityId: this.getModalityId(classroom.name, modalities),
         studentCount,
         groupCode: `${teacherCode}-${section}-${days}`, // Generamos un código de grupo único
         nearGraduation: false, // Por defecto, ya que no se especifica en el archivo
@@ -522,5 +468,140 @@ export class AcademicAssignmentReportsService {
       pac_modality,
       title,
     };
+  }
+
+  private validateUniqueClass(
+    allData: AcademicAssignmentDto[],
+    item: AcademicAssignmentDto,
+  ) {
+    if (
+      allData.some(
+        (cc) =>
+          cc.id !== item.id &&
+          cc.teacherCode === item.teacherCode &&
+          cc.courseCode === item.courseCode &&
+          cc.section === item.section &&
+          cc.days === item.days,
+      )
+    ) {
+      throw new BadRequestException(
+        `Ya existe una clase con el docente <${item.teacherCode}> ...`,
+      );
+    }
+  }
+
+  private findTeacher(
+    teachersMap: Map<string, TOutputTeacher>,
+    teacherCode: string,
+  ): TOutputTeacher {
+    const teacher = teachersMap.get(teacherCode);
+
+    if (!teacher)
+      throw new NotFoundException(
+        `No se encontró el docente con código <${teacherCode}>.`,
+      );
+
+    return teacher;
+  }
+
+  private findDepartment(
+    departmentsMap: Map<string, TDepartment>,
+    departmentName: string,
+  ): TDepartment {
+    const department = departmentsMap.get(normalizeText(departmentName));
+
+    if (!department)
+      throw new NotFoundException(
+        `No se encontró el departamento con nombre <${departmentName}>.`,
+      );
+
+    return department;
+  }
+
+  private findCourse(
+    allCoursesMap: Map<string, TOutputCourseWithSelect>,
+    courseCode: string,
+    department: TDepartment,
+  ): TOutputCourseWithSelect {
+    const course = allCoursesMap.get(courseCode);
+
+    if (!course)
+      throw new NotFoundException(
+        `No se encontró la asignatura con código <${courseCode}>.`,
+      );
+
+    // Si la asignatura no se encuentra activa, lanzamos un error,
+    // ya que puede ser una clase de un pensum anterior
+    if (!course.activeStatus)
+      throw new BadRequestException(
+        `La asignatura con código <${courseCode}> no está activa.`,
+      );
+
+    // Si la asignatura no pertenece al departamento, lanzamos un error
+    if (course.departmentId !== department.id)
+      throw new BadRequestException(
+        `La asignatura con código <${courseCode}> no pertenece al departamento <${department.name}>.`,
+      );
+
+    return course;
+  }
+
+  private findClassroom(
+    classroomsMap: Map<string, TClassroom>,
+    classroomName: string,
+  ): TClassroom {
+    const classroom = classroomsMap.get(normalizeText(classroomName));
+
+    if (!classroom)
+      throw new NotFoundException(
+        `No se encontró el salón de clase con nombre <${classroomName}>.`,
+      );
+
+    return classroom;
+  }
+
+  private validateCourseClassroom(
+    existingCourseClassroomsMap: Map<string, TCourseClassroomSelectPeriod>,
+    key: string,
+    teacherCode: string,
+    courseCode: string,
+    academicPeriodTitle: string,
+    periodId: string,
+  ): TCourseClassroomSelectPeriod | undefined {
+    const existingCourseClassroom = existingCourseClassroomsMap.get(key);
+
+    if (
+      existingCourseClassroom &&
+      existingCourseClassroom.teachingSession.assignmentReport.periodId ===
+        periodId
+    )
+      throw new BadRequestException(
+        `Ya existe una clase para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
+      );
+
+    return existingCourseClassroom;
+  }
+
+  private getModalityId(
+    classroomName: string,
+    modalities: TModality[],
+  ): string {
+    if (
+      normalizeText(classroomName.toString()) ===
+      normalizeText(EClassModality.TELEDUCATION)
+    )
+      return (
+        modalities.find(
+          (m) =>
+            normalizeText(m.name as EClassModality) ===
+            normalizeText(EClassModality.TELEDUCATION),
+        )?.id || ''
+      );
+
+    return (
+      modalities.find(
+        (m) => (m.name as EClassModality) === EClassModality.PRESENTIAL,
+      )?.id || ''
+    );
   }
 }

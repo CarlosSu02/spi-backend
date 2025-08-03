@@ -9,7 +9,7 @@ export class AcademicAssignmentDto {
   days: string;
   studentCount: number;
   classroomName: string;
-  department: string;
+  departmentName: string;
   coordinator: string;
   center: string;
   observation?: string;
@@ -28,7 +28,7 @@ export const propertiesAcademicAssignment: TAcademicAssignment = {
   7: 'days',
   8: 'studentCount',
   9: 'classroomName',
-  10: 'department',
+  10: 'departmentName',
   11: 'coordinator',
   12: 'center',
   13: 'observation',
