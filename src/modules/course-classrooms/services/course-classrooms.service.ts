@@ -7,6 +7,23 @@ import {
   TUpdateCourseClassroom,
 } from '../types';
 
+interface ICourseClassroomSelectPeriod
+  extends Omit<
+    TCourseClassroom,
+    | 'section'
+    | 'studentCount'
+    | 'modalityId'
+    | 'nearGraduation'
+    | 'teachingSessionId'
+  > {
+  teachingSession: {
+    assignmentReport: {
+      teacherId: string;
+      periodId: string;
+    };
+  };
+}
+
 @Injectable()
 export class CourseClassroomsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,6 +42,41 @@ export class CourseClassroomsService {
 
   async findAll(): Promise<TCourseClassroom[]> {
     const courseClassrooms = await this.prisma.course_Classroom.findMany();
+
+    return courseClassrooms;
+  }
+
+  async findAllWithSelectAndPeriodId(
+    periodId: string,
+  ): Promise<ICourseClassroomSelectPeriod[]> {
+    const courseClassrooms = await this.prisma.course_Classroom.findMany({
+      where: {
+        // courseId: course.id,
+        // days: days.toString(),
+        teachingSession: {
+          assignmentReport: {
+            periodId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        classroomId: true,
+        courseId: true,
+        days: true,
+        groupCode: true,
+        teachingSession: {
+          select: {
+            assignmentReport: {
+              select: {
+                periodId: true,
+                teacherId: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     return courseClassrooms;
   }
