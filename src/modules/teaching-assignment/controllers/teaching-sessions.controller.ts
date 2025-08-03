@@ -66,6 +66,7 @@ export class TeachingSessionsController {
     EUserRole.DIRECCION,
     EUserRole.RRHH,
     EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
   )
   update(
     @Param(ValidateIdPipe) id: string,

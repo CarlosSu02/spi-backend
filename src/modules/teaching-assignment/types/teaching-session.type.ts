@@ -10,7 +10,7 @@ export type TTeachingSession = {
 // Tipo para la creación
 export type TCreateTeachingSession = Omit<
   TTeachingSession,
-  'id' | 'assignmentReport' | 'courseClassrooms'
+  'assignmentReport' | 'courseClassrooms'
 >;
 
 // Tipo para la actualización

@@ -158,6 +158,31 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.remove(id);
   }
 
+  @Delete('/period/:id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Se ha eliminado los informes de asignación académica para un periodo.',
+  )
+  @ApiOperation({
+    summary: 'Eliminar todos los informes de asignación académica por periodo',
+  })
+  @ApiParam({
+    name: 'id',
+    description:
+      'ID del periodo para eliminar informes de asignación académica',
+    type: String,
+    format: 'uuid',
+  })
+  removeAll(@Param(ValidateIdPipe) id: string) {
+    return this.academicAssignmentReportsService.removeAll(id);
+  }
+
   // Archivo Excel
   @Post('file')
   @Roles(

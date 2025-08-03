@@ -26,7 +26,15 @@ export type TCreateCourseClassroom = Omit<
   | 'teachingSession'
   | 'modality'
   | 'courseStatistics'
->;
+  | 'classroomId'
+  | 'teachingSessionId'
+  | 'groupCode'
+> & {
+  // TODO: revisar si esto afecta a la creacion de los cursos.
+  classroomId: string;
+  teachingSessionId?: string;
+  groupCode?: string; // este se asigna por defecto en la base de datos
+};
 
 // Tipo para la actualización
 export type TUpdateCourseClassroom = Partial<TCreateCourseClassroom> & {

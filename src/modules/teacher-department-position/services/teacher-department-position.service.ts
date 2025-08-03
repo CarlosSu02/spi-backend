@@ -6,14 +6,18 @@ import {
 import { CreateTeacherDepartmentPositionDto } from '../dto/create-teacher-department-position.dto';
 import { UpdateTeacherDepartmentPositionDto } from '../dto/update-teacher-department-position.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TTeacherDeptPos } from '../types';
+import { TOutputTeacherDeptPos, TTeacherDeptPos } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { getTime, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
+import { QueryPaginationDto } from 'src/common/dto';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { paginate, paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
   private readonly selectOptionsTDP = {
+    // Se puede usar include tambien...
     id: true,
     startDate: true,
     endDate: true,
@@ -90,7 +94,7 @@ export class TeacherDepartmentPositionService {
     return newTeacherDeptPos;
   }
 
-  async findAll(): Promise<TTeacherDeptPos[]> {
+  async findAll(): Promise<TOutputTeacherDeptPos[]> {
     const teacherDeptPos =
       await this.prisma.teacher_Department_Position.findMany({
         // Se puede usar include tambien...
@@ -100,7 +104,80 @@ export class TeacherDepartmentPositionService {
     // if (teacherDeptPoss.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
 
-    return teacherDeptPos;
+    const mappedTeacherDeptPos: TOutputTeacherDeptPos[] = teacherDeptPos.map(
+      (tdp) => ({
+        id: tdp.id,
+        userId: tdp.teacher.user.id,
+        teacherId: tdp.teacher.id,
+        code: tdp.teacher.user.code,
+        // name: tdp.teacher.user.name,
+        departmentId: tdp.department.id,
+        departmentName: tdp.department.name,
+        positionId: tdp.position.id,
+        positionName: tdp.position.name,
+        startDate: formatInTimeZone(
+          tdp.startDate,
+          'America/Tegucigalpa',
+          'yyyy-MM-dd HH:mm:ss',
+        ),
+        endDate: tdp.endDate
+          ? formatInTimeZone(
+              tdp.endDate,
+              'America/Tegucigalpa',
+              'yyyy-MM-dd HH:mm:ss',
+            )
+          : null,
+      }),
+    );
+
+    return mappedTeacherDeptPos;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TOutputTeacherDeptPos>> {
+    const [teacherDeptPos, count] = await Promise.all([
+      this.prisma.teacher_Department_Position.findMany({
+        ...paginate(query),
+        select: this.selectOptionsTDP,
+      }),
+      this.prisma.teacher_Department_Position.count(),
+    ]);
+
+    // if (teacherDeptPoss.length === 0)
+    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    const mappedTeacherDeptPos: TOutputTeacherDeptPos[] = teacherDeptPos.map(
+      (tdp) => ({
+        id: tdp.id,
+        userId: tdp.teacher.user.id,
+        teacherId: tdp.teacher.id,
+        code: tdp.teacher.user.code,
+        name: tdp.teacher.user.name,
+        departmentId: tdp.department.id,
+        departmentName: tdp.department.name,
+        positionId: tdp.position.id,
+        positionName: tdp.position.name,
+        startDate: formatInTimeZone(
+          tdp.startDate,
+          'America/Tegucigalpa',
+          'yyyy-MM-dd HH:mm:ss',
+        ),
+        endDate: tdp.endDate
+          ? formatInTimeZone(
+              tdp.endDate,
+              'America/Tegucigalpa',
+              'yyyy-MM-dd HH:mm:ss',
+            )
+          : null,
+      }),
+    );
+
+    return paginateOutput<TOutputTeacherDeptPos>(
+      mappedTeacherDeptPos,
+      count,
+      query,
+    );
   }
 
   async findOne(id: string): Promise<TTeacherDeptPos> {

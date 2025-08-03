@@ -5,6 +5,7 @@ import { TCreateCourse, TCourse, TUpdateCourse } from '../types';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
+import { TDepartment } from 'src/modules/departments/types';
 
 @Injectable()
 export class CoursesService {
@@ -22,6 +23,33 @@ export class CoursesService {
 
   async findAll(): Promise<TCourse[]> {
     const courses = await this.prisma.course.findMany();
+
+    return courses;
+  }
+
+  async findAllWithSelect(): Promise<
+    {
+      id: string;
+      code: string;
+      departmentId: string;
+      activeStatus: boolean;
+      department: Omit<TDepartment, 'uvs' | 'centerId' | 'facultyId'>;
+    }[]
+  > {
+    const courses = await this.prisma.course.findMany({
+      select: {
+        id: true,
+        code: true,
+        departmentId: true,
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        activeStatus: true,
+      },
+    });
 
     return courses;
   }

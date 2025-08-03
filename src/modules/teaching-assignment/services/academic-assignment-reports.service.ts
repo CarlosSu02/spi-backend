@@ -1,11 +1,14 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import {
   AcademicAssignmentDto,
   CreateAcademicAssignmentReportDto,
+  CreateTeachingSessionDto,
   UpdateAcademicAssignmentReportDto,
 } from '../dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -25,6 +28,20 @@ import { DepartmentsService } from 'src/modules/departments/services/departments
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
+import { concatMap, groupBy, mergeMap, of, toArray, zip } from 'rxjs';
+import { CoursesService } from 'src/modules/course-classrooms/services/courses.service';
+import { TCreateTeacherDeptPos } from 'src/modules/teacher-department-position/types';
+import {
+  TCourseClassroom,
+  TCreateCourseClassroom,
+} from 'src/modules/course-classrooms/types';
+import { ModalitiesService } from 'src/modules/course-classrooms/services/modalities.service';
+import { EClassModality } from 'src/modules/course-classrooms/enums';
+import { formatISO, format } from 'date-fns';
+import { ClassroomService } from 'src/modules/infraestructure/services/classroom.service';
+import { TeachingSessionsService } from './teaching-sessions.service';
+import { Prisma } from '@prisma/client';
+import { AcademicAssignmentReportDto } from 'src/modules/excel-files/dto/academic-assignment-report.dto';
 
 interface ParsedTitle {
   year: number;
@@ -42,6 +59,10 @@ export class AcademicAssignmentReportsService {
     private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
     private readonly positionsService: PositionsService,
     private readonly departmentsService: DepartmentsService,
+    private readonly coursesService: CoursesService,
+    private readonly modalitiesService: ModalitiesService,
+    private readonly classroomService: ClassroomService,
+    private readonly teachingSessionsService: TeachingSessionsService,
   ) {}
 
   async create(
@@ -50,6 +71,7 @@ export class AcademicAssignmentReportsService {
     const { userId, departmentId, periodId } =
       createAcademicAssignmentReportDto;
 
+    const currentDate = formatISO(new Date().toISOString());
     const teacher = await this.teachersService.findOneByUserId(userId);
 
     // Primero verificamos si el docente pertenece al departamento
@@ -72,6 +94,7 @@ export class AcademicAssignmentReportsService {
         userId,
         departmentId,
         positionId,
+        startDate: currentDate,
       } as CreateTeacherDepartmentPositionDto;
 
       await this.teacherDepartmentPositionService.create(dto);
@@ -83,6 +106,22 @@ export class AcademicAssignmentReportsService {
           teacherId: teacher.id,
           departmentId,
           periodId,
+          teachingSessions: {
+            create: {
+              consultHour: currentDate, // Fecha actual
+              // +1 hour
+              tutoringHour: formatISO(
+                new Date(currentDate).getTime() + 3600000,
+              ),
+            },
+          },
+        },
+        select: {
+          id: true,
+          teacherId: true,
+          departmentId: true,
+          periodId: true,
+          teachingSessions: true,
         },
       });
 
@@ -91,7 +130,15 @@ export class AcademicAssignmentReportsService {
 
   async findAll(): Promise<TAcademicAssignmentReport[]> {
     const academicAssignmentReports =
-      await this.prisma.academic_Assignment_Report.findMany();
+      await this.prisma.academic_Assignment_Report.findMany({
+        include: {
+          teachingSessions: {
+            include: {
+              courseClassrooms: true,
+            },
+          },
+        },
+      });
 
     return academicAssignmentReports;
   }
@@ -157,11 +204,19 @@ export class AcademicAssignmentReportsService {
     return academicAssignmentReportDelete;
   }
 
+  async removeAll(id: string): Promise<boolean> {
+    const academicAssignmentReportDelete =
+      await this.prisma.academic_Assignment_Report.deleteMany({
+        where: {
+          periodId: id, // Elimina todos los informes del periodo académico
+        },
+      });
+
+    return !!academicAssignmentReportDelete;
+  }
+
   // Con el archivo de excel
   async createFromExcel(data: ExcelResponseDto<AcademicAssignmentDto>) {
-    // console.log('Data from Excel:', data);
-    // console.log('Academic Title:', data.title);
-    // console.log(this.parseAcademicTitle(data.subtitle));
     const { year, pac, pac_modality } = this.parseAcademicTitle(data.subtitle);
     const academicPeriod =
       await this.academicPeriodsService.findOneByYearPacModality(
@@ -170,46 +225,401 @@ export class AcademicAssignmentReportsService {
         pac_modality,
       );
 
+    const academicPeriodTitle = `Periodo Académico ${pac} ${pac_modality} ${year}`;
+
     console.log('Academic Period:', academicPeriod.id);
 
     const teachers = await this.teachersService.findAll();
-    const teacherMap = new Map(teachers.map((t) => [t.code, t]));
+    const teachersMap = new Map(teachers.map((t) => [t.code, t]));
 
     // lo mismo con las clases y departamentos
     const departments = await this.departmentsService.findAll();
-    const departmentMap = new Map(
+    const departmentsMap = new Map(
       departments.map((d) => [normalizeText(d.name), d]),
     );
 
     const teachersDeptPosition =
       await this.teacherDepartmentPositionService.findAll();
+    const teachersDeptPositionMap = new Map(
+      teachersDeptPosition.map((tdp) => [
+        `${tdp.code}-${tdp.departmentId}`,
+        tdp,
+      ]),
+    );
 
-    console.log('Departments:', departmentMap);
+    const positionNone = await this.positionsService.findOneByName(
+      EPosition.NONE as string,
+    );
 
-    for (const course of data.data) {
-      const { teacherCode, courseCode, days, studentCount, department } =
-        course;
+    const allCourses = await this.coursesService.findAllWithSelect();
+    const allCoursesMap = new Map(allCourses.map((c) => [c.code, c]));
 
-      // const teacher = await this.teachersService.findOneByCode(teacherCode);
-      const teacher = teacherMap.get(teacherCode);
-      console.log(teacher);
+    const modalities = await this.modalitiesService.findAll();
+
+    // console.log('Departments:', departmentMap);
+    // console.log(teachersDeptPosition);
+
+    // const coursesGroupByTeacherCode: [string, AcademicAssignmentDto[]][] = [];
+    const coursesGroupByTeacherCode: Record<string, AcademicAssignmentDto[]> =
+      {};
+
+    // FIX: suistuir este por of de rxjs por Object.groupBy en un futuro, actualmente no soportado
+    of(data.data)
+      .pipe(
+        concatMap((res) => res),
+        groupBy((item) => item.teacherCode),
+        mergeMap((group) => zip(of(group.key), group.pipe(toArray()))),
+      )
+      .subscribe(([teacherCode, courses]) => {
+        // coursesGroupByTeacherCode.push(grouped);
+        coursesGroupByTeacherCode[teacherCode] = courses;
+        // console.log(entries);
+      });
+
+    // console.log(
+    //   await this.prisma.course_Classroom.findMany({
+    //     where: {
+    //       teachingSession: {
+    //         assignmentReport: {
+    //           periodId: academicPeriod.id,
+    //         },
+    //       },
+    //     },
+    //   }),
+    // );
+
+    const afterCreateTeacherDeptPositions: TCreateTeacherDeptPos[] = [];
+    const existingCourseClassrooms =
+      await this.prisma.course_Classroom.findMany({
+        where: {
+          // courseId: course.id,
+          // days: days.toString(),
+          teachingSession: {
+            assignmentReport: {
+              periodId: academicPeriod.id,
+            },
+          },
+        },
+        select: {
+          id: true,
+          classroomId: true,
+          courseId: true,
+          days: true,
+          groupCode: true,
+          teachingSession: {
+            select: {
+              assignmentReport: {
+                select: {
+                  periodId: true,
+                  teacherId: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+    const classrooms = await this.classroomService.findAll();
+    const classroomsMap = new Map(
+      classrooms.map((c) => [normalizeText(c.name), c]),
+    );
+
+    const allData = data.data;
+    const coursesGroupByTeacherCodeEntries: Record<
+      string,
+      Omit<TAcademicAssignmentReport, 'id'> & {
+        userId: string;
+        courses: TCreateCourseClassroom[];
+      }
+    > = {};
+
+    for (const item of allData) {
+      const {
+        id,
+        teacherCode,
+        courseCode,
+        section,
+        days,
+        studentCount,
+        classroomName,
+        department,
+        observation,
+      } = item;
+
+      // comparar si ya existe en el arreglo otra clase con el mismo docente y asignatura
+      if (
+        allData.some(
+          (cc) =>
+            cc.id !== id && // Excluir el mismo id
+            cc.teacherCode === teacherCode &&
+            cc.courseCode === courseCode &&
+            cc.section === section &&
+            cc.days === days,
+        )
+      )
+        throw new BadRequestException(
+          `Ya existe una clase con el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico <${academicPeriodTitle}> con la sección <${section}> y días <${days}>. Por favor, verifique el archivo.`,
+        );
+
+      const teacher = teachersMap.get(teacherCode);
+      // console.log(teacher);
 
       if (!teacher)
         throw new NotFoundException(
           `No se encontró el docente con código <${teacherCode}>.`,
         );
 
-      const departmentObj = departmentMap.get(normalizeText(department));
+      const departmentObj = departmentsMap.get(normalizeText(department));
 
       if (!departmentObj)
         throw new NotFoundException(
           `No se encontró el departamento con nombre <${department}>.`,
         );
 
-      console.log('Teacher:', teacher.name);
+      const course = allCoursesMap.get(courseCode);
+
+      if (!course)
+        throw new NotFoundException(
+          `No se encontró la asignatura con código <${courseCode}>.`,
+        );
+
+      // Si la asignatura no se encuentra activa, lanzamos un error,
+      // ya que puede ser una clase de un pensum anterior
+      if (!course.activeStatus)
+        throw new BadRequestException(
+          `La asignatura con código <${courseCode}> no está activa.`,
+        );
+
+      // Si la asignatura no pertenece al departamento, lanzamos un error
+      if (course.departmentId !== departmentObj.id)
+        throw new BadRequestException(
+          `La asignatura con código <${courseCode}> no pertenece al departamento <${department}>.`,
+        );
+
+      // const teacherDeptPosition = teachersDeptPositionMap.get(
+      //   `${teacherCode}-${departmentObj.id}`,
+      // );
+      if (!teachersDeptPositionMap.get(`${teacherCode}-${departmentObj.id}`))
+        afterCreateTeacherDeptPositions.push({
+          teacherId: teacher.id,
+          departmentId: departmentObj.id,
+          positionId: positionNone.id,
+        });
+
+      // existingClass - todos los de existingCourseClassrooms son del periodo académico actual
+      // Este if verifica si ya existe una clase para el docente y la asignatura
+      const existingCourseClassroom = existingCourseClassrooms.find(
+        (cc) =>
+          cc.courseId === course.id &&
+          cc.days === days.toString() &&
+          cc.teachingSession.assignmentReport.teacherId === teacher.id,
+      );
+      if (
+        // existingCourseClassrooms.some(
+        //   (cc) =>
+        //     cc.courseId === course.id &&
+        //     cc.days === days.toString() &&
+        //     cc.teachingSession.assignmentReport.teacherId === teacher.id,
+        // )
+        // comparar si ya existe en el arreglo
+        existingCourseClassroom &&
+        existingCourseClassroom.teachingSession.assignmentReport.periodId ===
+          academicPeriod.id
+      )
+        throw new BadRequestException(
+          `Ya existe una clase para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
+        );
+
+      // Salones de clase
+      if (
+        classroomName === undefined ||
+        classroomName === null ||
+        classroomName === ''
+      )
+        throw new BadRequestException(
+          `El nombre del salón de clase no puede estar vacío para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico <${academicPeriodTitle}>.`,
+        );
+
+      const classroomObj = classroomsMap.get(
+        normalizeText(classroomName.toString()),
+      );
+
+      if (!classroomObj)
+        throw new NotFoundException(
+          `No se encontró el salón de clase con nombre <${classroomName}>.`,
+        );
+
+      // Agrupamos las clases por docente, ya que en este punto ya están validadas
+      const entry = coursesGroupByTeacherCodeEntries[teacherCode];
+
+      coursesGroupByTeacherCodeEntries[teacherCode] = {
+        teacherId: teacher.id,
+        userId: teacher.userId,
+        departmentId: departmentObj.id,
+        periodId: academicPeriod.id,
+        // courses: entry && entry.courses ? entry.courses : [],
+        courses:
+          entry && Object.prototype.hasOwnProperty.call(entry, 'courses')
+            ? entry.courses
+            : [],
+      };
+
+      coursesGroupByTeacherCodeEntries[teacherCode].courses.push({
+        courseId: course.id,
+        section,
+        days: days.toString(),
+        classroomId: classroomObj.id,
+        modalityId:
+          normalizeText(classroomName.toString()) ===
+          normalizeText(EClassModality.TELEDUCATION)
+            ? modalities.find(
+                (m) =>
+                  normalizeText(m.name as EClassModality) ===
+                  normalizeText(EClassModality.TELEDUCATION),
+              )!.id
+            : modalities.find(
+                (m) => (m.name as EClassModality) === EClassModality.PRESENTIAL,
+              )!.id,
+        studentCount,
+        groupCode: `${teacherCode}-${section}-${days}`, // Generamos un código de grupo único
+        nearGraduation: false, // Por defecto, ya que no se especifica en el archivo
+        observation: observation || null, // Si no hay observación, se asigna
+      });
     }
 
-    return data;
+    const allAcademicAssignmentReports = await this.findAll();
+    // console.log(allAcademicAssignmentReports);
+
+    for (const [teacherCode, academicInfo] of Object.entries(
+      coursesGroupByTeacherCodeEntries,
+    )) {
+      console.log(academicInfo.courses.length, 'courses', teacherCode);
+
+      const { teacherId, userId, departmentId, periodId, courses } =
+        academicInfo;
+
+      // const newAcademicAssignmentReport = await this.create({
+      //   userId,
+      //   departmentId,
+      //   periodId,
+      // } as CreateAcademicAssignmentReportDto);
+
+      const academicAssignmentReport =
+        allAcademicAssignmentReports.find(
+          (aar: TAcademicAssignmentReport) =>
+            aar.teacherId === teacherId &&
+            aar.departmentId === departmentId &&
+            aar.periodId === periodId,
+        ) ??
+        (await this.create({
+          userId,
+          departmentId,
+          periodId,
+        } as CreateAcademicAssignmentReportDto));
+
+      // // Otra alternativa es crear el informe directamente
+      // let academicAssignmentReport = allAcademicAssignmentReports.find(
+      //   (aar: TAcademicAssignmentReport) =>
+      //     aar.teacherId === teacherId &&
+      //     aar.departmentId === departmentId &&
+      //     aar.periodId === periodId,
+      // );
+      //
+      // if (!academicAssignmentReport) {
+      //   // Si no existe, crea uno nuevo y espera su creación
+      //   academicAssignmentReport = await this.create({
+      //     userId,
+      //     departmentId,
+      //     periodId,
+      //   } as CreateAcademicAssignmentReportDto);
+      // }
+
+      // no validamos si ya existe 'teachingSessions' porque ya lo hicimos al crear el informe
+      // y en este punto nadie podria eliminarlo, ya que se estan creando en el mismo momento
+      // pero nunca se sabe, asi que lo dejamos por si acaso
+      const teachingSession =
+        academicAssignmentReport.teachingSessions! &&
+        academicAssignmentReport.teachingSessions.length !== 0
+          ? academicAssignmentReport.teachingSessions[0]
+          : await this.teachingSessionsService.create({
+              consultHour: formatISO(new Date().toISOString()),
+              tutoringHour: formatISO(
+                new Date(new Date().getTime() + 3600000), // +1 hour
+              ),
+              assignmentReportId: academicAssignmentReport.id,
+            } as CreateTeachingSessionDto);
+
+      // Creamos CourseClassroom
+      const courseClassrooms: TCreateCourseClassroom[] = await Promise.all(
+        courses.map((cc) =>
+          this.prisma.course_Classroom.create({
+            data: {
+              ...cc,
+              teachingSessionId: teachingSession.id,
+              courseStadistics: {
+                create: {
+                  APB: 0, // Asignación por defecto
+                  ABD: 0, // Asignación por defecto
+                  NSP: 0, // Asignación por defecto
+                  RPB: 0, // Asignación por defecto
+                },
+              },
+            },
+          }),
+        ),
+      );
+    }
+
+    // console.log(afterCreateTeacherDeptPositions);
+
+    // const test = this.prisma.academic_Assignment_Report.createMany({
+    //   data: Object.entries(coursesGroupByTeacherCode).map(
+    //     ([teacherCode, courses]) => {
+    //       const teacher = teacherMap.get(teacherCode);
+    //       if (!teacher) {
+    //         throw new NotFoundException(
+    //           `No se encontró el docente con código <${teacherCode}>.`,
+    //         );
+    //       }
+    //
+    //       return {
+    //         teacherId: teacher.id,
+    //         periodId: academicPeriod.id,
+    //         departmentId: departmentMap.get(
+    //           normalizeText(courses[0].department),
+    //         )?.id,
+    //         // courses: {
+    //         //   create: courses.map((course) => ({
+    //         //     courseId: allCoursesMap.get(course.courseCode)?.id,
+    //         //     days: course.days,
+    //         //     studentCount: course.studentCount,
+    //         //   })),
+    //         // },
+    //         teachingSessions: {
+    //           create: {
+    //             courseClassrooms: courses.map((course) => {
+    //               const courseObj = allCoursesMap.get(course.courseCode);
+    //               if (!courseObj) {
+    //                 throw new NotFoundException(
+    //                   `No se encontró la asignatura con código <${course.courseCode}>.`,
+    //                 );
+    //               }
+    //
+    //               return {
+    //                 courseId: courseObj.id,
+    //                 days: course.days,
+    //                 studentCount: course.studentCount,
+    //               };
+    //             }),
+    //           },
+    //         },
+    //       };
+    //     },
+    //   ),
+    //   skipDuplicates: true, // Evitar duplicados
+    // });
+
+    return coursesGroupByTeacherCodeEntries;
   }
 
   private parseAcademicTitle(title: string): ParsedTitle {
