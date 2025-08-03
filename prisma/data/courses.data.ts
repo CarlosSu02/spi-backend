@@ -632,7 +632,7 @@ export const coursesSeed = [
     activeStatus: true,
   },
   {
-    code: 'RR-173',
+    code: 'RR173',
     name: 'Voleibol',
     uvs: 3,
     departmentId: departmentsSeed.humanidades.id,
@@ -646,7 +646,7 @@ export const coursesSeed = [
     activeStatus: true,
   },
   {
-    code: 'RR-193',
+    code: 'RR193',
     name: 'Futbol Sala',
     uvs: 3,
     departmentId: departmentsSeed.humanidades.id,

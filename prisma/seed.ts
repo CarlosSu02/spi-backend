@@ -11,6 +11,7 @@ import {
   coursesSeed,
   departmentsSeed,
   facultiesSeed,
+  modalitiesSeed,
   monitorSizesSeed,
   monitorTypesSeed,
   pcTypesSeed,
@@ -278,6 +279,14 @@ async function main() {
   });
 
   console.log({ academicPeriods });
+
+  // Modalidades
+  const modalities = await prisma.modality.createMany({
+    data: modalitiesSeed,
+    skipDuplicates: true,
+  });
+
+  console.log({ modalities });
 }
 
 main()

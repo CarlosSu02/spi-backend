@@ -2,6 +2,13 @@ import { centersSeed } from './center-faculty.data';
 
 export const buildingsSeed = [
   {
+    id: '986a15a6-cb60-4e30-a9df-e726e69b52cf',
+    name: 'Teledocencia',
+    color: 'No definido',
+    floors: '1',
+    centerId: centersSeed.copan.id,
+  },
+  {
     id: '388ffcc7-adac-44f7-8b42-4dad55024905',
     name: 'Edificio 1',
     color: 'Verde y blanco',

@@ -444,7 +444,7 @@ model Course_Classroom {
   // Relations
   course           Course             @relation(fields: [courseId], references: [id])
   classroom        Classroom          @relation(fields: [classroomId], references: [id])
-  teachingSession  Teaching_Session   @relation(fields: [teachingSessionId], references: [id])
+  teachingSession  Teaching_Session   @relation(fields: [teachingSessionId], references: [id], onDelete: Cascade)
   Modality         Modality           @relation(fields: [modalityId], references: [id])
   courseStadistics Course_Stadistic[]
 
@@ -494,6 +494,7 @@ model Academic_Assignment_Report {
   complementaryActivities Complementary_Activity[]
   teachingSessions        Teaching_Session[]
 
+  @@unique([teacherId, departmentId, periodId])
   @@map("academic_assignment_reports")
   @@schema("academic")
 }
@@ -505,7 +506,7 @@ model Teaching_Session {
   assignmentReportId String    @db.Uuid
 
   // Relations
-  assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
+  assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id], onDelete: Cascade)
   courseClassrooms Course_Classroom[]
 
   @@map("teaching_sessions")
@@ -521,7 +522,7 @@ model Course_Stadistic {
   courseClassroomId String @db.Uuid
 
   // Relations
-  courseClassroom Course_Classroom @relation(fields: [courseClassroomId], references: [id])
+  courseClassroom Course_Classroom @relation(fields: [courseClassroomId], references: [id], onDelete: Cascade)
 
   @@map("course_staditics")
   @@schema("academic")
@@ -537,7 +538,7 @@ model Complementary_Activity {
   activityTypeId     String   @db.Uuid
 
   // Relations
-  assignmentReport   Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id])
+  assignmentReport   Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id], onDelete: Cascade)
   activityType       Activity_Type              @relation(fields: [activityTypeId], references: [id])
   verificationMedias Verification_Media[]
 
