@@ -53,6 +53,52 @@ interface ParsedTitle {
 
 @Injectable()
 export class AcademicAssignmentReportsService {
+  private readonly includeOptionsAAR = {
+    teacher: {
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+          },
+        },
+      },
+    },
+    department: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+    teachingSessions: {
+      include: {
+        courseClassrooms: {
+          // select: {
+          //   id: true,
+          //   courseId: true,
+          //   classroomId: true,
+          //   section: true,
+          //   days: true,
+          //   studentCount: true,
+          //   groupCode: true,
+          //   nearGraduation: true,
+          //   observation: true,
+          //   modality: true,
+          // },
+          omit: {
+            teachingSessionId: true,
+            modalityId: true,
+          },
+          include: {
+            modality: true,
+          },
+        },
+      },
+    },
+  };
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly academicPeriodsService: AcademicPeriodsService,
@@ -133,6 +179,7 @@ export class AcademicAssignmentReportsService {
   async findAll(): Promise<TAcademicAssignmentReport[]> {
     const academicAssignmentReports =
       await this.prisma.academic_Assignment_Report.findMany({
+        relationLoadStrategy: 'join',
         include: {
           teachingSessions: {
             include: {
@@ -151,6 +198,12 @@ export class AcademicAssignmentReportsService {
     const [academicAssignmentReports, count] = await Promise.all([
       this.prisma.academic_Assignment_Report.findMany({
         ...paginate(query),
+        relationLoadStrategy: 'join',
+        include: this.includeOptionsAAR,
+        omit: {
+          teacherId: true,
+          departmentId: true,
+        },
       }),
       this.prisma.academic_Assignment_Report.count(),
     ]);
@@ -160,6 +213,102 @@ export class AcademicAssignmentReportsService {
       count,
       query,
     );
+  }
+
+  async findAllByUserIdAndCode(
+    query: QueryPaginationDto,
+    user: {
+      userId?: string;
+      code?: string;
+    },
+  ): Promise<IPaginateOutput<TAcademicAssignmentReport>> {
+    // const teacher = await this.teachersService.findOneByUserId(userId);
+    const { userId, code } = user;
+
+    const [academicAssignmentReports, count] = await Promise.all([
+      this.prisma.academic_Assignment_Report.findMany({
+        where: {
+          teacher: {
+            OR: [
+              {
+                userId,
+              },
+              {
+                user: {
+                  code: code ? normalizeText(code) : undefined,
+                },
+              },
+            ],
+          },
+        },
+        ...paginate(query),
+        relationLoadStrategy: 'join',
+        include: this.includeOptionsAAR,
+        omit: {
+          teacherId: true,
+          departmentId: true,
+        },
+      }),
+      this.prisma.academic_Assignment_Report.count({
+        where: {
+          teacher: {
+            userId,
+          },
+        },
+      }),
+    ]);
+
+    if (count === 0)
+      throw new NotFoundException(
+        `No se encontraron informes de asignación académica para el usuario con ID <${userId}>.`,
+      );
+
+    return paginateOutput<TAcademicAssignmentReport>(
+      academicAssignmentReports,
+      count,
+      query,
+    );
+  }
+
+  async findAllByDepartmentId(
+    query: QueryPaginationDto,
+    departmentId: string,
+  ): Promise<IPaginateOutput<TAcademicAssignmentReport>> {
+    await this.departmentsService.findOne(departmentId);
+
+    const where = {
+      departmentId,
+    };
+
+    const [academicAssignmentReports, count] = await Promise.all([
+      this.prisma.academic_Assignment_Report.findMany({
+        where,
+        ...paginate(query),
+        relationLoadStrategy: 'join',
+        include: this.includeOptionsAAR,
+        omit: {
+          teacherId: true,
+          departmentId: true,
+        },
+      }),
+      this.prisma.academic_Assignment_Report.count({
+        where,
+      }),
+    ]);
+
+    return paginateOutput<TAcademicAssignmentReport>(
+      academicAssignmentReports,
+      count,
+      query,
+    );
+  }
+
+  // Para no inicializar el teacherDepartmentPositionService en el controller
+  async findAllByCoordinator(query: QueryPaginationDto, userId: string) {
+    const user =
+      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+
+    return await this.findAllByDepartmentId(query, user.department.id);
   }
 
   async findOne(id: string): Promise<TAcademicAssignmentReport> {

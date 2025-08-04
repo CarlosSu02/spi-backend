@@ -4,9 +4,10 @@ import { TeacherDepartmentPositionController } from './contollers/teacher-depart
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeachersModule } from '../teachers/teachers.module';
 import { PositionsModule } from '../positions/positions.module';
+import { DepartmentsModule } from '../departments/departments.module';
 
 @Module({
-  imports: [TeachersModule, PositionsModule],
+  imports: [TeachersModule, PositionsModule, DepartmentsModule],
   controllers: [TeacherDepartmentPositionController],
   providers: [PrismaService, TeacherDepartmentPositionService],
   exports: [TeacherDepartmentPositionService],

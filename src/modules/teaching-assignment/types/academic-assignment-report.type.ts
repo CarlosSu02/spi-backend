@@ -2,14 +2,17 @@ import { TDepartment } from 'src/modules/departments/types';
 import { TTeacher } from 'src/modules/teachers/types';
 import { TAcademicPeriod } from './academid-period.type';
 import { TTeachingSession } from './teaching-session.type';
+import { TUser } from 'src/modules/users/types';
 
 export type TAcademicAssignmentReport = {
   id: string;
-  teacherId: string;
-  departmentId: string;
+  teacherId?: string;
+  departmentId?: string;
   periodId: string;
-  department?: TDepartment;
-  teacher?: TTeacher;
+  department?: Pick<TDepartment, 'id' | 'name'>;
+  teacher?: Pick<TTeacher, 'id'> & {
+    user: Pick<TUser, 'id' | 'name' | 'code'>;
+  };
   period?: TAcademicPeriod;
   // complementaryActivities?: TComplementaryActivity[];
   teachingSessions?: TTeachingSession[];

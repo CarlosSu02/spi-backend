@@ -15,6 +15,7 @@ import { DepartmentsService } from '../services/departments.service';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
+import { ApiParam } from '@nestjs/swagger';
 
 @Controller('departments')
 @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
@@ -28,13 +29,21 @@ export class DepartmentsController {
   }
 
   @Get()
+  @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   findAll() {
     return this.departmentsService.findAll();
   }
 
   @Get(':id')
+  @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
+  @ApiParam({
+    name: 'id',
+    description: 'ID del departamento a buscar',
+    type: String,
+    format: 'uuid',
+  })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.departmentsService.findOne(id);
   }

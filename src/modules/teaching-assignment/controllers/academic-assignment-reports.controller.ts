@@ -20,7 +20,12 @@ import {
   TAcademicAssignment,
   UpdateAcademicAssignmentReportDto,
 } from '../dto';
-import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
+import {
+  ApiPagination,
+  GetCurrentUserId,
+  ResponseMessage,
+  Roles,
+} from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
@@ -82,6 +87,154 @@ export class AssignmentReportsController {
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.academicAssignmentReportsService.findAllWithPagination(query);
+  }
+
+  @Get('user/:id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de informes de asignación académica de un usuario por ID.',
+  )
+  @ApiParam({
+    name: 'id',
+    description:
+      'ID del usuario para obtener sus informes de asignación académica, este es el userId.',
+    type: String,
+    format: 'uuid',
+  })
+  @ApiPagination({
+    summary:
+      'Obtener todos los informes de asignación académica de un usuario por ID',
+    description:
+      'Devuelve una lista de todos los informes de asignación académica de un usuario específico.',
+  })
+  findAllByUserId(
+    @Param(ValidateIdPipe) userId: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.academicAssignmentReportsService.findAllByUserIdAndCode(query, {
+      userId,
+    });
+  }
+
+  @Get('user/code/:code')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de informes de asignación académica de un usuario por ID.',
+  )
+  @ApiParam({
+    name: 'code',
+    description:
+      'Código del usuario para obtener sus informes de asignación académica.',
+    type: String,
+    format: 'string',
+  })
+  @ApiPagination({
+    summary:
+      'Obtener todos los informes de asignación académica de un usuario por código',
+    description:
+      'Devuelve una lista de todos los informes de asignación académica de un usuario específico.',
+  })
+  findAllByCode(
+    @Param('code') code: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.academicAssignmentReportsService.findAllByUserIdAndCode(query, {
+      code,
+    });
+  }
+
+  @Get('my')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de informes de asignación académica del usuario autenticado.',
+  )
+  @ApiPagination({
+    summary:
+      'Obtener todos los informes de asignación académica del usuario autenticado',
+    description:
+      'Devuelve una lista de todos los informes de asignación académica del usuario autenticado.',
+  })
+  findAllPersonal(
+    @GetCurrentUserId() userId: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.academicAssignmentReportsService.findAllByUserIdAndCode(query, {
+      userId,
+    });
+  }
+
+  @Get('department/:departmentId')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de asignaciones académicas por el ID de un departamento.',
+  )
+  @ApiParam({
+    name: 'departmentId',
+    description: 'ID del departamento para filtrar las asignaciones académicas',
+    type: String,
+    format: 'uuid',
+  })
+  @ApiPagination({
+    summary:
+      'Listar las asignaciones académicas por departamento en específico',
+    description:
+      'Obtiene un listado paginado de asignaciones académicas asociadas a un departamento específico',
+  })
+  findAllByDepartmentId(
+    @Query() query: QueryPaginationDto,
+    @Param(ValidateIdPipe) departmentId: string,
+  ) {
+    return this.academicAssignmentReportsService.findAllByDepartmentId(
+      query,
+      departmentId,
+    );
+  }
+
+  // para que un coordinador de area pueda ver los docentes de su area o departamento
+  // en este caso solo es para el rol COORDINADOR_AREA, y siempre y cuando este autenticado
+  // no necesita el departmentId en la url, ya que el coordinador de área solo puede ver los docentes de su departamento
+  // solo funcionara si el coordinador inicia sesión y tiene un departamento asignado
+  @Get('coordinator')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de asignaciones académicas por departamento para coordinadores de área.',
+  )
+  @ApiPagination({
+    summary:
+      'Listar asignaciones académicas por departamento para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
+    description:
+      'Obtiene un listado paginado de asignaciones académicas por departamento para coordinadores de área.',
+  })
+  findAllByCoordinator(
+    @Query() query: QueryPaginationDto,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.academicAssignmentReportsService.findAllByCoordinator(
+      query,
+      userId,
+    );
   }
 
   @Get(':id')

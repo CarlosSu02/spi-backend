@@ -6,13 +6,20 @@ import {
 import { CreateTeacherDepartmentPositionDto } from '../dto/create-teacher-department-position.dto';
 import { UpdateTeacherDepartmentPositionDto } from '../dto/update-teacher-department-position.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TOutputTeacherDeptPos, TTeacherDeptPos } from '../types';
+import {
+  TOutputTeacherDeptPos,
+  TTeacherDeptPos,
+  TTeacherInclude,
+} from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { getTime, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
-import { paginate, paginateOutput } from 'src/common/utils';
+import { formatDateTimeZone, paginate, paginateOutput } from 'src/common/utils';
+import { EPosition } from 'src/modules/positions/enums';
+import { PositionsService } from 'src/modules/positions/services/positions.service';
+import { DepartmentsService } from 'src/modules/departments/services/departments.service';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
@@ -50,6 +57,8 @@ export class TeacherDepartmentPositionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly teachersService: TeachersService,
+    private readonly positionsService: PositionsService,
+    private readonly departmentsService: DepartmentsService,
   ) {}
 
   async create(
@@ -104,31 +113,8 @@ export class TeacherDepartmentPositionService {
     // if (teacherDeptPoss.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
 
-    const mappedTeacherDeptPos: TOutputTeacherDeptPos[] = teacherDeptPos.map(
-      (tdp) => ({
-        id: tdp.id,
-        userId: tdp.teacher.user.id,
-        teacherId: tdp.teacher.id,
-        code: tdp.teacher.user.code,
-        // name: tdp.teacher.user.name,
-        departmentId: tdp.department.id,
-        departmentName: tdp.department.name,
-        positionId: tdp.position.id,
-        positionName: tdp.position.name,
-        startDate: formatInTimeZone(
-          tdp.startDate,
-          'America/Tegucigalpa',
-          'yyyy-MM-dd HH:mm:ss',
-        ),
-        endDate: tdp.endDate
-          ? formatInTimeZone(
-              tdp.endDate,
-              'America/Tegucigalpa',
-              'yyyy-MM-dd HH:mm:ss',
-            )
-          : null,
-      }),
-    );
+    const mappedTeacherDeptPos: TOutputTeacherDeptPos[] =
+      this.mappedTeacherDeptPos(teacherDeptPos);
 
     return mappedTeacherDeptPos;
   }
@@ -146,6 +132,52 @@ export class TeacherDepartmentPositionService {
 
     // if (teacherDeptPoss.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    const mappedTeacherDeptPos: TOutputTeacherDeptPos[] =
+      this.mappedTeacherDeptPos(teacherDeptPos);
+
+    return paginateOutput<TOutputTeacherDeptPos>(
+      mappedTeacherDeptPos,
+      count,
+      query,
+    );
+  }
+
+  async findAllByDepartmentId(
+    query: QueryPaginationDto,
+    departmentId: string,
+    omitTeacherId?: string, // Opcional para omitir un docente específico, en este caso el que esta haciendo la consulta
+  ): Promise<IPaginateOutput<TOutputTeacherDeptPos>> {
+    await this.departmentsService.findOne(departmentId);
+
+    const where = {
+      departmentId,
+    };
+    const whereOmitId = {
+      ...where,
+      teacherId: {
+        not: omitTeacherId,
+      },
+    };
+
+    const [teacherDeptPos, count] = await Promise.all([
+      this.prisma.teacher_Department_Position.findMany({
+        where: omitTeacherId ? whereOmitId : where,
+        ...paginate(query),
+        select: this.selectOptionsTDP,
+      }),
+      this.prisma.teacher_Department_Position.count({
+        where: omitTeacherId ? whereOmitId : where,
+      }),
+    ]);
+
+    // if (teacherDeptPoss.length === 0)
+    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    if (count === 0)
+      throw new NotFoundException(
+        `No se encontraron datos para el departamento con id <${departmentId}>.`,
+      );
 
     const mappedTeacherDeptPos: TOutputTeacherDeptPos[] = teacherDeptPos.map(
       (tdp) => ({
@@ -180,6 +212,26 @@ export class TeacherDepartmentPositionService {
     );
   }
 
+  async findAllByCoordinator(query: QueryPaginationDto, userId: string) {
+    const user = await this.findOneByUserId(userId);
+
+    if (!user.department)
+      throw new NotFoundException(
+        `El usuario con id <${userId}> no tiene un departamento asignado.`,
+      );
+
+    if (!user.teacher)
+      throw new NotFoundException(
+        `El usuario con id <${userId}> no tiene un docente asociado.`,
+      );
+
+    return await this.findAllByDepartmentId(
+      query,
+      user.department.id,
+      user.teacher.id,
+    );
+  }
+
   async findOne(id: string): Promise<TTeacherDeptPos> {
     const teacherDeptPos =
       await this.prisma.teacher_Department_Position.findUnique({
@@ -192,6 +244,41 @@ export class TeacherDepartmentPositionService {
     if (!teacherDeptPos)
       throw new NotFoundException(
         `El <docente-departamente-cargo> con id <${id}> no fue encontrado.`,
+      );
+
+    return teacherDeptPos;
+  }
+
+  async findOneByUserId(id: string): Promise<TTeacherInclude> {
+    const coordinatorPosition = await this.positionsService.findOneByName(
+      EPosition.DEPARTMENT_HEAD,
+    );
+
+    const teacherDeptPos =
+      await this.prisma.teacher_Department_Position.findFirst({
+        where: {
+          AND: [
+            {
+              teacher: {
+                userId: id,
+              },
+            },
+            {
+              positionId: coordinatorPosition.id,
+            },
+          ],
+        },
+        select: this.selectOptionsTDP,
+      });
+
+    if (!teacherDeptPos || teacherDeptPos === null)
+      throw new NotFoundException(
+        `El <docente-departamento-cargo> con userId <${id}> no fue encontrado.`,
+      );
+
+    if (teacherDeptPos.endDate)
+      throw new BadRequestException(
+        `El docente con userId <${id}> ya no se encuentra activo en el departamento <${teacherDeptPos.department.name}>.`,
       );
 
     return teacherDeptPos;
@@ -264,5 +351,23 @@ export class TeacherDepartmentPositionService {
       });
 
     return teacherDeptPosDelete;
+  }
+
+  private mappedTeacherDeptPos(
+    teacherDeptPos: TTeacherInclude[],
+  ): TOutputTeacherDeptPos[] {
+    return teacherDeptPos.map((tdp) => ({
+      id: tdp.id,
+      userId: tdp.teacher.user.id,
+      teacherId: tdp.teacher.id,
+      code: tdp.teacher.user.code,
+      name: tdp.teacher.user.name,
+      departmentId: tdp.department.id,
+      departmentName: tdp.department.name,
+      positionId: tdp.position.id,
+      positionName: tdp.position.name,
+      startDate: formatDateTimeZone(tdp.startDate).toString(),
+      endDate: tdp.endDate ? formatDateTimeZone(tdp.endDate).toString() : null,
+    }));
   }
 }
