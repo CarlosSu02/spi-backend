@@ -445,7 +445,7 @@ model Course_Classroom {
   course           Course             @relation(fields: [courseId], references: [id])
   classroom        Classroom          @relation(fields: [classroomId], references: [id])
   teachingSession  Teaching_Session   @relation(fields: [teachingSessionId], references: [id], onDelete: Cascade)
-  Modality         Modality           @relation(fields: [modalityId], references: [id])
+  modality         Modality           @relation(fields: [modalityId], references: [id])
   courseStadistics Course_Stadistic[]
 
   @@unique([courseId, classroomId, teachingSessionId, groupCode])
