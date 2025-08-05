@@ -18,6 +18,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
 import { TeachingAssignmentModule } from './modules/teaching-assignment/teaching-assignment.module';
 import { ExcelFilesModule } from './modules/excel-files/excel-files.module';
 import { CourseClassroomsModule } from './modules/course-classrooms/course-classrooms.module';
+import { ComplementaryActivitiesModule } from './modules/complementary-activities/complementary-activities.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CourseClassroomsModule } from './modules/course-classrooms/course-class
     TeachingAssignmentModule,
     ExcelFilesModule,
     CourseClassroomsModule,
+    ComplementaryActivitiesModule,
   ],
   providers: [
     {

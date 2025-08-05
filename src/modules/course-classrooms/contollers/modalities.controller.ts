@@ -18,7 +18,7 @@ import { ModalitiesService } from '../services/modalities.service';
 
 @Controller('modalities')
 export class ModalitiesController {
-  constructor(private readonly courseClassroomsService: ModalitiesService) {}
+  constructor(private readonly modalitiesService: ModalitiesService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -42,7 +42,7 @@ export class ModalitiesController {
     @Body()
     createModalityDto: CreateModalityDto,
   ) {
-    return this.courseClassroomsService.create(createModalityDto);
+    return this.modalitiesService.create(createModalityDto);
   }
 
   @Get()
@@ -60,7 +60,7 @@ export class ModalitiesController {
     EUserRole.DOCENTE,
   )
   findAll() {
-    return this.courseClassroomsService.findAll();
+    return this.modalitiesService.findAll();
   }
 
   @Get(':id')
@@ -83,7 +83,7 @@ export class ModalitiesController {
     EUserRole.DOCENTE,
   )
   findOne(@Param(ValidateIdPipe) id: string) {
-    return this.courseClassroomsService.findOne(id);
+    return this.modalitiesService.findOne(id);
   }
 
   @Patch(':id')
@@ -109,7 +109,7 @@ export class ModalitiesController {
     @Body()
     updateModalityDto: UpdateModalityDto,
   ) {
-    return this.courseClassroomsService.update(id, updateModalityDto);
+    return this.modalitiesService.update(id, updateModalityDto);
   }
 
   @Delete(':id')
@@ -131,6 +131,6 @@ export class ModalitiesController {
     EUserRole.COORDINADOR_AREA,
   )
   remove(@Param(ValidateIdPipe) id: string) {
-    return this.courseClassroomsService.remove(id);
+    return this.modalitiesService.remove(id);
   }
 }
