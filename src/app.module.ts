@@ -19,6 +19,7 @@ import { TeachingAssignmentModule } from './modules/teaching-assignment/teaching
 import { ExcelFilesModule } from './modules/excel-files/excel-files.module';
 import { CourseClassroomsModule } from './modules/course-classrooms/course-classrooms.module';
 import { ComplementaryActivitiesModule } from './modules/complementary-activities/complementary-activities.module';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ComplementaryActivitiesModule } from './modules/complementary-activitie
     ExcelFilesModule,
     CourseClassroomsModule,
     ComplementaryActivitiesModule,
+    CloudinaryModule,
   ],
   providers: [
     {
