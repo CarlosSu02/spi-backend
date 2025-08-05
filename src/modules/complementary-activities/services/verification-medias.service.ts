@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateVerificationMediaDto, UpdateVerificationMediaDto } from '../dto';
 import { TVerificationMedia } from '../types';
@@ -6,17 +10,51 @@ import { MultimediaTypesService } from './multimedia-types.service';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
+import { MULTIMEDIA_TYPES_EXTEND } from '../enums';
+import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
+import { ComplementaryActivitiesService } from './complementary-activities.service';
 
 @Injectable()
 export class VerificationMediasService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly multimediaTypesService: MultimediaTypesService,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly complementaryActivitiesService: ComplementaryActivitiesService,
   ) {}
 
   async create(
     createVerificationMediaDto: CreateVerificationMediaDto,
+    file: Express.Multer.File,
   ): Promise<TVerificationMedia> {
+    if (file) {
+      const activityId = createVerificationMediaDto.activityId;
+      const code =
+        await this.complementaryActivitiesService.findUserCodeByActivityId(
+          activityId,
+        );
+      const activity =
+        await this.complementaryActivitiesService.findOne(activityId);
+
+      const extension =
+        file.originalname.toString().toUpperCase().split('.').pop() || '';
+
+      if (!Object.keys(MULTIMEDIA_TYPES_EXTEND).includes(extension))
+        throw new BadRequestException(`El tipo de archivo no es válido.`);
+
+      createVerificationMediaDto.multimediaType = MULTIMEDIA_TYPES_EXTEND[
+        extension
+      ] as string;
+
+      const uploadResult = await this.cloudinaryService.handleFileUpload(
+        file,
+        code,
+        activity.activityType.name,
+      );
+
+      createVerificationMediaDto.url = uploadResult.url;
+    }
+
     const { multimediaType, ...dataWithoutMultimediaType } =
       createVerificationMediaDto;
 

@@ -8,8 +8,10 @@ import { VerificationMediasService } from './services/verification-medias.servic
 import { IsValidComplementaryActivityConfigConstraint } from './validators';
 import { Module } from '@nestjs/common';
 import { ActivityTypesService } from './services/activity-types.service';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 
 @Module({
+  imports: [CloudinaryModule],
   controllers: [
     ComplementaryActivitiesController,
     VerificationMediasController,

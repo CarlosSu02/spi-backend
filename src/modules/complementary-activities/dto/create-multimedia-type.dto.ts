@@ -10,7 +10,7 @@ export class CreateMultimediaTypeDto {
     message: 'La propiedad <description> debe ser una cadena de caracteres.',
   })
   @IsNotEmpty({
-    message: 'La propiedad <descriptionType> no debe estar vacía.',
+    message: 'La propiedad <description> no debe estar vacía.',
   })
   @Length(3, 250, {
     message: 'La propiedad <description> debe tener entre 3 y 250 caracteres.',

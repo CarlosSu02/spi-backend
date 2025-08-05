@@ -1,4 +1,4 @@
-export enum ActivityType {
+export enum EActivityType {
   Research = 'Investigación',
   Outreach = 'Vinculación',
   EducationalInnovation = 'Innovación Educativa',

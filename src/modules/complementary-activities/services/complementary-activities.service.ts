@@ -8,18 +8,41 @@ import { TComplementaryActivity } from '../types';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
+import { ActivityTypesService } from './activity-types.service';
 
 @Injectable()
 export class ComplementaryActivitiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityTypesService: ActivityTypesService,
+  ) {}
 
   async create(
     createComplementaryActivityDto: CreateComplementaryActivityDto,
   ): Promise<TComplementaryActivity> {
+    const { activityType, ...dataToCreate } = createComplementaryActivityDto;
+    const activityTypeExists =
+      await this.activityTypesService.findOneByName(activityType);
+
     const newComplementaryActivity =
       await this.prisma.complementary_Activity.create({
         data: {
-          ...createComplementaryActivityDto,
+          ...dataToCreate,
+          activityTypeId: activityTypeExists.id,
+          // activityType: {
+          //   connect: {
+          //     name: activityType,
+          //   },
+          // },
+          // assignmentReport: {
+          //   connect: {
+          //     id: assignmentReportId,
+          //   },
+          // },
+        },
+        relationLoadStrategy: 'join',
+        include: {
+          activityType: true,
         },
       });
 
@@ -28,7 +51,12 @@ export class ComplementaryActivitiesService {
 
   async findAll(): Promise<TComplementaryActivity[]> {
     const complementaryActivities =
-      await this.prisma.complementary_Activity.findMany();
+      await this.prisma.complementary_Activity.findMany({
+        relationLoadStrategy: 'join',
+        include: {
+          activityType: true,
+        },
+      });
 
     return complementaryActivities;
   }
@@ -39,6 +67,10 @@ export class ComplementaryActivitiesService {
     const [complementaryActivities, count] = await Promise.all([
       this.prisma.complementary_Activity.findMany({
         ...paginate(query),
+        relationLoadStrategy: 'join',
+        include: {
+          activityType: true,
+        },
       }),
       this.prisma.complementary_Activity.count(),
     ]);
@@ -80,6 +112,9 @@ export class ComplementaryActivitiesService {
         },
         ...paginate(query),
         relationLoadStrategy: 'join',
+        include: {
+          activityType: true,
+        },
       }),
       this.prisma.academic_Assignment_Report.count({
         where: {
@@ -107,6 +142,10 @@ export class ComplementaryActivitiesService {
       where: {
         id,
       },
+      relationLoadStrategy: 'join',
+      include: {
+        activityType: true,
+      },
     });
 
     if (!activityType)
@@ -117,16 +156,57 @@ export class ComplementaryActivitiesService {
     return activityType;
   }
 
+  async findUserCodeByActivityId(id: string): Promise<string> {
+    const userInfo = await this.prisma.complementary_Activity.findUnique({
+      where: {
+        id,
+      },
+      relationLoadStrategy: 'join',
+      select: {
+        assignmentReport: {
+          select: {
+            teacher: {
+              select: {
+                user: {
+                  select: {
+                    code: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!userInfo)
+      throw new NotFoundException(
+        `El código del usuario asociado al actividad complementaria con id <${id}> no fue encontrada`,
+      );
+
+    return userInfo.assignmentReport.teacher.user.code;
+  }
+
   async update(
     id: string,
     updateComplementaryActivityDto: UpdateComplementaryActivityDto,
   ): Promise<TComplementaryActivity> {
+    const { activityType, ...dataToUpdate } = updateComplementaryActivityDto;
+    const activityTypeExists =
+      activityType &&
+      (await this.activityTypesService.findOneByName(activityType));
+
     const activityTypeUpdate = await this.prisma.complementary_Activity.update({
       where: {
         id,
       },
       data: {
-        ...updateComplementaryActivityDto,
+        ...dataToUpdate,
+        ...(activityTypeExists && { activityTypeId: activityTypeExists.id }),
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        activityType: true,
       },
     });
 
@@ -137,6 +217,10 @@ export class ComplementaryActivitiesService {
     const activityTypeDelete = await this.prisma.complementary_Activity.delete({
       where: {
         id,
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        activityType: true,
       },
     });
 

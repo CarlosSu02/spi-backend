@@ -2,13 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsUUID,
   IsNotEmpty,
-  IsUrl,
   IsEnum,
-  ValidateIf,
   IsString,
   Length,
+  IsOptional,
 } from 'class-validator';
-import { EComplementaryActivityConfig, EMultimediaType } from '../enums';
+import { EComplementaryActivityConfig, MULTIMEDIA_TYPES } from '../enums';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidComplementaryActivityConfigConstraint } from '../validators';
 
@@ -32,7 +31,7 @@ export class CreateVerificationMediaDto {
     message: 'La propiedad <description> debe ser una cadena de caracteres.',
   })
   @IsNotEmpty({
-    message: 'La propiedad <descriptionType> no debe estar vacía.',
+    message: 'La propiedad <description> no debe estar vacía.',
   })
   @Length(3, 250, {
     message: 'La propiedad <description> debe tener entre 3 y 250 caracteres.',
@@ -41,30 +40,32 @@ export class CreateVerificationMediaDto {
 
   @ApiProperty({
     description: 'Tipo de multimedia.',
-    example: 'PDF',
+    example: 'Texto Plano',
   })
-  @IsEnum(EMultimediaType, {
-    message: `Tipo de multimedia no permitido, los permitidos son: ${Object.values(EMultimediaType).join(', ')}.`,
+  @IsEnum(MULTIMEDIA_TYPES, {
+    message: `Tipo de multimedia no permitido, los permitidos son: ${Object.values(MULTIMEDIA_TYPES).join(', ')}.`,
   })
-  @IsNotEmpty({
-    message: 'La propiedad <multimediaType> no debe estar vacía.',
-  })
-  multimediaType: string;
+  // @IsNotEmpty({
+  //   message: 'La propiedad <multimediaType> no debe estar vacía.',
+  // })
+  @IsOptional()
+  multimediaType: string = MULTIMEDIA_TYPES.PLANETEXT;
 
   // Para guardar la referencia o acceso de cloudinary
-  @ValidateIf(
-    (vm: CreateVerificationMediaDto) =>
-      vm.multimediaType !== (EMultimediaType.PlaneText as string),
-  )
-  @IsUrl(
-    {},
-    {
-      message: 'La propiedad <url> debe ser una url.',
-    },
-  )
-  @IsNotEmpty({
-    message: 'La propiedad <url> no debe estar vacía.',
-  })
+  // @ValidateIf(
+  //   (vm: CreateVerificationMediaDto) =>
+  //     vm.multimediaType !== (EMultimediaType.PlaneText as string),
+  // )
+  // @IsUrl(
+  //   {},
+  //   {
+  //     message: 'La propiedad <url> debe ser una url.',
+  //   },
+  // )
+  // @IsNotEmpty({
+  // message: 'La propiedad <url> no debe estar vacía.',
+  // })
+  @IsOptional()
   url: string;
 
   @ApiProperty({

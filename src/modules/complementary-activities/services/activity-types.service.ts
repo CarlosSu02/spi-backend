@@ -40,6 +40,24 @@ export class ActivityTypesService {
     return activityType;
   }
 
+  async findOneByName(name: string): Promise<TActivityType> {
+    const activityType = await this.prisma.activity_Type.findFirst({
+      where: {
+        name: {
+          equals: name,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    if (!activityType)
+      throw new NotFoundException(
+        `El tipo de actividad con nombre ${name} no fue encontrada.`,
+      );
+
+    return activityType;
+  }
+
   async update(
     id: string,
     updateActivityTypeDto: UpdateActivityTypeDto,

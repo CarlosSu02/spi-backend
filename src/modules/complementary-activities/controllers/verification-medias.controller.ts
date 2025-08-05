@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,14 +10,19 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import { Roles, ResponseMessage, ApiPagination } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { CreateVerificationMediaDto, UpdateVerificationMediaDto } from '../dto';
 import { VerificationMediasService } from '../services/verification-medias.service';
 import { QueryPaginationDto } from 'src/common/dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/modules/cloudinary/configs/multer.config';
+import { MULTIMEDIA_TYPES_EXTEND } from '../enums';
 
 @Controller('verification-medias')
 export class VerificationMediasController {
@@ -26,6 +32,7 @@ export class VerificationMediasController {
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
+  @UseInterceptors(FileInterceptor('file', multerConfig))
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un medio de verificación.')
   @ApiOperation({
@@ -33,15 +40,82 @@ export class VerificationMediasController {
     description: 'Debería crear un nuevo medio de verificación.',
   })
   @ApiBody({
-    type: CreateVerificationMediaDto,
+    required: true,
+    // description: 'Información necesaria para subir un archivo.',
     description: 'Datos necesarios para crear un medio de verificación.',
+    schema: {
+      type: 'object',
+      properties: {
+        description: {
+          description:
+            'Descripción del medio de verificación, si no se manda un archivo se tomará este como texto plano.',
+          type: 'string',
+          format: 'string',
+        },
+        activityId: {
+          description:
+            'ID de la actividad complemenetaria a la que pertenece este medio de verificación.',
+          type: 'string',
+          format: 'uuid',
+        },
+        file: {
+          description: 'Archivo a adjuntar, este es opcional.',
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['description', 'activityId'],
+    },
   })
+  // @ApiQuery({
+  //   name: 'code',
+  //   description: 'Código del usuario a guardar la imagen.',
+  //   type: String,
+  //   required: true,
+  // })
+  // @ApiQuery({
+  //   name: 'subject',
+  //   description: 'Subject donde guardar la imagen.',
+  //   type: String,
+  //   required: true,
+  // })
+  @ApiConsumes('multipart/form-data')
   create(
     @Body()
     createVerificationMediaDto: CreateVerificationMediaDto,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.verificationMediasService.create(createVerificationMediaDto);
+    return this.verificationMediasService.create(
+      createVerificationMediaDto,
+      file,
+    );
   }
+
+  // @Post('upload')
+  // @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
+  // @HttpCode(HttpStatus.CREATED)
+  // @ResponseMessage(
+  //   'Se ha creado un medio de verificación para el usuario autenticado.',
+  // )
+  // @ApiOperation({
+  //   summary: 'Crear un medio de verificación para el usuario autenticado',
+  //   description:
+  //     'Debería crear un nuevo medio de verificación para el usuario autenticado.',
+  // })
+  // @ApiBody({
+  //   type: CreateVerificationMediaDto,
+  //   description: 'Datos necesarios para crear un medio de verificación.',
+  // })
+  // createPersonal(
+  //   @Body()
+  //   createVerificationMediaDto: CreateVerificationMediaDto,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ) {
+  //   return this.verificationMediasService.create(
+  //     createVerificationMediaDto,
+  //     file,
+  //   );
+  // }
 
   @Get()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)

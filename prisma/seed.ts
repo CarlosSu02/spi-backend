@@ -27,7 +27,7 @@ import {
   connectivitiesSeed,
   roomTypesSeed,
 } from './data/infraestructure.data';
-import { EMultimediaType } from '../src/modules/complementary-activities/enums';
+import { MULTIMEDIA_TYPES } from '../src/modules/complementary-activities/enums';
 
 const prisma = new PrismaClient();
 
@@ -300,7 +300,7 @@ async function main() {
 
   // Tipos de multimedia
   const multimediaTypes = await prisma.multimedia_Type.createMany({
-    data: Object.values(EMultimediaType).map((mt) => ({
+    data: Object.values(MULTIMEDIA_TYPES).map((mt) => ({
       description: mt,
     })),
     skipDuplicates: true,

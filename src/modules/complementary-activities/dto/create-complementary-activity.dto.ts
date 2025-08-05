@@ -7,12 +7,12 @@ import {
   IsUUID,
   Length,
   ValidateIf,
+  IsEnum,
 } from 'class-validator';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { ETeachingAssignmentConfig } from 'src/modules/teaching-assignment/enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from 'src/modules/teaching-assignment/validators';
-import { EComplementaryActivityConfig } from '../enums';
-import { IsValidComplementaryActivityConfigConstraint } from '../validators';
+import { EActivityType, EPogressLevel } from '../enums';
 
 export class CreateComplementaryActivityDto {
   @ApiProperty({
@@ -52,13 +52,19 @@ export class CreateComplementaryActivityDto {
   fileNumber: string;
 
   @ApiProperty({
+    name: 'progressLevel',
+    enum: EPogressLevel,
     description: 'Nivel de avance de la actividad.',
+    example: EPogressLevel.PROPOSAL,
   })
   @IsString({
     message: 'La propiedad <progressLevel> debe ser una cadena de caracteres.',
   })
   @IsNotEmpty({ message: 'La propiedad <progressLevel> no debe estar vacía.' })
-  progressLevel: string;
+  @IsEnum(EPogressLevel, {
+    message: `El nivel de avance debe ser uno de los siguientes: ${Object.values(EPogressLevel).join(', ')}.`,
+  })
+  progressLevel: EPogressLevel;
 
   @ApiProperty({
     description: 'ID de la asignación académica a la que pertenece.',
@@ -76,17 +82,31 @@ export class CreateComplementaryActivityDto {
   )
   assignmentReportId: string;
 
+  // @ApiProperty({
+  //   description: 'ID del tipo de actividad.',
+  // })
+  // @IsUUID('all', {
+  //   each: true,
+  //   message: 'La propiedad <activityTypeId> debe ser un UUID válido.',
+  // })
+  // @IsNotEmpty({ message: 'La propiedad <activityTypeId> no debe estar vacía.' })
+  // @ValidatorConstraintDecorator(
+  //   EComplementaryActivityConfig.ACTIVITY_TYPE,
+  //   IsValidComplementaryActivityConfigConstraint,
+  // )
+  // activityTypeId: string;
+
   @ApiProperty({
-    description: 'ID del tipo de actividad.',
+    name: 'activityType',
+    enum: EActivityType,
+    description: 'Tipo de actividad.',
+    example: EActivityType.Research,
   })
-  @IsUUID('all', {
-    each: true,
-    message: 'La propiedad <activityTypeId> debe ser un UUID válido.',
+  @IsString({
+    message: 'La propiead <activityType> debe se una cadena de caracteres.',
   })
-  @IsNotEmpty({ message: 'La propiedad <activityTypeId> no debe estar vacía.' })
-  @ValidatorConstraintDecorator(
-    EComplementaryActivityConfig.ACTIVITY_TYPE,
-    IsValidComplementaryActivityConfigConstraint,
-  )
-  activityTypeId: string;
+  @IsEnum(EActivityType, {
+    message: `El tipo de actividad debe ser uno de los siguientes: ${Object.values(EActivityType).join(', ')}.`,
+  })
+  activityType: EActivityType;
 }
