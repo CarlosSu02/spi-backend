@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as argon from 'argon2';
 import {
   academicPeriodsSeed,
+  activityTypesSeed,
   brandsSeed,
   careersSeed,
   categoriesSeed,
@@ -26,6 +27,7 @@ import {
   connectivitiesSeed,
   roomTypesSeed,
 } from './data/infraestructure.data';
+import { EMultimediaType } from '../src/modules/complementary-activities/enums';
 
 const prisma = new PrismaClient();
 
@@ -287,6 +289,24 @@ async function main() {
   });
 
   console.log({ modalities });
+
+  // Tipos de actividades complementarias
+  const activityTypes = await prisma.activity_Type.createMany({
+    data: activityTypesSeed,
+    skipDuplicates: true,
+  });
+
+  console.log({ activityTypes });
+
+  // Tipos de multimedia
+  const multimediaTypes = await prisma.multimedia_Type.createMany({
+    data: Object.values(EMultimediaType).map((mt) => ({
+      description: mt,
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log({ multimediaTypes });
 }
 
 main()
