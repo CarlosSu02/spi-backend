@@ -1,5 +1,9 @@
 import { Readable } from 'stream';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  PayloadTooLargeException,
+} from '@nestjs/common';
 import {
   v2 as cloudinary,
   UploadApiResponse,
@@ -10,6 +14,7 @@ import {
   TCloudinaryResource,
   TCloudinaryResponse,
   TFileResponse,
+  TResponse,
 } from '../types';
 
 // interface IFileResponse {
@@ -34,6 +39,42 @@ export class CloudinaryService {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
     });
+  }
+
+  async handleFileUpload(
+    file: Express.Multer.File,
+    code: string,
+    subject: string,
+  ): Promise<TResponse> {
+    try {
+      if (!file)
+        throw new BadRequestException('No se proporcionó ningun archivo');
+
+      const uploadResult = (await this.uploadFile(
+        file.buffer,
+        code,
+        subject,
+        file.originalname,
+        file.mimetype,
+      )) as UploadApiResponse;
+
+      return {
+        url: uploadResult.secure_url,
+        public_id: uploadResult.public_id,
+        resource_type: uploadResult.resource_type,
+        format: uploadResult.format,
+        bytes: uploadResult.bytes,
+        type: uploadResult.resource_type === 'image' ? 'image' : 'document',
+      };
+    } catch (error) {
+      if (error.message.includes('File size too large')) {
+        throw new PayloadTooLargeException(
+          'El archivo excede el tamaño máximo permitido de 10MB',
+        );
+      }
+
+      throw new BadRequestException(`Error al subir archivo: ${error.message}`);
+    }
   }
 
   private getResourceType(mimetype: string): 'image' | 'raw' {

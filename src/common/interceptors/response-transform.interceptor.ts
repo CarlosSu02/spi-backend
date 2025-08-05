@@ -70,19 +70,34 @@ export class TransformInterceptor<T>
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    // const status =
-    //   exception instanceof HttpException
-    //     ? exception.getStatus()
-    //     : exception instanceof Prisma.PrismaClientKnownRequestError
-    //       ? GetPrismaStatus(exception.code)
-    //       : HttpStatus.INTERNAL_SERVER_ERROR;
+    // const [status, message] =
+    //   exception instanceof HttpException // if
+    //     ? [exception.getStatus(), exception.message]
+    //     : exception instanceof Prisma.PrismaClientKnownRequestError // elseif
+    //       ? this.getPrismaError(request, exception)
+    //       : [HttpStatus.INTERNAL_SERVER_ERROR, 'Error internal server.'];
 
-    const [status, message] =
-      exception instanceof HttpException // if
-        ? [exception.getStatus(), exception.message]
-        : exception instanceof Prisma.PrismaClientKnownRequestError // elseif
-          ? this.getPrismaError(request, exception)
-          : [HttpStatus.INTERNAL_SERVER_ERROR, 'Error internal server.'];
+    let {
+      status,
+      message,
+    }: {
+      status: number;
+      message: string;
+    } = {
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: exception.message || 'Error interno del servidor',
+    };
+
+    if (exception instanceof HttpException) {
+      // res = { status: exception.getStatus(), message: exception.message };
+      status = exception.getStatus();
+      message = exception.message;
+    }
+
+    if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      status = this.getPrismaError(request, exception).status;
+      message = this.getPrismaError(request, exception).message;
+    }
 
     interface IHEWithMessage extends HttpException {
       message: string;
@@ -96,6 +111,8 @@ export class TransformInterceptor<T>
         : [];
 
     const uniqueMessages = [...new Set(resultMessage)]; // Eliminar duplicados
+
+    console.log(exception.message);
 
     response.status(status).json({
       status: false,
@@ -140,7 +157,10 @@ export class TransformInterceptor<T>
   getPrismaError(
     request: Request,
     exception: Prisma.PrismaClientKnownRequestError,
-  ): [number, string] {
+  ): {
+    status: number;
+    message: string;
+  } {
     const { modelName, target } =
       (exception.meta! as {
         modelName: string;
@@ -155,7 +175,10 @@ export class TransformInterceptor<T>
         const message = `El valor proporcionado para <${fields}> ya está en uso. Por favor, elige un nombre diferente para ${this.METHOD_TRANSLATIONS[request.method]} el registro de <${modelName}>`;
 
         // break;
-        return [status, message];
+        return {
+          status,
+          message,
+        };
       }
 
       case 'P2025': {
@@ -165,19 +188,25 @@ export class TransformInterceptor<T>
         }> en el modelo <${modelName}>.`;
 
         // break;
-        return [status, message];
+        return {
+          status,
+          message,
+        };
       }
 
       case 'P2003': {
-        return [
-          HttpStatus.BAD_REQUEST,
-          `No se puede ${this.METHOD_TRANSLATIONS[request.method] || 'procesar'} el ${modelName} debido a una restricción de clave externa`,
-        ];
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          message: `No se puede ${this.METHOD_TRANSLATIONS[request.method] || 'procesar'} el ${modelName} debido a una restricción de clave externa`,
+        };
       }
 
       default:
         // break;
-        return [HttpStatus.INTERNAL_SERVER_ERROR, exception.message];
+        return {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: exception.message,
+        };
     }
   }
 }

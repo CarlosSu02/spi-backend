@@ -9,12 +9,10 @@ import {
   Body,
   Param,
   BadRequestException,
-  PayloadTooLargeException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { multerConfig } from '../configs/multer.config';
 import { CloudinaryService } from '../services/cloudinary.service';
-import { UploadApiResponse } from 'cloudinary';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -24,19 +22,9 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiResponse,
 } from '@nestjs/swagger';
 import { EUserRole } from 'src/common/enums';
 import { Roles } from 'src/common/decorators';
-
-interface IResponse {
-  url: string;
-  public_id: string;
-  resource_type: string;
-  format: string;
-  bytes: number;
-  type: string;
-}
 
 @Controller('cloudinary')
 @Roles(EUserRole.ADMIN)
@@ -111,41 +99,12 @@ export class CloudinaryController {
   @ApiInternalServerErrorResponse({
     description: 'Error interno al subir el archivo.',
   })
-  async uploadFile(
+  uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body('code') code: string,
     @Body('subject') subject: string,
-  ): Promise<IResponse> {
-    console.log(code);
-    try {
-      if (!file)
-        throw new BadRequestException('No se proporcionó ningun archivo');
-
-      const uploadResult = (await this.cloudinaryService.uploadFile(
-        file.buffer,
-        code,
-        subject,
-        file.originalname,
-        file.mimetype,
-      )) as UploadApiResponse;
-
-      return {
-        url: uploadResult.secure_url,
-        public_id: uploadResult.public_id,
-        resource_type: uploadResult.resource_type,
-        format: uploadResult.format,
-        bytes: uploadResult.bytes,
-        type: uploadResult.resource_type === 'image' ? 'image' : 'document',
-      };
-    } catch (error) {
-      if (error.message.includes('File size too large')) {
-        throw new PayloadTooLargeException(
-          'El archivo excede el tamaño máximo permitido de 10MB',
-        );
-      }
-
-      throw new BadRequestException(`Error al subir archivo: ${error.message}`);
-    }
+  ) {
+    return this.cloudinaryService.handleFileUpload(file, code, subject);
   }
 
   @Get('files/:code/:subject')

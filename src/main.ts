@@ -3,13 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidateGlobalIdsPipe } from './common/pipes';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('/v1/api');
 
-  // app.useGlobalPipes(new ValidateGlobalIdsPipe());
+  app.useGlobalPipes(new ValidateGlobalIdsPipe()); // Para no validar uno por uno, los ValidateIdPipe pueden no ser utiles con esto activo.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   // const { httpAdapter } = app.get(HttpAdapterHost);
