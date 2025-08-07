@@ -559,17 +559,30 @@ model Activity_Type {
 }
 
 model Verification_Media {
-  id               String  @id @default(uuid()) @db.Uuid
-  description      String
-  url              String? // Si es texto plano no sería necesario
-  multimediaTypeId String  @db.Uuid
-  activityId       String  @db.Uuid
+  id          String @id @default(uuid()) @db.Uuid
+  description String
+  activityId  String @db.Uuid
 
   // Relations
-  multimediaType        Multimedia_Type         @relation(fields: [multimediaTypeId], references: [id])
-  complementaryActivity Complementary_Activity? @relation(fields: [activityId], references: [id])
+  complementaryActivity  Complementary_Activity?   @relation(fields: [activityId], references: [id])
+  verificationMediaFiles Verification_Media_File[]
 
   @@map("verification_medias")
+  @@schema("academic")
+}
+
+// Solo cuando agregan archivos
+model Verification_Media_File {
+  id                  String @id @default(uuid()) @db.Uuid
+  url                 String
+  multimediaTypeId    String @db.Uuid
+  verificationMediaId String @db.Uuid
+
+  // Relations
+  multimediaType    Multimedia_Type    @relation(fields: [multimediaTypeId], references: [id])
+  verificationMedia Verification_Media @relation(fields: [verificationMediaId], references: [id])
+
+  @@map("verification_media_files")
   @@schema("academic")
 }
 
@@ -578,7 +591,7 @@ model Multimedia_Type {
   description String @unique
 
   // Relations
-  verificationMedia Verification_Media[]
+  verificationMediaFiles Verification_Media_File[]
 
   @@map("multimedia_types")
   @@schema("academic")
