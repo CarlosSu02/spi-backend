@@ -9,12 +9,28 @@ import {
   ValidateIf,
   IsEnum,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { ETeachingAssignmentConfig } from 'src/modules/teaching-assignment/enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from 'src/modules/teaching-assignment/validators';
 import { EActivityType, EPogressLevel } from '../enums';
 
 export class CreateComplementaryActivityDto {
+  @ApiProperty({
+    name: 'activityType',
+    enum: EActivityType,
+    description: 'Tipo de actividad.',
+    example: EActivityType.Research,
+  })
+  @IsString({
+    message: 'La propiead <activityType> debe se una cadena de caracteres.',
+  })
+  @IsEnum(EActivityType, {
+    message: `El tipo de actividad debe ser uno de los siguientes: ${Object.values(EActivityType).join(', ')}.`,
+  })
+  activityType: EActivityType;
+  // Investigacion y vinculacion son obligatios, los registros y si lleva el el registro, el fileNumber
+
   @ApiProperty({
     description: 'Nombre de la actividad.',
   })
@@ -30,15 +46,37 @@ export class CreateComplementaryActivityDto {
   @ApiProperty({
     description: '¿La actividad está registrada? Es opcional.',
   })
+  @ValidateIf((ca: CreateComplementaryActivityDto) =>
+    [EActivityType.Research, EActivityType.Outreach].includes(ca.activityType),
+  )
   @IsBoolean({
     message: 'La propiedad <isRegistered> debe se un valor booleano.',
   })
-  @IsOptional()
-  isRegistered?: boolean;
+  @IsNotEmpty({
+    message: `Si marcó uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; debe indicar si está registrada o no.`,
+  })
+  @Transform(
+    ({
+      obj,
+      value,
+    }: {
+      obj: CreateComplementaryActivityDto;
+      value: boolean;
+    }) =>
+      [EActivityType.Research, EActivityType.Outreach].includes(
+        obj.activityType,
+      )
+        ? value
+        : null,
+  )
+  isRegistered: boolean;
 
+  @ValidateIf((ca: CreateComplementaryActivityDto) =>
+    [EActivityType.Research, EActivityType.Outreach].includes(ca.activityType),
+  )
   @ApiProperty({
     description:
-      'Número de expediente. Es opciona, pero obligatorio si se marca que está registrada la actividad.',
+      'Número de expediente. Es opcional, pero obligatorio si se marca que está registrada la actividad.',
   })
   @ValidateIf((ca: CreateComplementaryActivityDto) => !!ca.isRegistered)
   @IsString({
@@ -47,8 +85,22 @@ export class CreateComplementaryActivityDto {
   // @IsOptional()
   @IsNotEmpty({
     message:
-      'Si marco que la actividad está registrada debe ingresas el número de expediente.',
+      'Si marco que la actividad está registrada debe ingresar el número de expediente <fileNumber>.',
   })
+  @Transform(
+    ({
+      obj,
+      value,
+    }: {
+      obj: CreateComplementaryActivityDto;
+      value: boolean;
+    }) =>
+      [EActivityType.Research, EActivityType.Outreach].includes(
+        obj.activityType,
+      )
+        ? value
+        : null,
+  )
   fileNumber: string;
 
   @ApiProperty({
@@ -95,18 +147,4 @@ export class CreateComplementaryActivityDto {
   //   IsValidComplementaryActivityConfigConstraint,
   // )
   // activityTypeId: string;
-
-  @ApiProperty({
-    name: 'activityType',
-    enum: EActivityType,
-    description: 'Tipo de actividad.',
-    example: EActivityType.Research,
-  })
-  @IsString({
-    message: 'La propiead <activityType> debe se una cadena de caracteres.',
-  })
-  @IsEnum(EActivityType, {
-    message: `El tipo de actividad debe ser uno de los siguientes: ${Object.values(EActivityType).join(', ')}.`,
-  })
-  activityType: EActivityType;
 }

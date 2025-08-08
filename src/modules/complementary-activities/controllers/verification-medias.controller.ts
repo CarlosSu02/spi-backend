@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,34 +9,45 @@ import {
   Patch,
   Post,
   Query,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
-import { Roles, ResponseMessage, ApiPagination } from 'src/common/decorators';
+import {
+  Roles,
+  ResponseMessage,
+  ApiPagination,
+  GetCurrentUserId,
+} from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { CreateVerificationMediaDto, UpdateVerificationMediaDto } from '../dto';
 import { VerificationMediasService } from '../services/verification-medias.service';
 import { QueryPaginationDto } from 'src/common/dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/modules/cloudinary/configs/multer.config';
-import { MULTIMEDIA_TYPES_EXTEND } from '../enums';
 
 @Controller('verification-medias')
+@Roles(
+  EUserRole.ADMIN,
+  EUserRole.DIRECCION,
+  EUserRole.RRHH,
+  EUserRole.COORDINADOR_AREA,
+  EUserRole.DOCENTE,
+)
 export class VerificationMediasController {
   constructor(
     private readonly verificationMediasService: VerificationMediasService,
   ) {}
 
   @Post()
-  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
-  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un medio de verificación.')
   @ApiOperation({
     summary: 'Crear un medio de verificación',
-    description: 'Debería crear un nuevo medio de verificación.',
+    description:
+      'Debería crear un nuevo medio de verificación con o sin archivos adjuntos.',
   })
   @ApiBody({
     required: true,
@@ -48,7 +58,7 @@ export class VerificationMediasController {
       properties: {
         description: {
           description:
-            'Descripción del medio de verificación, si no se manda un archivo se tomará este como texto plano.',
+            'Descripción del medio de verificación, si no se mandan archivos solamente se guardará la descripción.',
           type: 'string',
           format: 'string',
         },
@@ -58,10 +68,11 @@ export class VerificationMediasController {
           type: 'string',
           format: 'uuid',
         },
-        file: {
-          description: 'Archivo a adjuntar, este es opcional.',
-          type: 'string',
-          format: 'binary',
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+          description:
+            'Archivos a adjuntar, opcional y múltiples (solamente 5).',
         },
       },
       required: ['description', 'activityId'],
@@ -83,11 +94,11 @@ export class VerificationMediasController {
   create(
     @Body()
     createVerificationMediaDto: CreateVerificationMediaDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.verificationMediasService.create(
       createVerificationMediaDto,
-      file,
+      files,
     );
   }
 
@@ -134,13 +145,6 @@ export class VerificationMediasController {
   }
 
   @Get(':id')
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-    EUserRole.DOCENTE,
-  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información del medio de verificación.')
   @ApiOperation({
@@ -157,7 +161,6 @@ export class VerificationMediasController {
   }
 
   @Patch(':id')
-  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado el medio de verificación.')
   @ApiOperation({
@@ -195,5 +198,61 @@ export class VerificationMediasController {
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.verificationMediasService.remove(id);
+  }
+
+  @Delete('file/:id')
+  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha eliminado un archivo de los medios de verificación.')
+  @ApiOperation({
+    summary: 'Eliminar un archivo de un medio de verificación por ID',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del archivo del medio de verificación a eliminar',
+    type: String,
+    format: 'uuid',
+  })
+  removeFile(@Param(ValidateIdPipe) id: string) {
+    return this.verificationMediasService.removeFile(id);
+  }
+  @Delete(':id')
+  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha eliminado un medio de verificación.')
+  @ApiOperation({
+    summary: 'Eliminar un medio de verificación por ID',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del medio de verificación a eliminar',
+    type: String,
+    format: 'uuid',
+  })
+  removePersonal(
+    @GetCurrentUserId() currentUserId: string,
+    @Param(ValidateIdPipe) id: string,
+  ) {
+    return this.verificationMediasService.remove(id);
+  }
+
+  @Delete('file/:id')
+  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha eliminado un archivo de los medios de verificación.')
+  @ApiOperation({
+    summary: 'Eliminar un archivo de un medio de verificación por ID',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID del archivo del medio de verificación a eliminar',
+    type: String,
+    format: 'uuid',
+  })
+  removeFilePersonal(
+    @GetCurrentUserId() currentUserId: string,
+    @Param(ValidateIdPipe) id: string,
+  ) {
+    return this.verificationMediasService.removeFile(id);
   }
 }

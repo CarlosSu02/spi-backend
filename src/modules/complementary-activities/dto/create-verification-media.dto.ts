@@ -38,18 +38,18 @@ export class CreateVerificationMediaDto {
   })
   description: string;
 
-  @ApiProperty({
-    description: 'Tipo de multimedia.',
-    example: 'Texto Plano',
-  })
-  @IsEnum(MULTIMEDIA_TYPES, {
-    message: `Tipo de multimedia no permitido, los permitidos son: ${Object.values(MULTIMEDIA_TYPES).join(', ')}.`,
-  })
-  // @IsNotEmpty({
-  //   message: 'La propiedad <multimediaType> no debe estar vacía.',
+  // @ApiProperty({
+  //   description: 'Tipo de multimedia.',
+  //   example: 'Texto Plano',
   // })
-  @IsOptional()
-  multimediaType: string = MULTIMEDIA_TYPES.PLANETEXT;
+  // @IsEnum(MULTIMEDIA_TYPES, {
+  //   message: `Tipo de multimedia no permitido, los permitidos son: ${Object.values(MULTIMEDIA_TYPES).join(', ')}.`,
+  // })
+  // // @IsNotEmpty({
+  // //   message: 'La propiedad <multimediaType> no debe estar vacía.',
+  // // })
+  // @IsOptional()
+  // multimediaType: string = MULTIMEDIA_TYPES.PLANETEXT;
 
   // Para guardar la referencia o acceso de cloudinary
   // @ValidateIf(

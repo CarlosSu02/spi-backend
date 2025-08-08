@@ -1,4 +1,5 @@
 import { TActivityType } from './activity-type.type';
+import { TVerificationMedia } from './verification-media.type';
 
 export type TComplementaryActivity = {
   id: string;
@@ -9,4 +10,15 @@ export type TComplementaryActivity = {
   activityTypeId: string;
   // assignmentReport?: TAssignmentReport;
   activityType: TActivityType;
+  verificationMedias: TVerificationMedia[];
 };
+
+// export type TCreateComplementaryActivity = Omit<
+//   TComplementaryActivity,
+//   'verificationMedias'
+// >;
+
+// export type TCustomComplementaryActivity<T> = Omit<TComplementaryActivity, (T as string)>;
+// export type TCustomComplementaryActivity<
+//   T extends keyof TComplementaryActivity,
+// > = Omit<TComplementaryActivity, T>;

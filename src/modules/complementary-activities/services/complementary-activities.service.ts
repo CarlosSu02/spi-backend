@@ -9,9 +9,21 @@ import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
+import { TCustomOmit } from 'src/common/types';
 
 @Injectable()
 export class ComplementaryActivitiesService {
+  private readonly includeOptionsCA = {
+    include: {
+      activityType: true,
+      verificationMedias: {
+        include: {
+          verificationMediaFiles: true,
+        },
+      },
+    },
+  };
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityTypesService: ActivityTypesService,
@@ -19,7 +31,7 @@ export class ComplementaryActivitiesService {
 
   async create(
     createComplementaryActivityDto: CreateComplementaryActivityDto,
-  ): Promise<TComplementaryActivity> {
+  ): Promise<TCustomOmit<TComplementaryActivity, 'verificationMedias'>> {
     const { activityType, ...dataToCreate } = createComplementaryActivityDto;
     const activityTypeExists =
       await this.activityTypesService.findOneByName(activityType);
@@ -53,9 +65,7 @@ export class ComplementaryActivitiesService {
     const complementaryActivities =
       await this.prisma.complementary_Activity.findMany({
         relationLoadStrategy: 'join',
-        include: {
-          activityType: true,
-        },
+        ...this.includeOptionsCA,
       });
 
     return complementaryActivities;
@@ -68,9 +78,7 @@ export class ComplementaryActivitiesService {
       this.prisma.complementary_Activity.findMany({
         ...paginate(query),
         relationLoadStrategy: 'join',
-        include: {
-          activityType: true,
-        },
+        ...this.includeOptionsCA,
       }),
       this.prisma.complementary_Activity.count(),
     ]);
@@ -112,9 +120,7 @@ export class ComplementaryActivitiesService {
         },
         ...paginate(query),
         relationLoadStrategy: 'join',
-        include: {
-          activityType: true,
-        },
+        ...this.includeOptionsCA,
       }),
       this.prisma.academic_Assignment_Report.count({
         where: {
@@ -143,9 +149,7 @@ export class ComplementaryActivitiesService {
         id,
       },
       relationLoadStrategy: 'join',
-      include: {
-        activityType: true,
-      },
+      ...this.includeOptionsCA,
     });
 
     if (!activityType)
@@ -205,9 +209,7 @@ export class ComplementaryActivitiesService {
         ...(activityTypeExists && { activityTypeId: activityTypeExists.id }),
       },
       relationLoadStrategy: 'join',
-      include: {
-        activityType: true,
-      },
+      ...this.includeOptionsCA,
     });
 
     return activityTypeUpdate;
@@ -219,9 +221,7 @@ export class ComplementaryActivitiesService {
         id,
       },
       relationLoadStrategy: 'join',
-      include: {
-        activityType: true,
-      },
+      ...this.includeOptionsCA,
     });
 
     return activityTypeDelete;
