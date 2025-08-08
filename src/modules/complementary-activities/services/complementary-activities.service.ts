@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateComplementaryActivityDto,
@@ -10,6 +15,7 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
 import { TCustomOmit } from 'src/common/types';
+import { VerificationMediasService } from './verification-medias.service';
 
 @Injectable()
 export class ComplementaryActivitiesService {
@@ -27,12 +33,16 @@ export class ComplementaryActivitiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityTypesService: ActivityTypesService,
+    @Inject(forwardRef(() => VerificationMediasService))
+    private readonly verificationMediasService: VerificationMediasService,
   ) {}
 
   async create(
     createComplementaryActivityDto: CreateComplementaryActivityDto,
-  ): Promise<TCustomOmit<TComplementaryActivity, 'verificationMedias'>> {
-    const { activityType, ...dataToCreate } = createComplementaryActivityDto;
+    files: Express.Multer.File[],
+  ): Promise<TComplementaryActivity> {
+    const { activityType, description, ...dataToCreate } =
+      createComplementaryActivityDto;
     const activityTypeExists =
       await this.activityTypesService.findOneByName(activityType);
 
@@ -58,7 +68,20 @@ export class ComplementaryActivitiesService {
         },
       });
 
-    return newComplementaryActivity;
+    // TODO: esto genera una dependencia circular, ver este caso despues.
+    // manejo de archivos, para no modificar tanto, de momento utilizaremos el create de verificationMediasService
+    const newVerificationMedia = await this.verificationMediasService.create(
+      {
+        description: createComplementaryActivityDto.description,
+        activityId: newComplementaryActivity.id,
+      },
+      files,
+    );
+
+    return {
+      ...newComplementaryActivity,
+      verificationMedias: [newVerificationMedia],
+    };
   }
 
   async findAll(): Promise<TComplementaryActivity[]> {

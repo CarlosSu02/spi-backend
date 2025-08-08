@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,6 +23,7 @@ export class VerificationMediasService {
     private readonly prisma: PrismaService,
     private readonly multimediaTypesService: MultimediaTypesService,
     private readonly cloudinaryService: CloudinaryService,
+    @Inject(forwardRef(() => ComplementaryActivitiesService))
     private readonly complementaryActivitiesService: ComplementaryActivitiesService,
   ) {}
 

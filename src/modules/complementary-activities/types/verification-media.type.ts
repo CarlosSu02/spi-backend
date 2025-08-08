@@ -13,3 +13,8 @@ export type TVerificationMediaFile = {
   multimediaTypeId: string;
   verificationMediaId: string;
 };
+
+export type TCreateVerificationMedia = Pick<
+  TVerificationMedia,
+  'description' | 'activityId'
+> & { files: Express.Multer.File[] };

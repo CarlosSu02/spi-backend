@@ -217,11 +217,12 @@ export class VerificationMediasController {
     return this.verificationMediasService.removeFile(id);
   }
   @Delete(':id')
-  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Se ha eliminado un medio de verificación.')
+  @ResponseMessage(
+    'Se ha eliminado un medio de verificación (usuario autenticado).',
+  )
   @ApiOperation({
-    summary: 'Eliminar un medio de verificación por ID',
+    summary: 'Eliminar un medio de verificación por ID (usuario autenticado)',
   })
   @ApiParam({
     name: 'id',
@@ -233,15 +234,17 @@ export class VerificationMediasController {
     @GetCurrentUserId() currentUserId: string,
     @Param(ValidateIdPipe) id: string,
   ) {
-    return this.verificationMediasService.remove(id);
+    return this.verificationMediasService.removePersonal(currentUserId, id);
   }
 
   @Delete('file/:id')
-  @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Se ha eliminado un archivo de los medios de verificación.')
+  @ResponseMessage(
+    'Se ha eliminado un archivo de los medios de verificación (usuario autenticado).',
+  )
   @ApiOperation({
-    summary: 'Eliminar un archivo de un medio de verificación por ID',
+    summary:
+      'Eliminar un archivo de un medio de verificación por ID (usuario autenticado)',
   })
   @ApiParam({
     name: 'id',
@@ -253,6 +256,6 @@ export class VerificationMediasController {
     @GetCurrentUserId() currentUserId: string,
     @Param(ValidateIdPipe) id: string,
   ) {
-    return this.verificationMediasService.removeFile(id);
+    return this.verificationMediasService.removeFilePersonal(currentUserId, id);
   }
 }

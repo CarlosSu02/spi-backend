@@ -9,8 +9,10 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import {
   Roles,
   ResponseMessage,
@@ -25,6 +27,9 @@ import {
   UpdateComplementaryActivityDto,
 } from '../dto';
 import { QueryPaginationDto } from 'src/common/dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/modules/cloudinary/configs/multer.config';
+import { EActivityType, EPogressLevel } from '../enums';
 
 @Controller('complementary-activities')
 export class ComplementaryActivitiesController {
@@ -33,6 +38,7 @@ export class ComplementaryActivitiesController {
   ) {}
 
   @Post()
+  @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -46,26 +52,89 @@ export class ComplementaryActivitiesController {
     summary: 'Crear una actividad complmentaria',
     description: 'Debería crear un nuevo tipo de actividad.',
   })
-  @ApiBody({
-    type: CreateComplementaryActivityDto,
-    description: 'Datos necesarios para crear una actividad complmentaria.',
-  })
+  // @ApiBody({
+  //   required: true,
+  //   // description: 'Información necesaria para subir un archivo.',
+  //   description:
+  //     'Datos necesarios para crear una actividad complementaria con su medio de verificación.',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       assignmentReportId: {
+  //         description:
+  //           'ID de asignación académica a la que pertenecerá la actividad complementaria.',
+  //         type: 'string',
+  //         format: 'uuid',
+  //       },
+  //       activyType: {
+  //         description: 'Tipo de actividad.',
+  //         type: 'string',
+  //         enum: Object.values(EActivityType),
+  //       },
+  //       name: {
+  //         description: 'Nombre de la actividad',
+  //         type: 'string',
+  //         format: 'string',
+  //       },
+  //       isRegistered: {
+  //         description: `¿La actividad está registrada? Campo obligatorio solo si el tipo de actividad es uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; en caso contrario es opcional.`,
+  //         type: 'boolean',
+  //         nullable: true,
+  //       },
+  //       fileNumber: {
+  //         description:
+  //           'Número de expediente. Es opcional, pero obligatorio si se marca que está registrada la actividad.',
+  //         type: 'string',
+  //         nullable: true,
+  //       },
+  //       progressLevel: {
+  //         description: 'Nivel de avance de la actividad.',
+  //         type: 'string',
+  //         enum: Object.values(EPogressLevel),
+  //       },
+  //       description: {
+  //         description:
+  //           'Descripción del medio de verificación, si no se mandan archivos solamente se guardará la descripción.',
+  //         type: 'string',
+  //         format: 'string',
+  //       },
+  //       files: {
+  //         type: 'array',
+  //         items: { type: 'string', format: 'binary' },
+  //         description:
+  //           'Archivos a adjuntar, opcional y múltiples (solamente 5).',
+  //       },
+  //     },
+  //     required: [
+  //       'assignmentReportId',
+  //       'activityType',
+  //       'name',
+  //       'progressLevel',
+  //       'description',
+  //     ],
+  //   },
+  // })
+  // @ApiConsumes('multipart/form-data', 'application/json')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateComplementaryActivityDto }) // tipo DTO que defines
   create(
     @Body()
     createComplementaryActivityDto: CreateComplementaryActivityDto,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.complementaryActivitiesService.create(
       createComplementaryActivityDto,
+      files,
     );
   }
 
   @Get()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de tipos de actividades.')
+  @ResponseMessage('Listado de todas las actividades complementarias.')
   @ApiOperation({
     summary: 'Obtener todos los tipos de actividades',
-    description: 'Devuelve una lista de todos los tipos de actividades.',
+    description: 'Devuelve una lista de todas las actividades complementarias.',
   })
   @ApiPagination({
     summary: 'Obtener todas las actividades complementarias',
@@ -84,13 +153,13 @@ export class ComplementaryActivitiesController {
     EUserRole.DOCENTE,
   )
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('La información del tipo de actividad.')
+  @ResponseMessage('La información de la actividad complementaria.')
   @ApiOperation({
     summary: 'Obtener una actividad complmentaria por ID',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID del tipo de actividad a obtener',
+    description: 'ID de la actividad complementaria a obtener',
     type: String,
     format: 'uuid',
   })

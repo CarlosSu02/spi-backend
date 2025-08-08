@@ -26,6 +26,7 @@ export class CreateVerificationMediaDto {
   @ApiProperty({
     description: 'Descripción del medio de verificación.',
     example: 'Foto de la actividad...',
+    type: String,
   })
   @IsString({
     message: 'La propiedad <description> debe ser una cadena de caracteres.',
@@ -65,8 +66,8 @@ export class CreateVerificationMediaDto {
   // @IsNotEmpty({
   // message: 'La propiedad <url> no debe estar vacía.',
   // })
-  @IsOptional()
-  url: string;
+  // @IsOptional()
+  // url: string;
 
   @ApiProperty({
     description:

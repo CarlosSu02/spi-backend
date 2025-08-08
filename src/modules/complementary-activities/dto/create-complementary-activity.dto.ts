@@ -1,24 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsOptional,
   IsString,
   IsNotEmpty,
   IsUUID,
   Length,
   ValidateIf,
   IsEnum,
+  IsDefined,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { ETeachingAssignmentConfig } from 'src/modules/teaching-assignment/enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from 'src/modules/teaching-assignment/validators';
 import { EActivityType, EPogressLevel } from '../enums';
+import { CreateVerificationMediaDto } from './create-verification-media.dto';
+import { PickType } from '@nestjs/mapped-types';
 
-export class CreateComplementaryActivityDto {
+export class CreateComplementaryActivityDto extends PickType(
+  CreateVerificationMediaDto,
+  ['description'] as const,
+) {
   @ApiProperty({
     name: 'activityType',
     enum: EActivityType,
+    // enumName: 'EActivityType',
     description: 'Tipo de actividad.',
     example: EActivityType.Research,
   })
@@ -44,16 +50,27 @@ export class CreateComplementaryActivityDto {
   name: string;
 
   @ApiProperty({
-    description: '¿La actividad está registrada? Es opcional.',
+    // description: '¿La actividad está registrada? Es opcional.',
+    description: `¿La actividad está registrada? Campo obligatorio solo si el tipo de actividad es uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; en caso contrario es opcional.`,
+    type: 'boolean',
+    example: false,
+    required: false,
+    nullable: true,
   })
   @ValidateIf((ca: CreateComplementaryActivityDto) =>
     [EActivityType.Research, EActivityType.Outreach].includes(ca.activityType),
   )
-  @IsBoolean({
-    message: 'La propiedad <isRegistered> debe se un valor booleano.',
-  })
   @IsNotEmpty({
     message: `Si marcó uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; debe indicar si está registrada o no.`,
+  })
+  @IsDefined({
+    message: `Si marcó uno de los siguientes tipos de actividad: ${[
+      EActivityType.Research,
+      EActivityType.Outreach,
+    ].join(', ')}; debe indicar si está registrada o no.`,
+  })
+  @IsBoolean({
+    message: 'La propiedad <isRegistered> debe se un valor booleano.',
   })
   @Transform(
     ({
@@ -69,6 +86,13 @@ export class CreateComplementaryActivityDto {
         ? value
         : null,
   )
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return value;
+    if (typeof value === 'boolean') return value;
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   isRegistered: boolean;
 
   @ValidateIf((ca: CreateComplementaryActivityDto) =>
@@ -77,6 +101,9 @@ export class CreateComplementaryActivityDto {
   @ApiProperty({
     description:
       'Número de expediente. Es opcional, pero obligatorio si se marca que está registrada la actividad.',
+    type: 'string',
+    required: false,
+    nullable: true,
   })
   @ValidateIf((ca: CreateComplementaryActivityDto) => !!ca.isRegistered)
   @IsString({
@@ -147,4 +174,22 @@ export class CreateComplementaryActivityDto {
   //   IsValidComplementaryActivityConfigConstraint,
   // )
   // activityTypeId: string;
+
+  // Los decorators de swagger no se "extienden" a otra clase
+  @ApiProperty({
+    description: 'Descripción del medio de verificación.',
+    example: 'Foto de la actividad...',
+    type: 'string',
+  })
+  description: string;
+
+  @ApiProperty({
+    description: 'Archivos a adjuntar, opcional y múltiples (solamente 5).',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
+    maxItems: 5,
+    required: false,
+    nullable: true,
+  })
+  files: Express.Multer.File[];
 }
