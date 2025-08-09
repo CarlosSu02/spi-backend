@@ -8,14 +8,22 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CreateUndergradDto } from '../dto/create-undergrad.dto';
 import { UpdateUndergradDto } from '../dto/update-undergrad.dto';
 import { UndergradsService } from '../services/undergrads.service';
 import { EUserRole } from 'src/common/enums';
-import { Roles } from 'src/common/decorators';
+import {
+  ApiCommonResponses,
+  ApiPagination,
+  ResponseMessage,
+  Roles,
+} from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { TeachersUndergradService } from '../services/teachers-undergrad.service';
+import { ApiBody } from '@nestjs/swagger';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('teachers-undergrad')
 @Roles(
@@ -34,24 +42,66 @@ export class UndergradsController {
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado un pregrado.')
+  @ApiBody({
+    type: CreateUndergradDto,
+    description: 'Datos para crear un pregrado.',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear un pregrado',
+    createdDescription: 'Pregrado creado exitosamente.',
+    badRequestDescription: 'Datos inválidos para crear el pregrado.',
+    internalErrorDescription: 'Error interno al crear el pregrado.',
+  })
   create(@Body() createUndergradDto: CreateUndergradDto) {
     return this.undergradsService.create(createUndergradDto);
   }
 
   @Get()
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
-  findAll() {
-    return this.teachersUndegradService.findAll();
+  @ResponseMessage('Listado de pregrados.')
+  @ApiPagination({
+    summary: 'Obtener todos los pregrados',
+    description: 'Devuelve una lista paginada de todos los pregrados.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todos los pregrados',
+    okDescription: 'Listado de pregrados obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener los pregrados.',
+    internalErrorDescription: 'Error interno al obtener los pregrados.',
+    notFoundDescription: 'No se encontraron pregrados.',
+  })
+  findAll(@Query() query: QueryPaginationDto) {
+    return this.teachersUndegradService.findAllWithPagination(query);
   }
 
   @Get('array')
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de pregrados en arreglo.')
+  @ApiCommonResponses({
+    summary: 'Obtener pregrados como arreglo',
+    okDescription: 'Pregrados obtenidos correctamente como arreglo.',
+    badRequestDescription: 'Solicitud inválida al obtener pregrados.',
+    internalErrorDescription: 'Error interno al obtener pregrados.',
+    notFoundDescription: 'No se encontraron pregrados.',
+  })
   findAllArray() {
     return this.undergradsService.findAllArray();
   }
 
   @Get(':id')
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Información de un pregrado.')
+  @ApiCommonResponses({
+    summary: 'Obtener un pregrado por ID',
+    okDescription: 'Pregrado obtenido correctamente.',
+    badRequestDescription: 'ID inválido para obtener el pregrado.',
+    internalErrorDescription: 'Error interno al obtener el pregrado.',
+    notFoundDescription: 'No se encontró el pregrado solicitado.',
+  })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.undergradsService.findOne(id);
   }
@@ -59,6 +109,18 @@ export class UndergradsController {
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha actualizado el pregrado.')
+  @ApiBody({
+    type: UpdateUndergradDto,
+    description: 'Datos para actualizar un pregrado.',
+  })
+  @ApiCommonResponses({
+    summary: 'Actualizar un pregrado por ID',
+    okDescription: 'Pregrado actualizado correctamente.',
+    badRequestDescription: 'Datos inválidos para actualizar el pregrado.',
+    internalErrorDescription: 'Error interno al actualizar el pregrado.',
+    notFoundDescription: 'No se encontró el pregrado a actualizar.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
     @Body() updateUndergradDto: UpdateUndergradDto,
@@ -69,6 +131,14 @@ export class UndergradsController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha eliminado el pregrado.')
+  @ApiCommonResponses({
+    summary: 'Eliminar un pregrado por ID',
+    okDescription: 'Pregrado eliminado correctamente.',
+    badRequestDescription: 'ID inválido para eliminar el pregrado.',
+    internalErrorDescription: 'Error interno al eliminar el pregrado.',
+    notFoundDescription: 'No se encontró el pregrado a eliminar.',
+  })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.undergradsService.remove(id);
   }

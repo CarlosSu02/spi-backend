@@ -42,7 +42,7 @@ export class AssignmentReportsController {
       TAcademicAssignment,
       AcademicAssignmentDto
     >,
-  ) { }
+  ) {}
 
   @Post()
   @Roles(
@@ -55,15 +55,15 @@ export class AssignmentReportsController {
   @ResponseMessage('Se ha creado un informe de asignación académica.')
   @ApiBody({
     type: CreateAcademicAssignmentReportDto,
-    description: 'Datos necesarios para crear un informe de asignación académica.',
+    description:
+      'Datos necesarios para crear un informe de asignación académica.',
     required: true,
   })
   @ApiCommonResponses({
     summary: 'Crear informe de asignación académica',
-    description: 'Crea un nuevo informe de asignación académica en el sistema.',
     createdDescription: 'Informe de asignación académica creado exitosamente.',
     badRequestDescription: 'Datos inválidos para la creación del informe.',
-    internalErrorDescription: 'Error interno al crear el informe.'
+    internalErrorDescription: 'Error interno al crear el informe.',
   })
   create(
     @Body()
@@ -88,6 +88,14 @@ export class AssignmentReportsController {
     summary: 'Obtener todos los informes de asignación académica',
     description:
       'Devuelve una lista de todos los informes de asignación académica.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todos los informes de asignación académica',
+    okDescription:
+      'Listado de informes de asignación académica obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener los informes.',
+    internalErrorDescription: 'Error interno al obtener los informes.',
+    notFoundDescription: 'No se encontraron informes de asignación académica.',
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.academicAssignmentReportsService.findAllWithPagination(query);
@@ -118,8 +126,15 @@ export class AssignmentReportsController {
     description:
       'Devuelve una lista de todos los informes de asignación académica de un usuario específico.',
   })
+  @ApiCommonResponses({
+    summary: 'Obtener informes por userId',
+    okDescription: 'Listado de informes obtenido correctamente.',
+    badRequestDescription: 'ID inválido para obtener informes.',
+    internalErrorDescription: 'Error interno al obtener informes.',
+    notFoundDescription: 'No se encontraron informes para el usuario.',
+  })
   findAllByUserId(
-    @Param(ValidateIdPipe) userId: string,
+    @Param('id', ValidateIdPipe) userId: string,
     @Query() query: QueryPaginationDto,
   ) {
     return this.academicAssignmentReportsService.findAllByUserIdAndCode(query, {
@@ -137,7 +152,7 @@ export class AssignmentReportsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de informes de asignación académica de un usuario por ID.',
+    'Listado de informes de asignación académica de un usuario por código.',
   )
   @ApiParam({
     name: 'code',
@@ -151,6 +166,14 @@ export class AssignmentReportsController {
       'Obtener todos los informes de asignación académica de un usuario por código',
     description:
       'Devuelve una lista de todos los informes de asignación académica de un usuario específico.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener informes por código de usuario',
+    okDescription: 'Listado de informes obtenido correctamente.',
+    badRequestDescription: 'Código inválido para obtener informes.',
+    internalErrorDescription: 'Error interno al obtener informes.',
+    notFoundDescription:
+      'No se encontraron informes para el código proporcionado.',
   })
   findAllByCode(
     @Param('code') code: string,
@@ -179,6 +202,14 @@ export class AssignmentReportsController {
     description:
       'Devuelve una lista de todos los informes de asignación académica del usuario autenticado.',
   })
+  @ApiCommonResponses({
+    summary: 'Obtener informes del usuario autenticado',
+    okDescription: 'Listado de informes obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida.',
+    internalErrorDescription: 'Error interno al obtener informes.',
+    notFoundDescription:
+      'No se encontraron informes para el usuario autenticado.',
+  })
   findAllPersonal(
     @GetCurrentUserId() userId: string,
     @Query() query: QueryPaginationDto,
@@ -205,9 +236,16 @@ export class AssignmentReportsController {
     description:
       'Obtiene un listado paginado de asignaciones académicas asociadas a un departamento específico',
   })
+  @ApiCommonResponses({
+    summary: 'Obtener asignaciones por departamento',
+    okDescription: 'Listado de asignaciones obtenido correctamente.',
+    badRequestDescription: 'ID inválido para obtener asignaciones.',
+    internalErrorDescription: 'Error interno al obtener asignaciones.',
+    notFoundDescription: 'No se encontraron asignaciones para el departamento.',
+  })
   findAllByDepartmentId(
     @Query() query: QueryPaginationDto,
-    @Param(ValidateIdPipe) departmentId: string,
+    @Param('departmentId', ValidateIdPipe) departmentId: string,
   ) {
     return this.academicAssignmentReportsService.findAllByDepartmentId(
       query,
@@ -215,10 +253,6 @@ export class AssignmentReportsController {
     );
   }
 
-  // para que un coordinador de area pueda ver los docentes de su area o departamento
-  // en este caso solo es para el rol COORDINADOR_AREA, y siempre y cuando este autenticado
-  // no necesita el departmentId en la url, ya que el coordinador de área solo puede ver los docentes de su departamento
-  // solo funcionara si el coordinador inicia sesión y tiene un departamento asignado
   @Get('coordinator')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
@@ -230,6 +264,13 @@ export class AssignmentReportsController {
       'Listar asignaciones académicas por departamento para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
     description:
       'Obtiene un listado paginado de asignaciones académicas por departamento para coordinadores de área.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener asignaciones para coordinadores de área',
+    okDescription: 'Listado de asignaciones obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida para coordinador.',
+    internalErrorDescription: 'Error interno al obtener asignaciones.',
+    notFoundDescription: 'No se encontraron asignaciones para el coordinador.',
   })
   findAllByCoordinator(
     @Query() query: QueryPaginationDto,
@@ -260,7 +301,14 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  @ApiCommonResponses({
+    summary: 'Obtener informe por ID',
+    okDescription: 'Informe obtenido correctamente.',
+    badRequestDescription: 'ID inválido para obtener informe.',
+    internalErrorDescription: 'Error interno al obtener informe.',
+    notFoundDescription: 'No se encontró el informe solicitado.',
+  })
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.findOne(id);
   }
 
@@ -282,8 +330,16 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
+  @ApiBody({ type: UpdateAcademicAssignmentReportDto })
+  @ApiCommonResponses({
+    summary: 'Actualizar informe por ID',
+    okDescription: 'Informe actualizado correctamente.',
+    badRequestDescription: 'Datos inválidos para actualizar informe.',
+    internalErrorDescription: 'Error interno al actualizar informe.',
+    notFoundDescription: 'No se encontró el informe a actualizar.',
+  })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body()
     updateAcademicAssignmentReportDto: UpdateAcademicAssignmentReportDto,
   ) {
@@ -311,7 +367,14 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  @ApiCommonResponses({
+    summary: 'Eliminar informe por ID',
+    okDescription: 'Informe eliminado correctamente.',
+    badRequestDescription: 'ID inválido para eliminar informe.',
+    internalErrorDescription: 'Error interno al eliminar informe.',
+    notFoundDescription: 'No se encontró el informe a eliminar.',
+  })
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.remove(id);
   }
 
@@ -336,11 +399,17 @@ export class AssignmentReportsController {
     type: String,
     format: 'uuid',
   })
-  removeAll(@Param(ValidateIdPipe) id: string) {
+  @ApiCommonResponses({
+    summary: 'Eliminar informes por periodo',
+    okDescription: 'Informes eliminados correctamente.',
+    badRequestDescription: 'ID inválido para eliminar informes.',
+    internalErrorDescription: 'Error interno al eliminar informes.',
+    notFoundDescription: 'No se encontraron informes para el periodo.',
+  })
+  removeAll(@Param('id', ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.removeAll(id);
   }
 
-  // Archivo Excel
   @Post('file')
   @Roles(
     EUserRole.ADMIN,
@@ -370,6 +439,12 @@ export class AssignmentReportsController {
     },
   })
   @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses({
+    summary: 'Crear informes desde archivo',
+    createdDescription: 'Informes creados exitosamente desde el archivo.',
+    badRequestDescription: 'Archivo inválido o datos erróneos.',
+    internalErrorDescription: 'Error interno al procesar el archivo.',
+  })
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     const handledFile = this.excelFilesService.handleFileUpload(file);
 

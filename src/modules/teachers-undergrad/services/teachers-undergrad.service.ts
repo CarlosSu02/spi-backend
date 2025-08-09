@@ -3,6 +3,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeacherUndergradDto } from '../dto';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { TTeacherUndergrad } from '../types';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
+import { paginate, paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class TeachersUndergradService {
@@ -39,6 +42,24 @@ export class TeachersUndergradService {
     });
 
     return results;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TTeacherUndergrad>> {
+    const [results, count] = await Promise.all([
+      this.prisma.teacherUndergraduateDegree.findMany({
+        ...paginate(query),
+        relationLoadStrategy: 'join',
+        include: {
+          teacher: true,
+          undergraduate: true,
+        },
+      }),
+      this.prisma.teacherUndergraduateDegree.count(),
+    ]);
+
+    return paginateOutput<TTeacherUndergrad>(results, count, query);
   }
 
   async remove(userId: string, undergradId: string): Promise<boolean> {

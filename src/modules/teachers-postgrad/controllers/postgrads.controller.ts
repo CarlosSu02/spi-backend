@@ -13,9 +13,15 @@ import { CreatePostgradDto } from '../dto/create-postgrad.dto';
 import { UpdatePostgradDto } from '../dto/update-postgrad.dto';
 import { PostgradsService } from '../services/postgrads.service';
 import { EUserRole } from 'src/common/enums';
-import { Roles } from 'src/common/decorators';
+import {
+  ApiCommonResponses,
+  ApiPagination,
+  ResponseMessage,
+  Roles,
+} from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { TeachersPostgradService } from '../services/teachers-postgrad.service';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('teachers-postgrad')
 @Roles(
@@ -28,30 +34,58 @@ import { TeachersPostgradService } from '../services/teachers-postgrad.service';
 export class PostgradsController {
   constructor(
     private readonly postgradsService: PostgradsService,
-    private readonly teachersUndegradService: TeachersPostgradService,
+    private readonly teachersPostgradService: TeachersPostgradService,
   ) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado un postgrado.')
+  @ApiCommonResponses({
+    summary: 'Crear un postgrado',
+    createdDescription: 'Postgrado creado exitosamente.',
+    badRequestDescription: 'Datos inválidos para crear postgrado.',
+    internalErrorDescription: 'Error interno al crear postgrado.',
+  })
   create(@Body() createPostgradDto: CreatePostgradDto) {
     return this.postgradsService.create(createPostgradDto);
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  findAll() {
-    return this.teachersUndegradService.findAll();
+  @ResponseMessage('Listado de postgrados obtenidos correctamente.')
+  @ApiPagination({
+    summary: 'Obtener todos los postgrados',
+    description: 'Devuelve una lista paginada de todos los postgrados.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todos los postgrados',
+    okDescription: 'Listado de postgrados obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener postgrados.',
+    internalErrorDescription: 'Error interno al obtener postgrados.',
+    notFoundDescription: 'No se encontraron postgrados.',
+  })
+  findAll(query: QueryPaginationDto) {
+    return this.teachersPostgradService.findAllWithPagination(query);
   }
 
   @Get('array')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de postgrados en array.')
   findAllArray() {
     return this.postgradsService.findAllArray();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Postgrado obtenido correctamente.')
+  @ApiCommonResponses({
+    summary: 'Obtener postgrado por ID',
+    okDescription: 'Postgrado obtenido correctamente.',
+    badRequestDescription: 'ID inválido para obtener postgrado.',
+    internalErrorDescription: 'Error interno al obtener postgrado.',
+    notFoundDescription: 'No se encontró el postgrado solicitado.',
+  })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.postgradsService.findOne(id);
   }
@@ -59,6 +93,14 @@ export class PostgradsController {
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Postgrado actualizado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Actualizar postgrado por ID',
+    okDescription: 'Postgrado actualizado correctamente.',
+    badRequestDescription: 'Datos inválidos para actualizar postgrado.',
+    internalErrorDescription: 'Error interno al actualizar postgrado.',
+    notFoundDescription: 'No se encontró el postgrado a actualizar.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
     @Body() updatePostgradDto: UpdatePostgradDto,
@@ -69,6 +111,14 @@ export class PostgradsController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Postgrado eliminado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Eliminar postgrado por ID',
+    okDescription: 'Postgrado eliminado correctamente.',
+    badRequestDescription: 'ID inválido para eliminar postgrado.',
+    internalErrorDescription: 'Error interno al eliminar postgrado.',
+    notFoundDescription: 'No se encontró el postgrado a eliminar.',
+  })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.postgradsService.remove(id);
   }

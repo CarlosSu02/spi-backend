@@ -1,5 +1,7 @@
 import {
   Controller,
+  HttpCode,
+  HttpStatus,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -12,6 +14,8 @@ import {
   propertiesAcademicAssignmentReport,
   TAcademicAssignmentReport,
 } from '../dto/academic-assignment-report.dto';
+import { ApiConsumes } from '@nestjs/swagger';
+import { ResponseMessage, ApiCommonResponses } from 'src/common/decorators';
 
 @Controller('excel-files')
 export class ExcelFilesController {
@@ -24,16 +28,18 @@ export class ExcelFilesController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Archivo Excel subido y procesado correctamente.')
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses({
+    summary: 'Subir archivo Excel para reporte académico',
+    createdDescription: 'Archivo Excel procesado exitosamente.',
+    badRequestDescription: 'Archivo inválido o formato no soportado.',
+    internalErrorDescription: 'Error interno al procesar el archivo.',
+  })
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ExcelResponseDto<AcademicAssignmentReportDto>> {
-    // if (!file) throw new BadRequestException('El archivo es requerido.');
-    //
-    // if (!file.originalname.match(/\.(xlsx|xls)$/))
-    //   throw new BadRequestException(
-    //     'El archivo debe ser un Excel, formato permtido: (.xlsx o .xls)',
-    // );
-
     const handledFile = this.excelFilesService.handleFileUpload(file);
 
     return this.excelFilesService.processFile(

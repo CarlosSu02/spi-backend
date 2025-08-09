@@ -9,8 +9,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiParam } from '@nestjs/swagger';
-import { Roles, ResponseMessage } from 'src/common/decorators';
+import { ApiBody, ApiParam } from '@nestjs/swagger';
+import {
+  Roles,
+  ResponseMessage,
+  ApiCommonResponses,
+} from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { UpdateMultimediaTypeDto } from '../dto/update-multimedia-type.dto';
@@ -27,18 +31,16 @@ export class MultimediaTypesController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un tipo de multimedia.')
-  @ApiOperation({
-    summary: 'Crear un tipo de multimedia',
-    description: 'Debería crear un nuevo tipo de multimedia.',
-  })
   @ApiBody({
     type: CreateMultimediaTypeDto,
     description: 'Datos necesarios para crear un tipo de multimedia.',
   })
-  create(
-    @Body()
-    createMultimediaTypeDto: CreateMultimediaTypeDto,
-  ) {
+  @ApiCommonResponses({
+    summary: 'Crear un tipo de multimedia',
+    createdDescription: 'Tipo de multimedia creado correctamente.',
+    badRequestDescription: 'Datos inválidos para la creación.',
+  })
+  create(@Body() createMultimediaTypeDto: CreateMultimediaTypeDto) {
     return this.multimediaTypesService.create(createMultimediaTypeDto);
   }
 
@@ -46,9 +48,9 @@ export class MultimediaTypesController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de tipos de multimediaes.')
-  @ApiOperation({
+  @ApiCommonResponses({
     summary: 'Obtener todos los tipos de multimediaes',
-    description: 'Devuelve una lista de todos los tipos de multimediaes.',
+    okDescription: 'Lista de tipos de multimedia obtenida correctamente.',
   })
   findAll() {
     return this.multimediaTypesService.findAll();
@@ -64,14 +66,16 @@ export class MultimediaTypesController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información del tipo de multimedia.')
-  @ApiOperation({
-    summary: 'Obtener un tipo de multimedia por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del tipo de multimedia a obtener',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener un tipo de multimedia por ID',
+    okDescription: 'Tipo de multimedia obtenido correctamente.',
+    notFoundDescription: 'El tipo de multimedia no existe.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.multimediaTypesService.findOne(id);
@@ -81,19 +85,22 @@ export class MultimediaTypesController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado el tipo de multimedia.')
-  @ApiOperation({
-    summary: 'Actualizar un tipo de multimedia por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del tipo de multimedia a actualizar',
     type: String,
     format: 'uuid',
   })
+  @ApiBody({ type: UpdateMultimediaTypeDto })
+  @ApiCommonResponses({
+    summary: 'Actualizar un tipo de multimedia por ID',
+    okDescription: 'Tipo de multimedia actualizado correctamente.',
+    badRequestDescription: 'Datos inválidos para la actualización.',
+    notFoundDescription: 'El tipo de multimedia no existe.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
-    @Body()
-    updateMultimediaTypeDto: UpdateMultimediaTypeDto,
+    @Body() updateMultimediaTypeDto: UpdateMultimediaTypeDto,
   ) {
     return this.multimediaTypesService.update(id, updateMultimediaTypeDto);
   }
@@ -102,14 +109,16 @@ export class MultimediaTypesController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado un tipo de multimedia.')
-  @ApiOperation({
-    summary: 'Eliminar un tipo de multimedia por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del tipo de multimedia a eliminar',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Eliminar un tipo de multimedia por ID',
+    okDescription: 'Tipo de multimedia eliminado correctamente.',
+    notFoundDescription: 'El tipo de multimedia no existe.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.multimediaTypesService.remove(id);

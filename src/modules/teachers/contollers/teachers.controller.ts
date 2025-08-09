@@ -20,16 +20,24 @@ import { EUserRole } from 'src/common/enums';
 import { ExtractIdInterceptor } from 'src/common/interceptors';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { QueryPaginationDto } from 'src/common/dto';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('teachers')
 export class TeachersController {
-  constructor(private readonly teachersService: TeachersService) { }
+  constructor(private readonly teachersService: TeachersService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un perfil de docente.')
-  @ApiCommonResponses({ summary: 'Crear un perfil de docente', createdDescription: 'Se ha creado un perfil de docente.' })
+  @ApiBody({
+    type: CreateTeacherDto,
+    description: 'Datos para crear un perfil de docente',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear un perfil de docente',
+    createdDescription: 'Se ha creado un perfil de docente.',
+  })
   create(@Body() createTeacherDto: CreateTeacherDto) {
     return this.teachersService.create(createTeacherDto);
   }
@@ -38,9 +46,16 @@ export class TeachersController {
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un perfil de docente.')
   @UseInterceptors(ExtractIdInterceptor)
-  @ApiCommonResponses({ summary: 'Crear mi perfil de docente', createdDescription: 'Se ha creado un perfil de docente.' })
+  @ApiBody({
+    type: CreateTeacherDto,
+    description: 'Datos para crear mi perfil de docente',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear mi perfil de docente',
+    createdDescription: 'Se ha creado un perfil de docente.',
+  })
   createMyTeacherProfile(@Body() createTeacherDto: CreateTeacherDto) {
-    createTeacherDto.userId = createTeacherDto.currentUserId!; // no es una ruta publica por lo que siempre existira el currentUserId
+    createTeacherDto.userId = createTeacherDto.currentUserId!; // no es una ruta pública, currentUserId siempre existe
     return this.teachersService.create(createTeacherDto);
   }
 
@@ -57,23 +72,12 @@ export class TeachersController {
     summary: 'Obtener todos los docentes',
     description: 'Devuelve una lista de todos los docentes.',
   })
-  @ApiCommonResponses({ summary: 'Obtener todos los docentes', okDescription: 'Listado de docentes.' })
+  @ApiCommonResponses({
+    summary: 'Obtener todos los docentes',
+    okDescription: 'Listado de docentes.',
+  })
   findAll(@Query() query: QueryPaginationDto) {
     return this.teachersService.findAllWithPagination(query);
-  }
-
-  @Get(':id')
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.COORDINADOR_AREA,
-    EUserRole.RRHH,
-    EUserRole.DIRECCION,
-  )
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Se ha encontrado el docente.')
-  @ApiCommonResponses({ summary: 'Obtener un docente por ID', okDescription: 'Se ha encontrado el docente.' })
-  findOne(@Param(ValidateIdPipe) id: string) {
-    return this.teachersService.findOne(id);
   }
 
   @Get('teacher/:id')
@@ -85,15 +89,43 @@ export class TeachersController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha encontrado el docente por ID de usuario.')
-  @ApiCommonResponses({ summary: 'Obtener docente por ID de usuario', okDescription: 'Se ha encontrado el docente por ID de usuario.' })
+  @ApiCommonResponses({
+    summary: 'Obtener docente por ID de usuario',
+    okDescription: 'Se ha encontrado el docente por ID de usuario.',
+  })
   findTeacherByUserId(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.findOneByUserId(id);
+  }
+
+  @Get(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha encontrado el docente.')
+  @ApiCommonResponses({
+    summary: 'Obtener un docente por ID',
+    okDescription: 'Se ha encontrado el docente.',
+  })
+  findOne(@Param(ValidateIdPipe) id: string) {
+    return this.teachersService.findOne(id);
   }
 
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ApiCommonResponses({ summary: 'Actualizar un docente por ID', okDescription: 'Se ha actualizado el docente.' })
+  @ResponseMessage('Docente actualizado exitosamente.')
+  @ApiBody({
+    type: UpdateTeacherDto,
+    description: 'Datos para actualizar un perfil de docente',
+  })
+  @ApiCommonResponses({
+    summary: 'Actualizar un docente por ID',
+    okDescription: 'Se ha actualizado el docente.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
     @Body() updateTeacherDto: UpdateTeacherDto,
@@ -101,12 +133,15 @@ export class TeachersController {
     return this.teachersService.update(id, updateTeacherDto);
   }
 
-  // Cambiar el active status del usuario a false, esto para no eliminar el registro
+  // Cambiar el active status del usuario a false, para no eliminar el registro físicamente
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Se ha eliminado el docente.')
-  @ApiCommonResponses({ summary: 'Eliminar un docente por ID', okDescription: 'Se ha eliminado el docente.' })
+  @ResponseMessage('Docente desactivado exitosamente.')
+  @ApiCommonResponses({
+    summary: 'Eliminar un docente por ID',
+    okDescription: 'Se ha desactivado el docente.',
+  })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.teachersService.remove(id);
   }

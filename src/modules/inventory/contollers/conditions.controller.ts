@@ -25,12 +25,12 @@ import { ConditionsService } from '../services/conditions.service';
   EUserRole.COORDINADOR_AREA,
 )
 export class ConditionsController {
-  constructor(private readonly conditionService: ConditionsService) { }
+  constructor(private readonly conditionService: ConditionsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Condición creada exitosamente. Devuelve la condición creada.')
+  @ResponseMessage('Condición creada exitosamente.')
   @ApiBody({
     type: CreateConditionDto,
     description: 'Datos para crear una condición',
@@ -38,11 +38,7 @@ export class ConditionsController {
   })
   @ApiCommonResponses({
     summary: 'Crear condición',
-    description: 'Crea una nueva condición.',
     createdDescription: 'Condición creada correctamente.',
-    badRequestDescription: 'Datos inválidos para la creación.',
-    internalErrorDescription: 'Error interno al crear la condición.',
-    notFoundDescription: 'No se encontró el recurso solicitado.'
   })
   create(@Body() createConditionDto: CreateConditionDto) {
     return this.conditionService.create(createConditionDto);
@@ -50,14 +46,10 @@ export class ConditionsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Lista de condiciones obtenida exitosamente.')
+  @ResponseMessage('Listado de condiciones.')
   @ApiCommonResponses({
     summary: 'Listar condiciones',
-    description: 'Obtiene todas las condiciones registradas.',
-    createdDescription: 'Condiciones obtenidas correctamente.',
-    badRequestDescription: 'Solicitud inválida.',
-    internalErrorDescription: 'Error interno al obtener las condiciones.',
-    notFoundDescription: 'No se encontraron condiciones.'
+    okDescription: 'Listado de condiciones.',
   })
   findAll() {
     return this.conditionService.findAll();
@@ -65,14 +57,11 @@ export class ConditionsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Condición obtenida exitosamente.')
+  @ResponseMessage('Condición obtenida.')
   @ApiCommonResponses({
     summary: 'Obtener condición',
-    description: 'Obtiene una condición por su ID.',
-    createdDescription: 'Condición obtenida correctamente.',
-    badRequestDescription: 'ID inválido.',
-    internalErrorDescription: 'Error interno al obtener la condición.',
-    notFoundDescription: 'No se encontró la condición solicitada.'
+    okDescription: 'Condición obtenida.',
+    notFoundDescription: 'No se encontró la condición solicitada.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.conditionService.findOne(id);
@@ -81,7 +70,7 @@ export class ConditionsController {
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Condición actualizada exitosamente. Devuelve la condición actualizada.')
+  @ResponseMessage('Condición actualizada.')
   @ApiBody({
     type: UpdateConditionDto,
     description: 'Datos para actualizar una condición',
@@ -89,11 +78,8 @@ export class ConditionsController {
   })
   @ApiCommonResponses({
     summary: 'Actualizar condición',
-    description: 'Actualiza la información de una condición existente.',
-    createdDescription: 'Condición actualizada correctamente.',
-    badRequestDescription: 'Datos inválidos para la actualización.',
-    internalErrorDescription: 'Error interno al actualizar la condición.',
-    notFoundDescription: 'No se encontró la condición solicitada.'
+    okDescription: 'Condición actualizada.',
+    notFoundDescription: 'No se encontró la condición solicitada.',
   })
   update(
     @Param(ValidateIdPipe) id: string,
@@ -105,14 +91,11 @@ export class ConditionsController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Condición eliminada exitosamente.')
+  @ResponseMessage('Condición eliminada.')
   @ApiCommonResponses({
     summary: 'Eliminar condición',
-    description: 'Elimina una condición por su ID.',
-    createdDescription: 'Condición eliminada correctamente.',
-    badRequestDescription: 'ID inválido.',
-    internalErrorDescription: 'Error interno al eliminar la condición.',
-    notFoundDescription: 'No se encontró la condición solicitada.'
+    okDescription: 'Condición eliminada.',
+    notFoundDescription: 'No se encontró la condición solicitada.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.conditionService.remove(id);

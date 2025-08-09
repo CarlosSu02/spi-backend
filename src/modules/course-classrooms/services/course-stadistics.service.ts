@@ -11,6 +11,9 @@ import {
   TUpdateCourseStadistic,
 } from '../types';
 import { CourseClassroomsService } from './course-classrooms.service';
+import { IPaginateOutput } from 'src/common/interfaces';
+import { QueryPaginationDto } from 'src/common/dto';
+import { paginate, paginateOutput } from 'src/common/utils';
 
 @Injectable()
 export class CourseStadisticsService {
@@ -35,6 +38,19 @@ export class CourseStadisticsService {
     const courseStadistics = await this.prisma.course_Stadistic.findMany();
 
     return courseStadistics;
+  }
+
+  async findAllWithPagination(
+    query: QueryPaginationDto,
+  ): Promise<IPaginateOutput<TCourseStadistic>> {
+    const [courseStadistics, count] = await Promise.all([
+      this.prisma.course_Stadistic.findMany({
+        ...paginate(query),
+      }),
+      this.prisma.course_Stadistic.count(),
+    ]);
+
+    return paginateOutput<TCourseStadistic>(courseStadistics, count, query);
   }
 
   async findOne(id: string): Promise<TCourseStadistic> {

@@ -8,7 +8,6 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
@@ -19,13 +18,12 @@ import { UpdateRoleDto } from '../dto/update-role.dto';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from '../../../common/enums';
-import { RolesGuard } from 'src/common/guards';
 
 @Controller('roles')
 @Roles(EUserRole.ADMIN)
 // @UseGuards(RolesGuard)
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) { }
+  constructor(private readonly rolesService: RolesService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -40,7 +38,7 @@ export class RolesController {
     description: 'Crea un nuevo rol en el sistema.',
     createdDescription: 'Rol creado exitosamente.',
     badRequestDescription: 'Datos inválidos para la creación del rol.',
-    internalErrorDescription: 'Error interno al crear el rol.'
+    internalErrorDescription: 'Error interno al crear el rol.',
   })
   create(@Body() createRoleDto: CreateRoleDto) {
     return this.rolesService.create(createRoleDto);
@@ -48,11 +46,12 @@ export class RolesController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de roles.')
   @ApiCommonResponses({
     summary: 'Listar roles',
     description: 'Obtiene la lista de todos los roles registrados.',
     okDescription: 'Lista de roles obtenida correctamente.',
-    internalErrorDescription: 'Error interno al obtener los roles.'
+    internalErrorDescription: 'Error interno al obtener los roles.',
   })
   findAll() {
     return this.rolesService.findAll();
@@ -60,12 +59,13 @@ export class RolesController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Información del rol obtenida.')
   @ApiCommonResponses({
     summary: 'Obtener rol por ID',
     description: 'Obtiene la información de un rol específico por su ID.',
     okDescription: 'Rol obtenido correctamente.',
     internalErrorDescription: 'Error interno al obtener el rol.',
-    notFoundDescription: 'No se encontró el rol solicitado.'
+    notFoundDescription: 'No se encontró el rol solicitado.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.rolesService.findOne(id);
@@ -73,6 +73,7 @@ export class RolesController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Rol actualizado correctamente.')
   @ApiBody({
     type: UpdateRoleDto,
     description: 'Datos para actualizar rol',
@@ -82,7 +83,7 @@ export class RolesController {
     summary: 'Actualizar rol',
     description: 'Actualiza la información de un rol existente.',
     internalErrorDescription: 'Error interno al actualizar el rol.',
-    notFoundDescription: 'No se encontró el rol solicitado.'
+    notFoundDescription: 'No se encontró el rol solicitado.',
   })
   update(
     @Param(ValidateIdPipe) id: string,
@@ -93,11 +94,12 @@ export class RolesController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Rol eliminado correctamente.')
   @ApiCommonResponses({
     summary: 'Eliminar rol',
     description: 'Elimina un rol del sistema por su ID.',
     internalErrorDescription: 'Error interno al eliminar el rol.',
-    notFoundDescription: 'No se encontró el rol solicitado.'
+    notFoundDescription: 'No se encontró el rol solicitado.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.rolesService.remove(id);

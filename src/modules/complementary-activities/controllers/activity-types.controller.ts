@@ -19,7 +19,7 @@ import { CreateActivityTypeDto, UpdateActivityTypeDto } from '../dto';
 
 @Controller('activity-types')
 export class ActivityTypesController {
-  constructor(private readonly activityTypesService: ActivityTypesService) { }
+  constructor(private readonly activityTypesService: ActivityTypesService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
@@ -33,8 +33,9 @@ export class ActivityTypesController {
     summary: 'Crear tipo de actividad',
     description: 'Crea un nuevo tipo de actividad en el sistema.',
     createdDescription: 'Tipo de actividad creado exitosamente.',
-    badRequestDescription: 'Datos inválidos para la creación del tipo de actividad.',
-    internalErrorDescription: 'Error interno al crear el tipo de actividad.'
+    badRequestDescription:
+      'Datos inválidos para la creación del tipo de actividad.',
+    internalErrorDescription: 'Error interno al crear el tipo de actividad.',
   })
   create(
     @Body()
@@ -49,9 +50,11 @@ export class ActivityTypesController {
   @ResponseMessage('Listado de tipos de actividades.')
   @ApiCommonResponses({
     summary: 'Listar tipos de actividades',
-    description: 'Obtiene la lista de todos los tipos de actividades registradas.',
+    description:
+      'Obtiene la lista de todos los tipos de actividades registradas.',
     okDescription: 'Lista de tipos de actividades obtenida correctamente.',
-    internalErrorDescription: 'Error interno al obtener los tipos de actividades.'
+    internalErrorDescription:
+      'Error interno al obtener los tipos de actividades.',
   })
   findAll() {
     return this.activityTypesService.findAll();
@@ -75,10 +78,11 @@ export class ActivityTypesController {
   })
   @ApiCommonResponses({
     summary: 'Obtener tipo de actividad por ID',
-    description: 'Obtiene la información de un tipo de actividad específico por su ID.',
+    description:
+      'Obtiene la información de un tipo de actividad específico por su ID.',
     okDescription: 'Tipo de actividad obtenido correctamente.',
     internalErrorDescription: 'Error interno al obtener el tipo de actividad.',
-    notFoundDescription: 'No se encontró el tipo de actividad solicitado.'
+    notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.activityTypesService.findOne(id);
@@ -102,8 +106,9 @@ export class ActivityTypesController {
   @ApiCommonResponses({
     summary: 'Actualizar tipo de actividad',
     description: 'Actualiza la información de un tipo de actividad existente.',
-    internalErrorDescription: 'Error interno al actualizar el tipo de actividad.',
-    notFoundDescription: 'No se encontró el tipo de actividad solicitado.'
+    internalErrorDescription:
+      'Error interno al actualizar el tipo de actividad.',
+    notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
   update(
     @Param(ValidateIdPipe) id: string,
@@ -127,7 +132,7 @@ export class ActivityTypesController {
     summary: 'Eliminar tipo de actividad',
     description: 'Elimina un tipo de actividad del sistema por su ID.',
     internalErrorDescription: 'Error interno al eliminar el tipo de actividad.',
-    notFoundDescription: 'No se encontró el tipo de actividad solicitado.'
+    notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.activityTypesService.remove(id);

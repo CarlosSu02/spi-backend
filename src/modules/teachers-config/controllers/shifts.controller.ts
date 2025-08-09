@@ -21,10 +21,11 @@ import { ValidateIdPipe } from 'src/common/pipes';
 @Controller('shifts')
 @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
 export class ShiftsController {
-  constructor(private readonly shiftsService: ShiftsService) { }
+  constructor(private readonly shiftsService: ShiftsService) {}
 
   @Post()
-  @HttpCode(HttpStatus.ACCEPTED)
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH)
+  @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un turno.')
   @ApiBody({ type: CreateShiftDto, description: 'Datos para crear un turno.' })
   @ApiCommonResponses({
@@ -66,9 +67,13 @@ export class ShiftsController {
   }
 
   @Patch(':id')
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado el turno.')
-  @ApiBody({ type: UpdateShiftDto, description: 'Datos para actualizar un turno.' })
+  @ApiBody({
+    type: UpdateShiftDto,
+    description: 'Datos para actualizar un turno.',
+  })
   @ApiCommonResponses({
     summary: 'Actualizar un turno por ID',
     okDescription: 'Turno actualizado correctamente.',
@@ -84,6 +89,7 @@ export class ShiftsController {
   }
 
   @Delete(':id')
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado el turno.')
   @ApiCommonResponses({

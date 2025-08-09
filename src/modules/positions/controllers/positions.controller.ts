@@ -21,19 +21,20 @@ import { ApiBody } from '@nestjs/swagger';
 @Controller('positions')
 @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
 export class PositionsController {
-  constructor(private readonly positionsService: PositionsService) { }
+  constructor(private readonly positionsService: PositionsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Cargo creado exitosamente. Devuelve el cargo creado.')
-  @ApiBody({ type: CreatePositionDto, description: 'Datos para crear un cargo', required: true })
+  @ResponseMessage('Cargo creado exitosamente.')
+  @ApiBody({
+    type: CreatePositionDto,
+    description: 'Datos para crear un cargo',
+    required: true,
+  })
   @ApiCommonResponses({
     summary: 'Crear cargo',
-    description: 'Crea un nuevo cargo en el sistema.',
-    createdDescription: 'Cargo creado exitosamente.',
-    badRequestDescription: 'Datos inválidos para la creación del cargo.',
-    internalErrorDescription: 'Error interno al crear el cargo.',
-    notFoundDescription: 'No se encontró el recurso solicitado.'
+    createdDescription: 'Cargo creado correctamente.',
+    notFoundDescription: 'No se encontró el recurso solicitado.',
   })
   create(@Body() createPositionDto: CreatePositionDto) {
     return this.positionsService.create(createPositionDto);
@@ -41,27 +42,40 @@ export class PositionsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de cargos obtenido correctamente.')
+  @ApiCommonResponses({
+    summary: 'Listar cargos',
+    okDescription: 'Listado de cargos obtenido.',
+    notFoundDescription: 'No se encontraron cargos.',
+  })
   findAll() {
     return this.positionsService.findAll();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Cargo obtenido correctamente.')
+  @ApiCommonResponses({
+    summary: 'Obtener cargo por ID',
+    okDescription: 'Cargo obtenido correctamente.',
+    notFoundDescription: 'No se encontró el cargo solicitado.',
+  })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.positionsService.findOne(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Cargo actualizado exitosamente. Devuelve el cargo actualizado.')
-  @ApiBody({ type: UpdatePositionDto, description: 'Datos para actualizar un cargo', required: true })
+  @ResponseMessage('Cargo actualizado correctamente.')
+  @ApiBody({
+    type: UpdatePositionDto,
+    description: 'Datos para actualizar un cargo',
+    required: true,
+  })
   @ApiCommonResponses({
     summary: 'Actualizar cargo',
-    description: 'Actualiza la información de un cargo existente.',
-    createdDescription: 'Cargo actualizado correctamente.',
-    badRequestDescription: 'Datos inválidos para la actualización.',
-    internalErrorDescription: 'Error interno al actualizar el cargo.',
-    notFoundDescription: 'No se encontró el cargo solicitado.'
+    okDescription: 'Cargo actualizado correctamente.',
+    notFoundDescription: 'No se encontró el cargo solicitado.',
   })
   update(
     @Param(ValidateIdPipe) id: string,
@@ -72,6 +86,12 @@ export class PositionsController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Cargo eliminado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Eliminar cargo',
+    okDescription: 'Cargo eliminado correctamente.',
+    notFoundDescription: 'No se encontró el cargo a eliminar.',
+  })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.positionsService.remove(id);
   }

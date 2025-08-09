@@ -25,12 +25,12 @@ import { BrandsService } from '../services/brands.service';
   EUserRole.COORDINADOR_AREA,
 )
 export class BrandsController {
-  constructor(private readonly brandsService: BrandsService) { }
+  constructor(private readonly brandsService: BrandsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Marca creada exitosamente. Devuelve la marca creada.')
+  @ResponseMessage('Marca creada exitosamente.')
   @ApiBody({
     type: CreateBrandDto,
     description: 'Datos para crear una marca',
@@ -38,11 +38,7 @@ export class BrandsController {
   })
   @ApiCommonResponses({
     summary: 'Crear marca',
-    description: 'Crea una nueva marca.',
     createdDescription: 'Marca creada correctamente.',
-    badRequestDescription: 'Datos inválidos para la creación.',
-    internalErrorDescription: 'Error interno al crear la marca.',
-    notFoundDescription: 'No se encontró el recurso solicitado.'
   })
   create(@Body() createBrandDto: CreateBrandDto) {
     return this.brandsService.create(createBrandDto);
@@ -50,14 +46,10 @@ export class BrandsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Lista de marcas obtenida exitosamente.')
+  @ResponseMessage('Listado de marcas.')
   @ApiCommonResponses({
     summary: 'Listar marcas',
-    description: 'Obtiene todas las marcas registradas.',
-    createdDescription: 'Marcas obtenidas correctamente.',
-    badRequestDescription: 'Solicitud inválida.',
-    internalErrorDescription: 'Error interno al obtener las marcas.',
-    notFoundDescription: 'No se encontraron marcas.'
+    okDescription: 'Listado de marcas.',
   })
   findAll() {
     return this.brandsService.findAll();
@@ -65,14 +57,11 @@ export class BrandsController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Marca obtenida exitosamente.')
+  @ResponseMessage('Marca obtenida.')
   @ApiCommonResponses({
     summary: 'Obtener marca',
-    description: 'Obtiene una marca por su ID.',
-    createdDescription: 'Marca obtenida correctamente.',
-    badRequestDescription: 'ID inválido.',
-    internalErrorDescription: 'Error interno al obtener la marca.',
-    notFoundDescription: 'No se encontró la marca solicitada.'
+    okDescription: 'Marca obtenida.',
+    notFoundDescription: 'No se encontró la marca solicitada.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.brandsService.findOne(id);
@@ -81,7 +70,7 @@ export class BrandsController {
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Marca actualizada exitosamente. Devuelve la marca actualizada.')
+  @ResponseMessage('Marca actualizada.')
   @ApiBody({
     type: UpdateBrandDto,
     description: 'Datos para actualizar una marca',
@@ -89,11 +78,8 @@ export class BrandsController {
   })
   @ApiCommonResponses({
     summary: 'Actualizar marca',
-    description: 'Actualiza la información de una marca existente.',
-    createdDescription: 'Marca actualizada correctamente.',
-    badRequestDescription: 'Datos inválidos para la actualización.',
-    internalErrorDescription: 'Error interno al actualizar la marca.',
-    notFoundDescription: 'No se encontró la marca solicitada.'
+    okDescription: 'Marca actualizada.',
+    notFoundDescription: 'No se encontró la marca solicitada.',
   })
   update(
     @Param(ValidateIdPipe) id: string,
@@ -105,14 +91,11 @@ export class BrandsController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Marca eliminada exitosamente.')
+  @ResponseMessage('Marca eliminada.')
   @ApiCommonResponses({
     summary: 'Eliminar marca',
-    description: 'Elimina una marca por su ID.',
-    createdDescription: 'Marca eliminada correctamente.',
-    badRequestDescription: 'ID inválido.',
-    internalErrorDescription: 'Error interno al eliminar la marca.',
-    notFoundDescription: 'No se encontró la marca solicitada.'
+    okDescription: 'Marca eliminada.',
+    notFoundDescription: 'No se encontró la marca solicitada.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.brandsService.remove(id);

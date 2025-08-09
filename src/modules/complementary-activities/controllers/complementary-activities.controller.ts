@@ -18,6 +18,7 @@ import {
   ResponseMessage,
   ApiPagination,
   GetCurrentUserId,
+  ApiCommonResponses,
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -29,7 +30,6 @@ import {
 import { QueryPaginationDto } from 'src/common/dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/modules/cloudinary/configs/multer.config';
-import { EActivityType, EPogressLevel } from '../enums';
 
 @Controller('complementary-activities')
 export class ComplementaryActivitiesController {
@@ -52,71 +52,16 @@ export class ComplementaryActivitiesController {
     summary: 'Crear una actividad complmentaria',
     description: 'Debería crear un nuevo tipo de actividad.',
   })
-  // @ApiBody({
-  //   required: true,
-  //   // description: 'Información necesaria para subir un archivo.',
-  //   description:
-  //     'Datos necesarios para crear una actividad complementaria con su medio de verificación.',
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       assignmentReportId: {
-  //         description:
-  //           'ID de asignación académica a la que pertenecerá la actividad complementaria.',
-  //         type: 'string',
-  //         format: 'uuid',
-  //       },
-  //       activyType: {
-  //         description: 'Tipo de actividad.',
-  //         type: 'string',
-  //         enum: Object.values(EActivityType),
-  //       },
-  //       name: {
-  //         description: 'Nombre de la actividad',
-  //         type: 'string',
-  //         format: 'string',
-  //       },
-  //       isRegistered: {
-  //         description: `¿La actividad está registrada? Campo obligatorio solo si el tipo de actividad es uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; en caso contrario es opcional.`,
-  //         type: 'boolean',
-  //         nullable: true,
-  //       },
-  //       fileNumber: {
-  //         description:
-  //           'Número de expediente. Es opcional, pero obligatorio si se marca que está registrada la actividad.',
-  //         type: 'string',
-  //         nullable: true,
-  //       },
-  //       progressLevel: {
-  //         description: 'Nivel de avance de la actividad.',
-  //         type: 'string',
-  //         enum: Object.values(EPogressLevel),
-  //       },
-  //       description: {
-  //         description:
-  //           'Descripción del medio de verificación, si no se mandan archivos solamente se guardará la descripción.',
-  //         type: 'string',
-  //         format: 'string',
-  //       },
-  //       files: {
-  //         type: 'array',
-  //         items: { type: 'string', format: 'binary' },
-  //         description:
-  //           'Archivos a adjuntar, opcional y múltiples (solamente 5).',
-  //       },
-  //     },
-  //     required: [
-  //       'assignmentReportId',
-  //       'activityType',
-  //       'name',
-  //       'progressLevel',
-  //       'description',
-  //     ],
-  //   },
-  // })
-  // @ApiConsumes('multipart/form-data', 'application/json')
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateComplementaryActivityDto }) // tipo DTO que defines
+  @ApiCommonResponses({
+    summary: 'Crear una actividad complementaria',
+    description: 'Debería crear un nuevo tipo de actividad.',
+    createdDescription: 'Actividad complementaria creada exitosamente.',
+    badRequestDescription: 'Datos inválidos para crear la actividad.',
+    internalErrorDescription: 'Error interno al crear la actividad.',
+    notFoundDescription: 'Recurso no encontrado.',
+  })
   create(
     @Body()
     createComplementaryActivityDto: CreateComplementaryActivityDto,

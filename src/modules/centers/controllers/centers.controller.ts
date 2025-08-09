@@ -12,14 +12,7 @@ import {
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { ResponseMessage } from 'src/common/decorators/response-message.decorator';
 import { ApiBody } from '@nestjs/swagger';
-import {
-  ApiOperation,
-  ApiOkResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiBadRequestResponse,
-  ApiInternalServerErrorResponse,
-} from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
 import { CreateCenterDto } from '../dto/create-center.dto';
 import { UpdateCenterDto } from '../dto/update-center.dto';
 import { CentersService } from '../services/centers.service';
@@ -58,14 +51,12 @@ export class CentersController {
     summary: 'Listar centros',
     description: 'Obtiene la lista de todos los centros registrados.',
   })
-  @ApiOkResponse({
-    description: 'Lista de centros obtenida correctamente.',
-  })
-  @ApiInternalServerErrorResponse({
-    description: 'Error interno al obtener los centros.',
-  })
-  @ApiNotFoundResponse({
-    description: 'No se encontraron centros.',
+  @ApiCommonResponses({
+    summary: 'Obtener lista de centros',
+    description: 'Obtiene todos los centros disponibles en el sistema.',
+    okDescription: 'Lista de centros obtenida correctamente.',
+    internalErrorDescription: 'Error interno al obtener los centros.',
+    notFoundDescription: 'No se encontraron centros.',
   })
   findAll() {
     return this.centersService.findAll();
@@ -76,7 +67,7 @@ export class CentersController {
   @ApiCommonResponses({
     summary: 'Obtener centro por ID',
     description: 'Obtiene la información de un centro específico por su ID.',
-    createdDescription: 'Centro obtenido correctamente.',
+    okDescription: 'Centro obtenido correctamente.',
     badRequestDescription: 'ID de centro inválido.',
     internalErrorDescription: 'Error interno al obtener el centro.',
     notFoundDescription: 'No se encontró el centro solicitado.',
@@ -98,7 +89,7 @@ export class CentersController {
   @ApiCommonResponses({
     summary: 'Actualizar centro',
     description: 'Actualiza la información de un centro existente.',
-    createdDescription: 'Centro actualizado correctamente.',
+    okDescription: 'Centro actualizado correctamente.',
     badRequestDescription: 'Datos inválidos para la actualización.',
     internalErrorDescription: 'Error interno al actualizar el centro.',
     notFoundDescription: 'No se encontró el centro solicitado.',
@@ -115,7 +106,7 @@ export class CentersController {
   @ApiCommonResponses({
     summary: 'Eliminar centro',
     description: 'Elimina un centro del sistema por su ID.',
-    createdDescription: 'Centro eliminado correctamente.',
+    okDescription: 'Centro eliminado correctamente.',
     badRequestDescription: 'ID de centro inválido.',
     internalErrorDescription: 'Error interno al eliminar el centro.',
     notFoundDescription: 'No se encontró el centro solicitado.',

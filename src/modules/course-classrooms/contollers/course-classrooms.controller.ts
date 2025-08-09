@@ -14,8 +14,8 @@ import { CourseClassroomsService } from '../services/course-classrooms.service';
 import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
-import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiParam } from '@nestjs/swagger';
+import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 
 @Controller('course-classrooms')
@@ -33,10 +33,6 @@ export class CourseClassroomsController {
   )
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado una sección de asignatura.')
-  @ApiOperation({
-    summary: 'Crear una sección de asignatura',
-    description: 'Debería crear una nueva sección de asignatura.',
-  })
   @ApiBody({
     type: CreateCourseClassroomDto,
     description: 'Datos necesarios para crear una sección de asignatura.',
@@ -44,11 +40,9 @@ export class CourseClassroomsController {
   @ApiCommonResponses({
     summary: 'Crear una sección de asignatura',
     createdDescription: 'Se ha creado una sección de asignatura.',
+    badRequestDescription: 'Datos inválidos para la creación.',
   })
-  create(
-    @Body()
-    createCourseClassroomDto: CreateCourseClassroomDto,
-  ) {
+  create(@Body() createCourseClassroomDto: CreateCourseClassroomDto) {
     return this.courseClassroomsService.create(createCourseClassroomDto);
   }
 
@@ -62,13 +56,9 @@ export class CourseClassroomsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de secciones de asignatura.')
-  @ApiOperation({
-    summary: 'Obtener todos las secciones de asignatura',
-    description: 'Devuelve una lista de todas las secciones de asignatura.',
-  })
   @ApiCommonResponses({
-    summary: 'Obtener todos las secciones de asignatura',
-    okDescription: 'Listado de secciones de asignatura.',
+    summary: 'Obtener todas las secciones de asignatura',
+    okDescription: 'Listado de secciones de asignatura obtenido correctamente.',
   })
   findAll() {
     return this.courseClassroomsService.findAll();
@@ -84,14 +74,16 @@ export class CourseClassroomsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información de la sección de asignatura.')
-  @ApiOperation({
-    summary: 'Obtener una sección de asignatura por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID de la sección de asignatura a obtener',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener una sección de asignatura por ID',
+    okDescription: 'Sección de asignatura obtenida correctamente.',
+    notFoundDescription: 'La sección de asignatura no existe.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.courseClassroomsService.findOne(id);
@@ -106,19 +98,22 @@ export class CourseClassroomsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado la sección de asignatura.')
-  @ApiOperation({
-    summary: 'Actualizar una sección de asignatura por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID de la sección de asignatura a actualizar',
     type: String,
     format: 'uuid',
   })
+  @ApiBody({ type: UpdateCourseClassroomDto })
+  @ApiCommonResponses({
+    summary: 'Actualizar una sección de asignatura por ID',
+    okDescription: 'Sección de asignatura actualizada correctamente.',
+    badRequestDescription: 'Datos inválidos para la actualización.',
+    notFoundDescription: 'La sección de asignatura no existe.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
-    @Body()
-    updateCourseClassroomDto: UpdateCourseClassroomDto,
+    @Body() updateCourseClassroomDto: UpdateCourseClassroomDto,
   ) {
     return this.courseClassroomsService.update(id, updateCourseClassroomDto);
   }
@@ -132,14 +127,16 @@ export class CourseClassroomsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado una sección de asignatura.')
-  @ApiOperation({
-    summary: 'Eliminar una sección de asignatura por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID de la sección de asignatura a eliminar',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Eliminar una sección de asignatura por ID',
+    okDescription: 'Sección de asignatura eliminada correctamente.',
+    notFoundDescription: 'La sección de asignatura no existe.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.courseClassroomsService.remove(id);

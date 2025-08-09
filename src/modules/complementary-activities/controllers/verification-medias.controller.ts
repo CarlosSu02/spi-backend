@@ -12,12 +12,13 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
 import {
   Roles,
   ResponseMessage,
   ApiPagination,
   GetCurrentUserId,
+  ApiCommonResponses,
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -44,14 +45,8 @@ export class VerificationMediasController {
   @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un medio de verificación.')
-  @ApiOperation({
-    summary: 'Crear un medio de verificación',
-    description:
-      'Debería crear un nuevo medio de verificación con o sin archivos adjuntos.',
-  })
   @ApiBody({
     required: true,
-    // description: 'Información necesaria para subir un archivo.',
     description: 'Datos necesarios para crear un medio de verificación.',
     schema: {
       type: 'object',
@@ -78,22 +73,15 @@ export class VerificationMediasController {
       required: ['description', 'activityId'],
     },
   })
-  // @ApiQuery({
-  //   name: 'code',
-  //   description: 'Código del usuario a guardar la imagen.',
-  //   type: String,
-  //   required: true,
-  // })
-  // @ApiQuery({
-  //   name: 'subject',
-  //   description: 'Subject donde guardar la imagen.',
-  //   type: String,
-  //   required: true,
-  // })
   @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses({
+    summary: 'Crear un medio de verificación',
+    createdDescription:
+      'Medio de verificación creado correctamente, con o sin archivos adjuntos.',
+    badRequestDescription: 'Datos inválidos para la creación.',
+  })
   create(
-    @Body()
-    createVerificationMediaDto: CreateVerificationMediaDto,
+    @Body() createVerificationMediaDto: CreateVerificationMediaDto,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.verificationMediasService.create(
@@ -102,43 +90,17 @@ export class VerificationMediasController {
     );
   }
 
-  // @Post('upload')
-  // @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
-  // @HttpCode(HttpStatus.CREATED)
-  // @ResponseMessage(
-  //   'Se ha creado un medio de verificación para el usuario autenticado.',
-  // )
-  // @ApiOperation({
-  //   summary: 'Crear un medio de verificación para el usuario autenticado',
-  //   description:
-  //     'Debería crear un nuevo medio de verificación para el usuario autenticado.',
-  // })
-  // @ApiBody({
-  //   type: CreateVerificationMediaDto,
-  //   description: 'Datos necesarios para crear un medio de verificación.',
-  // })
-  // createPersonal(
-  //   @Body()
-  //   createVerificationMediaDto: CreateVerificationMediaDto,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   return this.verificationMediasService.create(
-  //     createVerificationMediaDto,
-  //     file,
-  //   );
-  // }
-
   @Get()
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de tipos de actividades.')
-  @ApiOperation({
-    summary: 'Obtener todos los tipos de actividades',
-    description: 'Devuelve una lista de todos los tipos de actividades.',
-  })
   @ApiPagination({
     summary: 'Obtener todos los medios de verificación',
     description: 'Devuelve una lista de todos los medios de verificación.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todos los medios de verificación',
+    okDescription: 'Lista de medios de verificación obtenida correctamente.',
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.verificationMediasService.findAllWithPagination(query);
@@ -147,14 +109,16 @@ export class VerificationMediasController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información del medio de verificación.')
-  @ApiOperation({
-    summary: 'Obtener un medio de verificación por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del medio de verificación a obtener',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener un medio de verificación por ID',
+    okDescription: 'Medio de verificación obtenido correctamente.',
+    notFoundDescription: 'El medio de verificación no existe.',
   })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.verificationMediasService.findOne(id);
@@ -163,19 +127,22 @@ export class VerificationMediasController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado el medio de verificación.')
-  @ApiOperation({
-    summary: 'Actualizar un medio de verificación por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del medio de verificación a actualizar',
     type: String,
     format: 'uuid',
   })
+  @ApiBody({ type: UpdateVerificationMediaDto })
+  @ApiCommonResponses({
+    summary: 'Actualizar un medio de verificación por ID',
+    okDescription: 'Medio de verificación actualizado correctamente.',
+    badRequestDescription: 'Datos inválidos para la actualización.',
+    notFoundDescription: 'El medio de verificación no existe.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
-    @Body()
-    updateVerificationMediaDto: UpdateVerificationMediaDto,
+    @Body() updateVerificationMediaDto: UpdateVerificationMediaDto,
   ) {
     return this.verificationMediasService.update(
       id,
@@ -187,14 +154,16 @@ export class VerificationMediasController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado un medio de verificación.')
-  @ApiOperation({
-    summary: 'Eliminar un medio de verificación por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del medio de verificación a eliminar',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Eliminar un medio de verificación por ID',
+    okDescription: 'Medio de verificación eliminado correctamente.',
+    notFoundDescription: 'El medio de verificación no existe.',
   })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.verificationMediasService.remove(id);
@@ -204,31 +173,37 @@ export class VerificationMediasController {
   @Roles(EUserRole.ADMIN, EUserRole.DIRECCION, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado un archivo de los medios de verificación.')
-  @ApiOperation({
-    summary: 'Eliminar un archivo de un medio de verificación por ID',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del archivo del medio de verificación a eliminar',
     type: String,
     format: 'uuid',
   })
+  @ApiCommonResponses({
+    summary: 'Eliminar un archivo de un medio de verificación por ID',
+    okDescription: 'Archivo eliminado correctamente del medio de verificación.',
+    notFoundDescription: 'El archivo del medio de verificación no existe.',
+  })
   removeFile(@Param(ValidateIdPipe) id: string) {
     return this.verificationMediasService.removeFile(id);
   }
+
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
     'Se ha eliminado un medio de verificación (usuario autenticado).',
   )
-  @ApiOperation({
-    summary: 'Eliminar un medio de verificación por ID (usuario autenticado)',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del medio de verificación a eliminar',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary: 'Eliminar un medio de verificación por ID (usuario autenticado)',
+    okDescription:
+      'Medio de verificación eliminado correctamente por el usuario autenticado.',
+    notFoundDescription: 'El medio de verificación no existe.',
   })
   removePersonal(
     @GetCurrentUserId() currentUserId: string,
@@ -242,15 +217,18 @@ export class VerificationMediasController {
   @ResponseMessage(
     'Se ha eliminado un archivo de los medios de verificación (usuario autenticado).',
   )
-  @ApiOperation({
-    summary:
-      'Eliminar un archivo de un medio de verificación por ID (usuario autenticado)',
-  })
   @ApiParam({
     name: 'id',
     description: 'ID del archivo del medio de verificación a eliminar',
     type: String,
     format: 'uuid',
+  })
+  @ApiCommonResponses({
+    summary:
+      'Eliminar un archivo de un medio de verificación por ID (usuario autenticado)',
+    okDescription:
+      'Archivo eliminado correctamente del medio de verificación por el usuario autenticado.',
+    notFoundDescription: 'El archivo del medio de verificación no existe.',
   })
   removeFilePersonal(
     @GetCurrentUserId() currentUserId: string,

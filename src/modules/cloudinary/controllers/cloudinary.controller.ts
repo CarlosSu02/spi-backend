@@ -13,10 +13,7 @@ import {
 } from '@nestjs/common';
 import { multerConfig } from '../configs/multer.config';
 import { CloudinaryService } from '../services/cloudinary.service';
-import {
-  ApiBody,
-  ApiConsumes,
-} from '@nestjs/swagger';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { EUserRole } from 'src/common/enums';
 import { Roles } from 'src/common/decorators';
@@ -24,14 +21,15 @@ import { Roles } from 'src/common/decorators';
 @Controller('cloudinary')
 @Roles(EUserRole.ADMIN)
 export class CloudinaryController {
-  constructor(private readonly cloudinaryService: CloudinaryService) { }
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   @Get('test')
   @ApiCommonResponses({
     summary: 'Probar conexión con Cloudinary',
-    description: 'Este endpoint verifica que la conexión con el servicio de Cloudinary esté funcionando correctamente.',
+    description:
+      'Este endpoint verifica que la conexión con el servicio de Cloudinary esté funcionando correctamente.',
     okDescription: 'Conexión con Cloudinary exitosa.',
-    internalErrorDescription: 'Error al conectar con Cloudinary.'
+    internalErrorDescription: 'Error al conectar con Cloudinary.',
   })
   async testConnection() {
     return await this.cloudinaryService.testConnection();
@@ -64,10 +62,12 @@ export class CloudinaryController {
   @ApiConsumes('multipart/form-data')
   @ApiCommonResponses({
     summary: 'Subir archivo a Cloudinary',
-    description: 'Este endpoint permite subir un archivo a Cloudinary, asociándolo a un código de usuario y un subject específicos.',
+    description:
+      'Este endpoint permite subir un archivo a Cloudinary, asociándolo a un código de usuario y un subject específicos.',
     createdDescription: 'Archivo subido correctamente.',
-    badRequestDescription: 'Solicitud inválida, falta algún campo o el archivo no es válido.',
-    internalErrorDescription: 'Error interno al subir el archivo.'
+    badRequestDescription:
+      'Solicitud inválida, falta algún campo o el archivo no es válido.',
+    internalErrorDescription: 'Error interno al subir el archivo.',
   })
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
@@ -80,10 +80,12 @@ export class CloudinaryController {
   @Get('files/:code/:subject')
   @ApiCommonResponses({
     summary: 'Obtener archivos por carpeta',
-    description: 'Recupera los archivos almacenados en Cloudinary según el código de usuario y el subject especificado.',
+    description:
+      'Recupera los archivos almacenados en Cloudinary según el código de usuario y el subject especificado.',
     okDescription: 'Lista de archivos obtenida correctamente.',
     internalErrorDescription: 'Error interno del servidor.',
-    notFoundDescription: 'No se encontraron archivos para el código y subject especificados.'
+    notFoundDescription:
+      'No se encontraron archivos para el código y subject especificados.',
   })
   async getFilesByFolder(
     @Param('code') code: string,
@@ -105,10 +107,12 @@ export class CloudinaryController {
   @Get('search/:code')
   @ApiCommonResponses({
     summary: 'Buscar archivos por usuario',
-    description: 'Busca archivos en Cloudinary asociados al código de usuario proporcionado, usando un término de búsqueda opcional.',
+    description:
+      'Busca archivos en Cloudinary asociados al código de usuario proporcionado, usando un término de búsqueda opcional.',
     okDescription: 'Archivos encontrados según el término de búsqueda.',
     internalErrorDescription: 'Error interno del servidor.',
-    notFoundDescription: 'No se encontraron archivos que coincidan con la búsqueda.'
+    notFoundDescription:
+      'No se encontraron archivos que coincidan con la búsqueda.',
   })
   async searchFilesByUser(
     @Param('code') code: string,
