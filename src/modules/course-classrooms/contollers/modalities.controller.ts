@@ -10,6 +10,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -27,11 +29,14 @@ export class ModalitiesController {
     summary: 'Crear una modalidad de curso',
     description: 'Debería crear una nueva modalidad de curso.',
   })
-  // @ApiBody({
-  //   type: CreateModalityDto,
-  //   description:
-  //     'Datos necesarios para crear una modalidad de curso.',
-  // })
+  @ApiBody({
+    type: CreateModalityDto,
+    description: 'Datos necesarios para crear una modalidad de curso.',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear una modalidad de curso',
+    createdDescription: 'Se ha creado una modalidad de curso.',
+  })
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -49,8 +54,12 @@ export class ModalitiesController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de modalidades de curso.')
   @ApiOperation({
-    summary: 'Obtener todos las modalidades de curso',
+    summary: 'Obtener todas las modalidades de curso',
     description: 'Devuelve una lista de todas las modalidades de curso.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todas las modalidades de curso',
+    okDescription: 'Listado de modalidades de curso.',
   })
   @Roles(
     EUserRole.ADMIN,

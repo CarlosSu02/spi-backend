@@ -13,9 +13,11 @@ import { IsValidIdsInventoryConfigConstraint } from 'src/modules/inventory/valid
 import { ETeachingAssignmentConfig } from 'src/modules/teaching-assignment/enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from 'src/modules/teaching-assignment/validators';
 import { ECourseClassroomConfig } from '../enums';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsValidClassroomConfigConstraint } from '../validators';
 
 export class CreateCourseClassroomDto {
+  @ApiProperty({ description: 'UUID del curso.', example: 'a1b2c3d4-e5f6-7890-abcd-1234567890ab', required: true })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <courseId> debe ser un UUID válido.',
@@ -27,6 +29,7 @@ export class CreateCourseClassroomDto {
   )
   courseId: string;
 
+  @ApiProperty({ description: 'UUID del aula.', example: 'b2c3d4e5-f6a1-7890-abcd-1234567890ab', required: true })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <classroomId> debe ser un UUID válido.',
@@ -38,6 +41,7 @@ export class CreateCourseClassroomDto {
   )
   classroomId: string;
 
+  @ApiProperty({ description: 'UUID de la sesión de enseñanza.', example: 'c3d4e5f6-a1b2-7890-abcd-1234567890ab', required: true })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <teachingSessionId> debe ser un UUID válido.',
@@ -51,6 +55,7 @@ export class CreateCourseClassroomDto {
   )
   teachingSessionId: string;
 
+  @ApiProperty({ description: 'Nombre de la sección.', example: 'A', required: true })
   @IsString({
     message: 'La propiedad <section> debe ser una cadena de caracteres.',
   })

@@ -6,12 +6,14 @@ import {
   Length,
   Validate,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 import { EInventoryConfig } from '../enums';
 import { IsValidIdsInventoryConfigConstraint } from '../validators';
 
 export class CreatePcEquipmentDto {
+  @ApiProperty({ example: 'INV-001', required: true, description: 'Número de inventario del equipo.' })
   @IsString({
     message:
       'La propiedad <inventoryNumber> debe ser una cadena de caracteres.',
@@ -25,6 +27,7 @@ export class CreatePcEquipmentDto {
   })
   inventoryNumber: string;
 
+  @ApiProperty({ example: 'Intel Core i5', required: true, description: 'Procesador del equipo.' })
   @IsString({
     message: 'La propiedad <processor> debe ser una cadena de caracteres.',
   })
@@ -34,6 +37,7 @@ export class CreatePcEquipmentDto {
   })
   processor: string;
 
+  @ApiProperty({ example: '8GB', required: true, description: 'Memoria RAM del equipo.' })
   @IsString({
     message: 'La propiedad <ram> debe ser una cadena de caracteres.',
   })
@@ -43,6 +47,7 @@ export class CreatePcEquipmentDto {
   })
   ram: string;
 
+  @ApiProperty({ example: 'SSD 256GB', required: true, description: 'Disco duro del equipo.' })
   @IsString({
     message: 'La propiedad <disk> debe ser una cadena de caracteres.',
   })
@@ -52,6 +57,7 @@ export class CreatePcEquipmentDto {
   })
   disk: string;
 
+  @ApiProperty({ example: 'uuid-brand', required: true, description: 'ID de la marca.' })
   @IsUUID('all', { message: 'La propiedad <brandId> debe ser un UUID válido.' })
   @IsNotEmpty({ message: 'La propiedad <brandId> no debe estar vacía.' })
   @ValidatorConstraintDecorator(
@@ -60,6 +66,7 @@ export class CreatePcEquipmentDto {
   )
   brandId: string;
 
+  @ApiProperty({ example: 'uuid-condition', required: true, description: 'ID de la condición.' })
   @IsUUID('all', {
     message: 'La propiedad <conditionId> debe ser un UUID válido.',
   })
@@ -70,6 +77,7 @@ export class CreatePcEquipmentDto {
   )
   conditionId: string;
 
+  @ApiProperty({ example: 'uuid-monitor-type', required: true, description: 'ID del tipo de monitor.' })
   @IsUUID('all', {
     message: 'La propiedad <monitorTypeId> debe ser un UUID válido.',
   })
@@ -80,6 +88,7 @@ export class CreatePcEquipmentDto {
   )
   monitorTypeId: string;
 
+  @ApiProperty({ example: 'uuid-monitor-size', required: true, description: 'ID del tamaño de monitor.' })
   @IsUUID('all', {
     message: 'La propiedad <monitorSizeId> debe ser un UUID válido.',
   })
@@ -90,6 +99,7 @@ export class CreatePcEquipmentDto {
   )
   monitorSizeId: string;
 
+  @ApiProperty({ example: 'uuid-pc-type', required: true, description: 'ID del tipo de PC.' })
   @IsUUID('all', {
     message: 'La propiedad <pcTypeId> debe ser un UUID válido.',
   })
@@ -100,6 +110,7 @@ export class CreatePcEquipmentDto {
   )
   pcTypeId: string;
 
+  @ApiProperty({ example: 'uuid-classroom', required: false, description: 'ID del aula.' })
   @IsUUID('all', {
     message: 'La propiedad <classroomId> debe ser un UUID válido.',
   })
@@ -110,6 +121,7 @@ export class CreatePcEquipmentDto {
   )
   classroomId?: string;
 
+  @ApiProperty({ example: 'uuid-department', required: false, description: 'ID del departamento.' })
   @IsUUID('all', {
     message: 'La propiedad <departmentId> debe ser un UUID válido.',
   })

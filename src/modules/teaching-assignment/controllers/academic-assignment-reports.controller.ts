@@ -32,6 +32,7 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QueryPaginationDto } from 'src/common/dto';
+import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 
 @Controller('academic-assignment-reports')
 export class AssignmentReportsController {
@@ -41,7 +42,7 @@ export class AssignmentReportsController {
       TAcademicAssignment,
       AcademicAssignmentDto
     >,
-  ) {}
+  ) { }
 
   @Post()
   @Roles(
@@ -52,15 +53,18 @@ export class AssignmentReportsController {
   )
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un informe de asignación académica.')
-  @ApiOperation({
-    summary: 'Crear un informe de asignación académica',
-    description: 'Debería crear un nuevo informe de asignación académica.',
+  @ApiBody({
+    type: CreateAcademicAssignmentReportDto,
+    description: 'Datos necesarios para crear un informe de asignación académica.',
+    required: true,
   })
-  // @ApiBody({
-  //   type: CreateAcademicAssignmentReportDto,
-  //   description:
-  //     'Datos necesarios para crear un informe de asignación académica.',
-  // })
+  @ApiCommonResponses({
+    summary: 'Crear informe de asignación académica',
+    description: 'Crea un nuevo informe de asignación académica en el sistema.',
+    createdDescription: 'Informe de asignación académica creado exitosamente.',
+    badRequestDescription: 'Datos inválidos para la creación del informe.',
+    internalErrorDescription: 'Error interno al crear el informe.'
+  })
   create(
     @Body()
     createAcademicAssignmentReportDto: CreateAcademicAssignmentReportDto,

@@ -15,6 +15,8 @@ import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 
 @Controller('course-classrooms')
 export class CourseClassroomsController {
@@ -23,23 +25,26 @@ export class CourseClassroomsController {
   ) {}
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Se ha creado una sección de asignatura.')
-  @ApiOperation({
-    summary: 'Crear una sección de asignatura',
-    description: 'Debería crear una nueva sección de asignatura.',
-  })
-  // @ApiBody({
-  //   type: CreateCourseClassroomDto,
-  //   description:
-  //     'Datos necesarios para crear una sección de asignatura.',
-  // })
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
     EUserRole.RRHH,
     EUserRole.COORDINADOR_AREA,
   )
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado una sección de asignatura.')
+  @ApiOperation({
+    summary: 'Crear una sección de asignatura',
+    description: 'Debería crear una nueva sección de asignatura.',
+  })
+  @ApiBody({
+    type: CreateCourseClassroomDto,
+    description: 'Datos necesarios para crear una sección de asignatura.',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear una sección de asignatura',
+    createdDescription: 'Se ha creado una sección de asignatura.',
+  })
   create(
     @Body()
     createCourseClassroomDto: CreateCourseClassroomDto,
@@ -48,12 +53,6 @@ export class CourseClassroomsController {
   }
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de secciones de asignatura.')
-  @ApiOperation({
-    summary: 'Obtener todos las secciones de asignatura',
-    description: 'Devuelve una lista de todas las secciones de asignatura.',
-  })
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -61,11 +60,28 @@ export class CourseClassroomsController {
     EUserRole.COORDINADOR_AREA,
     EUserRole.DOCENTE,
   )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de secciones de asignatura.')
+  @ApiOperation({
+    summary: 'Obtener todos las secciones de asignatura',
+    description: 'Devuelve una lista de todas las secciones de asignatura.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todos las secciones de asignatura',
+    okDescription: 'Listado de secciones de asignatura.',
+  })
   findAll() {
     return this.courseClassroomsService.findAll();
   }
 
   @Get(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('La información de la sección de asignatura.')
   @ApiOperation({
@@ -77,18 +93,17 @@ export class CourseClassroomsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-    EUserRole.DOCENTE,
-  )
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.courseClassroomsService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha actualizado la sección de asignatura.')
   @ApiOperation({
@@ -100,12 +115,6 @@ export class CourseClassroomsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   update(
     @Param(ValidateIdPipe) id: string,
     @Body()
@@ -115,6 +124,12 @@ export class CourseClassroomsController {
   }
 
   @Delete(':id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha eliminado una sección de asignatura.')
   @ApiOperation({
@@ -126,12 +141,6 @@ export class CourseClassroomsController {
     type: String,
     format: 'uuid',
   })
-  @Roles(
-    EUserRole.ADMIN,
-    EUserRole.DIRECCION,
-    EUserRole.RRHH,
-    EUserRole.COORDINADOR_AREA,
-  )
   remove(@Param(ValidateIdPipe) id: string) {
     return this.courseClassroomsService.remove(id);
   }

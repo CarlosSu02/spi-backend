@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -12,6 +13,7 @@ import { IsValidPositionIdConstraint } from 'src/modules/positions/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 
 export class CreateTeacherDepartmentPositionDto {
+  @ApiProperty({ example: 'uuid-user', required: true, description: 'ID del usuario docente.' })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <userId> debe ser un UUID válido.',
@@ -20,6 +22,7 @@ export class CreateTeacherDepartmentPositionDto {
   @Validate(IsValidUserIdConstraint)
   userId: string;
 
+  @ApiProperty({ example: 'uuid-department', required: true, description: 'ID del departamento.' })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <departmentId> debe ser un UUID válido.',
@@ -28,6 +31,7 @@ export class CreateTeacherDepartmentPositionDto {
   @Validate(IsValidDepartmentIdConstraint)
   departmentId: string;
 
+  @ApiProperty({ example: 'uuid-position', required: true, description: 'ID del cargo.' })
   @IsString({
     message: 'La propiedad <positionId> debe ser una cadena de caracteres.',
   })
@@ -35,6 +39,7 @@ export class CreateTeacherDepartmentPositionDto {
   @Validate(IsValidPositionIdConstraint)
   positionId: string;
 
+  @ApiProperty({ example: '2025-08-09', required: false, description: 'Fecha de inicio.' })
   @IsOptional()
   @IsDateString(
     {},
@@ -43,13 +48,9 @@ export class CreateTeacherDepartmentPositionDto {
         'La propiedad <startDate> debe ser una fecha válida, <yyyy-MM-dd>.',
     },
   )
-  // @IsNotEmpty({ message: 'La propiedad <startDate> no debe estar vacía.' })
-  // startDate: string | Date = format(
-  //   new Date().toISOString(),
-  //   "yyyy-MM-dd'T'HH:mm:ss.SSSxxx",
-  // );
   startDate: string = formatISO(new Date().toISOString());
 
+  @ApiProperty({ example: '2025-12-31', required: false, description: 'Fecha de fin.' })
   @IsDateString(
     {},
     {

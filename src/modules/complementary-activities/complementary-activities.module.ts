@@ -9,6 +9,7 @@ import { IsValidComplementaryActivityConfigConstraint } from './validators';
 import { Module } from '@nestjs/common';
 import { ActivityTypesService } from './services/activity-types.service';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { ActivityTypesController } from './controllers/activity-types.controller';
 
 @Module({
   imports: [CloudinaryModule],
@@ -16,7 +17,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
     ComplementaryActivitiesController,
     VerificationMediasController,
     MultimediaTypesController,
-    ComplementaryActivitiesController,
+    ActivityTypesController
   ],
   providers: [
     PrismaService,
@@ -33,4 +34,4 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
     ComplementaryActivitiesService,
   ],
 })
-export class ComplementaryActivitiesModule {}
+export class ComplementaryActivitiesModule { }

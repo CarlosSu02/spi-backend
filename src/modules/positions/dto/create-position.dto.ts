@@ -1,7 +1,9 @@
 import { IsString, Length, IsNotEmpty, Validate } from 'class-validator';
 import { IsValidNamePositionConstraint } from '../validators';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePositionDto {
+  @ApiProperty({ example: 'Coordinador', required: true, description: 'Nombre del cargo.' })
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
   })

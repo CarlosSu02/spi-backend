@@ -1,6 +1,14 @@
 import { IsString, IsNotEmpty, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCenterDto {
+  @ApiProperty({
+    description: 'Nombre del centro',
+    example: 'Centro Universitario',
+    type: 'string',
+    minLength: 1,
+    maxLength: 100,
+  })
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
   })

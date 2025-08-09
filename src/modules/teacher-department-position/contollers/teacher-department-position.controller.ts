@@ -10,6 +10,8 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators';
 import { CreateTeacherDepartmentPositionDto } from '../dto/create-teacher-department-position.dto';
 import { UpdateTeacherDepartmentPositionDto } from '../dto/update-teacher-department-position.dto';
 import { TeacherDepartmentPositionService } from '../services/teacher-department-position.service';
@@ -34,10 +36,18 @@ import { ApiParam } from '@nestjs/swagger';
 export class TeacherDepartmentPositionController {
   constructor(
     private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
-  ) {}
+  ) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se ha creado la relación docente-departamento-cargo.')
+  @ApiBody({ type: CreateTeacherDepartmentPositionDto, description: 'Datos para crear la relación docente-departamento-cargo.' })
+  @ApiCommonResponses({
+    summary: 'Crear relación docente-departamento-cargo',
+    createdDescription: 'Relación docente-departamento-cargo creada exitosamente.',
+    badRequestDescription: 'Datos inválidos para crear la relación docente-departamento-cargo.',
+    internalErrorDescription: 'Error interno al crear la relación docente-departamento-cargo.',
+  })
   create(
     @Body()
     createTeacherDepartmentPositionDto: CreateTeacherDepartmentPositionDto,
@@ -50,6 +60,13 @@ export class TeacherDepartmentPositionController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de docentes con su departamento y cargo.')
+  @ApiCommonResponses({
+    summary: 'Listar docentes con su departamento y cargo',
+    okDescription: 'Listado de docentes con departamento y cargo obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener los docentes con departamento y cargo.',
+    internalErrorDescription: 'Error interno al obtener los docentes con departamento y cargo.',
+    notFoundDescription: 'No se encontraron docentes con departamento y cargo.',
+  })
   @ApiPagination({
     summary: 'Listar docentes con su departamento y cargo',
     description:
@@ -61,9 +78,14 @@ export class TeacherDepartmentPositionController {
 
   @Get('department/:departmentId')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage(
-    'Listado de docentes con su departamento y cargo en un departamento en específico.',
-  )
+  @ResponseMessage('Listado de docentes con su departamento y cargo en un departamento en específico.')
+  @ApiCommonResponses({
+    summary: 'Listar docentes con su departamento y cargo por departamento en específico',
+    okDescription: 'Listado obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener los docentes por departamento.',
+    internalErrorDescription: 'Error interno al obtener los docentes por departamento.',
+    notFoundDescription: 'No se encontraron docentes para el departamento.',
+  })
   @ApiParam({
     name: 'departmentId',
     description: 'ID del departamento para filtrar los docentes',
@@ -93,9 +115,14 @@ export class TeacherDepartmentPositionController {
   @Get('coordinator')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage(
-    'Listado de docentes con su departamento y cargo en un departamento en específico para coordinadores de área.',
-  )
+  @ResponseMessage('Listado de docentes con su departamento y cargo en un departamento en específico para coordinadores de área.')
+  @ApiCommonResponses({
+    summary: 'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área',
+    okDescription: 'Listado obtenido correctamente para coordinador.',
+    badRequestDescription: 'Solicitud inválida al obtener los docentes para coordinador.',
+    internalErrorDescription: 'Error interno al obtener los docentes para coordinador.',
+    notFoundDescription: 'No se encontraron docentes para el coordinador.',
+  })
   @ApiPagination({
     summary:
       'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
@@ -118,12 +145,28 @@ export class TeacherDepartmentPositionController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Información de la relación docente-departamento-cargo.')
+  @ApiCommonResponses({
+    summary: 'Obtener una relación docente-departamento-cargo por ID',
+    okDescription: 'Relación obtenida correctamente.',
+    badRequestDescription: 'ID inválido para obtener la relación.',
+    internalErrorDescription: 'Error interno al obtener la relación.',
+    notFoundDescription: 'No se encontró la relación solicitada.',
+  })
   findOne(@Param(ValidateIdPipe) id: string) {
     return this.teacherDepartmentPositionService.findOne(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Relación docente-departamento-cargo actualizada correctamente.')
+  @ApiCommonResponses({
+    summary: 'Actualizar una relación docente-departamento-cargo por ID',
+    okDescription: 'Relación actualizada correctamente.',
+    badRequestDescription: 'Datos inválidos para actualizar la relación.',
+    internalErrorDescription: 'Error interno al actualizar la relación.',
+    notFoundDescription: 'No se encontró la relación a actualizar.',
+  })
   update(
     @Param(ValidateIdPipe) id: string,
     @Body()
@@ -137,6 +180,14 @@ export class TeacherDepartmentPositionController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Relación docente-departamento-cargo eliminada correctamente.')
+  @ApiCommonResponses({
+    summary: 'Eliminar una relación docente-departamento-cargo por ID',
+    okDescription: 'Relación eliminada correctamente.',
+    badRequestDescription: 'ID inválido para eliminar la relación.',
+    internalErrorDescription: 'Error interno al eliminar la relación.',
+    notFoundDescription: 'No se encontró la relación a eliminar.',
+  })
   remove(@Param(ValidateIdPipe) id: string) {
     return this.teacherDepartmentPositionService.remove(id);
   }

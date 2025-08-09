@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsOptional,
@@ -14,23 +15,23 @@ import {
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 
 export class CreateTeacherDto {
+  @ApiProperty({ description: 'UUID del pregrado.', example: 'a1b2c3d4-e5f6-7890-abcd-1234567890ab', required: true })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <undergradId> debe ser un UUID válido.',
   })
-  // @IsValidGradDegree(EDegreeType.UNDERGRAD)
   @ValidatorConstraintDecorator(
     EDegreeType.UNDERGRAD,
     IsValidGradDegreeConstraint,
   )
   undergradId: string;
 
+  @ApiProperty({ description: 'UUID del posgrado.', example: 'b2c3d4e5-f6a1-7890-abcd-1234567890ab', required: false })
   @IsOptional()
   @IsUUID('all', {
     each: true,
-    message: 'La propiedad <undergradId> debe ser un UUID válido.',
+    message: 'La propiedad <postgradId> debe ser un UUID válido.',
   })
-  // @IsValidGradDegree(EDegreeType.POSTGRAD)
   @ValidatorConstraintDecorator(
     EDegreeType.POSTGRAD,
     IsValidGradDegreeConstraint,

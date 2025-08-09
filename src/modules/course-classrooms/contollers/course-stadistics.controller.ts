@@ -10,6 +10,8 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { Roles, ResponseMessage } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -36,11 +38,14 @@ export class CourseStadisticsController {
     summary: 'Crear una estadística de asignatura',
     description: 'Debería crear una nueva estadística de asignatura.',
   })
-  // @ApiBody({
-  //   type: CreateCourseStadisticDto,
-  //   description:
-  //     'Datos necesarios para crear una estadística de asignatura.',
-  // })
+  @ApiBody({
+    type: CreateCourseStadisticDto,
+    description: 'Datos necesarios para crear una estadística de asignatura.',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear una estadística de asignatura',
+    createdDescription: 'Se ha creado una nueva estadística de asignatura.',
+  })
   create(
     @Body()
     createCourseStadisticDto: CreateCourseStadisticDto,
@@ -52,8 +57,12 @@ export class CourseStadisticsController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de estadísticas de asignatura.')
   @ApiOperation({
-    summary: 'Obtener todos las estadísticas de asignatura',
+    summary: 'Obtener todas las estadísticas de asignatura',
     description: 'Devuelve una lista de todas las estadísticas de asignatura.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todas las estadísticas de asignatura',
+    okDescription: 'Listado de estadísticas de asignatura.',
   })
   findAll() {
     return this.courseStadisticsService.findAll();

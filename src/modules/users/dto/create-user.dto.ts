@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
@@ -13,12 +14,14 @@ import { CreateTeacherDto } from 'src/modules/teachers/dto/create-teacher.dto';
 import { TeacherRequiredFieldsForRoleConstraint } from '../validators/teacher-required-fields.validator';
 
 export class CreateUserDto extends PartialType(CreateTeacherDto) {
+  @ApiProperty({ description: 'Nombre del usuario.', example: 'Juan Pérez', required: true })
   @IsString({
     message: 'La propiedad <name> debe ser una cadena de caracteres.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no se debe estar vacía.' })
   name: string;
 
+  @ApiProperty({ description: 'Correo electrónico del usuario.', example: 'juan.perez@email.com', required: true })
   @IsEmail(
     {},
     {
@@ -32,6 +35,7 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsNotEmpty({ message: 'La propiedad <email> no se debe estar vacía.' })
   email: string;
 
+  @ApiProperty({ description: 'Código del usuario.', example: 'USR123', required: true })
   @IsString({
     message: 'La propiedad <code> debe ser una cadena de caracteres.',
   })

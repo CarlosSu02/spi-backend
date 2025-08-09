@@ -11,6 +11,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiProperty } from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
@@ -35,11 +37,14 @@ export class CoursesController {
     summary: 'Crear una asignatura',
     description: 'Debería crear una nueva asignatura.',
   })
-  // @ApiBody({
-  //   type: CreateCourseDto,
-  //   description:
-  //     'Datos necesarios para crear una asignatura.',
-  // })
+  @ApiBody({
+    type: CreateCourseDto,
+    description: 'Datos necesarios para crear una asignatura.',
+  })
+  @ApiCommonResponses({
+    summary: 'Crear una asignatura',
+    createdDescription: 'Se ha creado una asignatura.',
+  })
   create(
     @Body()
     createCourseDto: CreateCourseDto,
@@ -57,9 +62,14 @@ export class CoursesController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de asignaturas.')
-  @ApiPagination({
-    summary: 'Obtener todos las asignatura',
+  @ApiOperation({
+    summary: 'Obtener todas las asignaturas',
+    description: 'Devuelve una lista de todas las asignaturas.',
+  })
+  @ApiCommonResponses({
+    summary: 'Obtener todas las asignaturas',
     description: 'Devuelve una lista de todas las asignatura.',
+    okDescription: 'Listado de asignaturas.',
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.coursesService.findAllWithPagination(query);
