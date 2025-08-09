@@ -6,19 +6,19 @@ import { ECourseClassroomConfig } from '../enums';
 export class CreateCourseStadisticDto {
   @IsInt({ message: 'La propiedad <APB> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <APB> no debe estar vacía.' })
-  APB: number;
+  APB: number = 0;
 
   @IsInt({ message: 'La propiedad <RPB> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <RPB> no debe estar vacía.' })
-  RPB: number;
+  RPB: number = 0;
 
   @IsInt({ message: 'La propiedad <NSP> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <NSP> no debe estar vacía.' })
-  NSP: number;
+  NSP: number = 0;
 
   @IsInt({ message: 'La propiedad <ABD> debe ser un número entero.' })
   @IsNotEmpty({ message: 'La propiedad <ABD> no debe estar vacía.' })
-  ABD: number;
+  ABD: number = 0;
 
   @IsUUID('all', {
     each: true,
