@@ -7,13 +7,17 @@ import {
   Validate,
   IsUUID,
 } from 'class-validator';
-import { format, formatISO } from 'date-fns';
+import { formatISO } from 'date-fns';
 import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 import { IsValidPositionIdConstraint } from 'src/modules/positions/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 
 export class CreateTeacherDepartmentPositionDto {
-  @ApiProperty({ example: 'uuid-user', required: true, description: 'ID del usuario docente.' })
+  @ApiProperty({
+    example: 'eec45228-d3ed-4f0a-bd56-d44a7d2818e8',
+    required: true,
+    description: 'ID del usuario docente.',
+  })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <userId> debe ser un UUID válido.',
@@ -22,7 +26,11 @@ export class CreateTeacherDepartmentPositionDto {
   @Validate(IsValidUserIdConstraint)
   userId: string;
 
-  @ApiProperty({ example: 'uuid-department', required: true, description: 'ID del departamento.' })
+  @ApiProperty({
+    example: '484b0088-09ac-467b-981a-a0885deb69cb',
+    required: true,
+    description: 'ID del departamento.',
+  })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <departmentId> debe ser un UUID válido.',
@@ -31,15 +39,23 @@ export class CreateTeacherDepartmentPositionDto {
   @Validate(IsValidDepartmentIdConstraint)
   departmentId: string;
 
-  @ApiProperty({ example: 'uuid-position', required: true, description: 'ID del cargo.' })
+  @ApiProperty({
+    example: 'uuid-position',
+    required: true,
+    description: 'ID del cargo.',
+  })
   @IsString({
-    message: 'La propiedad <positionId> debe ser una cadena de caracteres.',
+    message: 'La propiedad <positionId> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <positionId> no debe estar vacía.' })
   @Validate(IsValidPositionIdConstraint)
   positionId: string;
 
-  @ApiProperty({ example: '2025-08-09', required: false, description: 'Fecha de inicio.' })
+  @ApiProperty({
+    example: '2025-08-09',
+    required: false,
+    description: 'Fecha de inicio.',
+  })
   @IsOptional()
   @IsDateString(
     {},
@@ -50,7 +66,11 @@ export class CreateTeacherDepartmentPositionDto {
   )
   startDate: string = formatISO(new Date().toISOString());
 
-  @ApiProperty({ example: '2025-12-31', required: false, description: 'Fecha de fin.' })
+  @ApiProperty({
+    example: '2025-12-31',
+    required: false,
+    description: 'Fecha de fin.',
+  })
   @IsDateString(
     {},
     {

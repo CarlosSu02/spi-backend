@@ -1,35 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsUUID,
-  IsNotEmpty,
-  IsEnum,
-  IsString,
-  Length,
-  IsOptional,
-} from 'class-validator';
-import { EComplementaryActivityConfig, MULTIMEDIA_TYPES } from '../enums';
+import { IsUUID, IsNotEmpty, IsString, Length } from 'class-validator';
+import { EComplementaryActivityConfig } from '../enums';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidComplementaryActivityConfigConstraint } from '../validators';
 
 // TODO: validator constraints
 // TODO: 2 ver lo de los archivos
 export class CreateVerificationMediaDto {
-  // @IsUUID('all', {
-  //   each: true,
-  //   message: 'La propiedad <multimediaTypeId> debe ser un UUID válido.',
-  // })
-  // @IsNotEmpty({
-  //   message: 'La propiedad <multimediaTypeId> no debe estar vacía.',
-  // })
-  // multimediaTypeId: string;
-
   @ApiProperty({
     description: 'Descripción del medio de verificación.',
     example: 'Foto de la actividad...',
     type: String,
   })
   @IsString({
-    message: 'La propiedad <description> debe ser una cadena de caracteres.',
+    message: 'La propiedad <description> debe ser una cadena de texto.',
   })
   @IsNotEmpty({
     message: 'La propiedad <description> no debe estar vacía.',
@@ -39,40 +23,10 @@ export class CreateVerificationMediaDto {
   })
   description: string;
 
-  // @ApiProperty({
-  //   description: 'Tipo de multimedia.',
-  //   example: 'Texto Plano',
-  // })
-  // @IsEnum(MULTIMEDIA_TYPES, {
-  //   message: `Tipo de multimedia no permitido, los permitidos son: ${Object.values(MULTIMEDIA_TYPES).join(', ')}.`,
-  // })
-  // // @IsNotEmpty({
-  // //   message: 'La propiedad <multimediaType> no debe estar vacía.',
-  // // })
-  // @IsOptional()
-  // multimediaType: string = MULTIMEDIA_TYPES.PLANETEXT;
-
-  // Para guardar la referencia o acceso de cloudinary
-  // @ValidateIf(
-  //   (vm: CreateVerificationMediaDto) =>
-  //     vm.multimediaType !== (EMultimediaType.PlaneText as string),
-  // )
-  // @IsUrl(
-  //   {},
-  //   {
-  //     message: 'La propiedad <url> debe ser una url.',
-  //   },
-  // )
-  // @IsNotEmpty({
-  // message: 'La propiedad <url> no debe estar vacía.',
-  // })
-  // @IsOptional()
-  // url: string;
-
   @ApiProperty({
     description:
       'ID de la actividad complementaria a la que se le asginará este medio de verificación.',
-    example: 'uuid',
+    example: '38928115-e3b7-4180-83db-255b396bee4a',
   })
   @IsUUID('all', {
     each: true,

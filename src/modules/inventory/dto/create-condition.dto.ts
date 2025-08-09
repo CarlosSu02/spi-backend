@@ -1,8 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class CreateConditionDto {
+  @ApiProperty({
+    description: 'Estado o condición.',
+    example: 'Nuevo',
+    required: true,
+  })
   @IsString({
-    message: 'La propiedad <status> debe ser una cadena de caracteres.',
+    message: 'La propiedad <status> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <status> no debe estar vacía.' })
   @Length(3, 50, {

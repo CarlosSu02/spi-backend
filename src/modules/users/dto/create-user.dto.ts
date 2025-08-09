@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsString,
   Length,
+  Matches,
   Validate,
   ValidateIf,
 } from 'class-validator';
@@ -12,16 +13,26 @@ import { EUserRole } from '../../../common/enums';
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateTeacherDto } from 'src/modules/teachers/dto/create-teacher.dto';
 import { TeacherRequiredFieldsForRoleConstraint } from '../validators/teacher-required-fields.validator';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
+import { MatchConstraint } from '../validators/match.validator';
 
 export class CreateUserDto extends PartialType(CreateTeacherDto) {
-  @ApiProperty({ description: 'Nombre del usuario.', example: 'Juan Pérez', required: true })
+  @ApiProperty({
+    description: 'Nombre del usuario.',
+    example: 'Juan Pérez',
+    required: true,
+  })
   @IsString({
-    message: 'La propiedad <name> debe ser una cadena de caracteres.',
+    message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no se debe estar vacía.' })
   name: string;
 
-  @ApiProperty({ description: 'Correo electrónico del usuario.', example: 'juan.perez@email.com', required: true })
+  @ApiProperty({
+    description: 'Correo electrónico del usuario.',
+    example: 'juan.perez@email.com',
+    required: true,
+  })
   @IsEmail(
     {},
     {
@@ -30,30 +41,46 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
     },
   )
   @IsString({
-    message: 'La propiedad <email> debe ser una cadena de caracteres.',
+    message: 'La propiedad <email> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <email> no se debe estar vacía.' })
   email: string;
 
-  @ApiProperty({ description: 'Código del usuario.', example: 'USR123', required: true })
+  @ApiProperty({
+    description: 'Código del usuario.',
+    example: 'USR123',
+    required: true,
+  })
   @IsString({
-    message: 'La propiedad <code> debe ser una cadena de caracteres.',
+    message: 'La propiedad <code> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <code> no se debe estar vacía.' })
   code: string;
 
+  @ApiProperty({
+    description: 'Contraseña del usuario.',
+    example: 'Password123!',
+    required: true,
+  })
   @IsString({
-    message: 'La propiedad <password> debe ser una cadena de caracteres.',
+    message: 'La propiedad <password> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <password> no se debe estar vacía.' })
   @Length(5, 50, {
     message: 'La propiedad <password> debe ser entre 3 y 50 caracteres.',
   })
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'La contraseña es muy débil.',
+  })
   password: string;
 
+  @ApiProperty({
+    description: 'Confirmación de la contraseña.',
+    example: 'Password123!',
+    required: true,
+  })
   @IsString({
-    message:
-      'La propiedad <passwordConfirm> debe ser una cadena de caracteres.',
+    message: 'La propiedad <passwordConfirm> debe ser una cadena de texto.',
   })
   @IsNotEmpty({
     message: 'La propiedad <passwordConfirm> no se debe estar vacía.',
@@ -61,14 +88,20 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @Length(5, 50, {
     message: 'La propiedad <passwordConfirm> debe ser entre 3 y 50 caracteres.',
   })
+  @ValidatorConstraintDecorator('password', MatchConstraint)
   passwordConfirm: string;
 
+  @ApiProperty({
+    description: 'Rol del usuario.',
+    example: EUserRole.DOCENTE,
+    enum: EUserRole,
+    required: true,
+  })
   @IsEnum(EUserRole, {
     message: `El rol debe ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
   })
   role: EUserRole;
 
-  // Para no agregar en vada propiedad el ValidateIf
   @ValidateIf((o: CreateUserDto) =>
     [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(o.role),
   )

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID, Validate } from 'class-validator';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { EDegreeType } from 'src/modules/teachers/enums';
@@ -7,21 +8,27 @@ import {
 } from 'src/modules/teachers/validators';
 
 export class CreateTeacherPostgradDto {
+  @ApiProperty({
+    description: 'ID del usuario.',
+    example: '65039ef6-1fc5-474c-b4e3-27239c200138',
+    required: true,
+  })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <userId> debe ser un UUID válido.',
   })
-  // @IsNotEmpty({
-  //   message: 'La propiedad <userId> no debe estar vacía.',
-  // })
   @Validate(IsValidUserIdConstraint)
   userId: string;
 
+  @ApiProperty({
+    description: 'ID del grado académico de posgrado.',
+    example: '65039ef6-1fc5-474c-b4e3-27239c200138',
+    required: true,
+  })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <postgradId> debe ser un UUID válido.',
   })
-  // @IsValidGradDegree(EDegreeType.POSTGRAD)
   @ValidatorConstraintDecorator(
     EDegreeType.POSTGRAD,
     IsValidGradDegreeConstraint,

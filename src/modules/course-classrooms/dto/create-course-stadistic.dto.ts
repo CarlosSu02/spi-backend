@@ -25,7 +25,11 @@ export class CreateCourseStadisticDto {
   @IsNotEmpty({ message: 'La propiedad <ABD> no debe estar vacía.' })
   ABD: number = 0;
 
-  @ApiProperty({ description: 'UUID de la sección de curso.', example: 'd4e5f6a1-b2c3-7890-abcd-1234567890ab', required: true })
+  @ApiProperty({
+    description: 'UUID de la sección de curso.',
+    example: 'd4e5f6a1-b2c3-7890-abcd-1234567890ab',
+    required: true,
+  })
   @IsUUID('all', {
     each: true,
     message: 'La propiedad <courseClassroomId> debe ser un UUID válido.',

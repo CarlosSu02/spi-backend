@@ -5,9 +5,10 @@ export class CreateMultimediaTypeDto {
   @ApiProperty({
     description: 'Descripción del tipo de multimedia.',
     example: 'PDF',
+    required: true,
   })
   @IsString({
-    message: 'La propiedad <description> debe ser una cadena de caracteres.',
+    message: 'La propiedad <description> debe ser una cadena de texto.',
   })
   @IsNotEmpty({
     message: 'La propiedad <description> no debe estar vacía.',

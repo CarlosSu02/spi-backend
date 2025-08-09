@@ -10,7 +10,7 @@ export class CreateCenterDto {
     maxLength: 100,
   })
   @IsString({
-    message: 'La propiedad <name> debe ser una cadena de caracteres.',
+    message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no debe estar vacía.' })
   @Length(1, 100, {

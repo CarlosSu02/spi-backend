@@ -6,7 +6,7 @@ export class DBaseDto {
     description: 'Nombre para crear un elemento.',
   })
   @IsString({
-    message: 'La propiedad <name> debe ser una cadena de caracteres.',
+    message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no debe estar vacía.' })
   @Length(3, 100, {
@@ -18,7 +18,7 @@ export class DBaseDto {
     description: 'Descipción de un elemento.',
   })
   @IsString({
-    message: 'La propiedad <description> debe ser una cadena de caracteres.',
+    message: 'La propiedad <description> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <description> no debe estar vacía.' })
   @Length(3, 250, {

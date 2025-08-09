@@ -29,7 +29,7 @@ export class CreateComplementaryActivityDto extends PickType(
     example: EActivityType.Research,
   })
   @IsString({
-    message: 'La propiead <activityType> debe se una cadena de caracteres.',
+    message: 'La propiead <activityType> debe se una cadena de texto.',
   })
   @IsEnum(EActivityType, {
     message: `El tipo de actividad debe ser uno de los siguientes: ${Object.values(EActivityType).join(', ')}.`,
@@ -41,7 +41,7 @@ export class CreateComplementaryActivityDto extends PickType(
     description: 'Nombre de la actividad.',
   })
   @IsString({
-    message: 'La propiedad <name> debe ser una cadena de caracteres.',
+    message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no debe estar vacía.' })
   @Length(3, 100, {
@@ -50,7 +50,6 @@ export class CreateComplementaryActivityDto extends PickType(
   name: string;
 
   @ApiProperty({
-    // description: '¿La actividad está registrada? Es opcional.',
     description: `¿La actividad está registrada? Campo obligatorio solo si el tipo de actividad es uno de los siguientes tipos de actividad: ${[EActivityType.Research, EActivityType.Outreach].join(', ')}; en caso contrario es opcional.`,
     type: 'boolean',
     example: false,
@@ -107,7 +106,7 @@ export class CreateComplementaryActivityDto extends PickType(
   })
   @ValidateIf((ca: CreateComplementaryActivityDto) => !!ca.isRegistered)
   @IsString({
-    message: 'La propiedad <fileNumber> debe ser una cadena de caracteres.',
+    message: 'La propiedad <fileNumber> debe ser una cadena de texto.',
   })
   // @IsOptional()
   @IsNotEmpty({
@@ -137,7 +136,7 @@ export class CreateComplementaryActivityDto extends PickType(
     example: EPogressLevel.PROPOSAL,
   })
   @IsString({
-    message: 'La propiedad <progressLevel> debe ser una cadena de caracteres.',
+    message: 'La propiedad <progressLevel> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <progressLevel> no debe estar vacía.' })
   @IsEnum(EPogressLevel, {
@@ -161,21 +160,6 @@ export class CreateComplementaryActivityDto extends PickType(
   )
   assignmentReportId: string;
 
-  // @ApiProperty({
-  //   description: 'ID del tipo de actividad.',
-  // })
-  // @IsUUID('all', {
-  //   each: true,
-  //   message: 'La propiedad <activityTypeId> debe ser un UUID válido.',
-  // })
-  // @IsNotEmpty({ message: 'La propiedad <activityTypeId> no debe estar vacía.' })
-  // @ValidatorConstraintDecorator(
-  //   EComplementaryActivityConfig.ACTIVITY_TYPE,
-  //   IsValidComplementaryActivityConfigConstraint,
-  // )
-  // activityTypeId: string;
-
-  // Los decorators de swagger no se "extienden" a otra clase
   @ApiProperty({
     description: 'Descripción del medio de verificación.',
     example: 'Foto de la actividad...',
