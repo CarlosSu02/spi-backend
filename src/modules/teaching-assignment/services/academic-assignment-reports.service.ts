@@ -376,7 +376,7 @@ export class AcademicAssignmentReportsService {
         pac,
         pac_modality,
       );
-    const academicPeriodTitle = `Periodo Académico ${pac} ${pac_modality} ${year}`;
+    const academicPeriodTitle = `Periodo Académico No. ${pac}, ${pac_modality}, ${year}`;
 
     // En cuestion de rendimiento, es mejor hacer las consultas
     // de todos los datos necesarios antes de iterar sobre el archivo

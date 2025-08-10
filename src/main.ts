@@ -55,6 +55,13 @@ async function bootstrap() {
     swaggerOptions: { persistAuthorization: true },
   });
 
+  app.enableCors({
+    origin: process.env.FE_URL ?? 'https://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
