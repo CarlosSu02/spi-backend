@@ -65,20 +65,20 @@ export class AuthController {
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  async logout(
+  logout(
     @GetCurrentUserId() userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     res.clearCookie('refresh_token');
 
-    return await this.authService.logout(userId);
+    return this.authService.logout(userId);
   }
 
   @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth('jwt-refresh')
+  // @ApiBearerAuth('jwt-refresh')
   @ApiOperation({
     summary: 'Refresh token.',
     description:

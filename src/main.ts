@@ -48,7 +48,6 @@ async function bootstrap() {
     //     in: 'header',
     //   },
     //   'jwt-refresh',
-    .addCookieAuth()
     // )
     .build();
 

@@ -6,7 +6,7 @@ import { jwtConstants } from '../constants';
 import { TJwtPayload, TJwtPayloadWithRt } from '../types';
 
 interface IRequestWithRT extends Request {
-  cookies: {
+  signedCookies: {
     refresh_token: string;
   };
 }
@@ -26,21 +26,25 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   }
 
   private static extractJWT(req: IRequestWithRT): string | null {
+    console.log(req.signedCookies);
     if (
-      (!req.cookies && !('refresh_token' in req.cookies)) ||
-      (req.cookies.refresh_token && req.cookies.refresh_token?.length === 0)
+      (!req.signedCookies && !('refresh_token' in req.signedCookies)) ||
+      (req.signedCookies.refresh_token &&
+        req.signedCookies.refresh_token?.length === 0)
     )
       throw new ForbiddenException('Refresh token malformed!');
 
-    return req.cookies.refresh_token;
+    return req.signedCookies.refresh_token;
   }
 
   validate(req: IRequestWithRT, payload: TJwtPayload): TJwtPayloadWithRt {
+    console.log(req);
     const refreshToken =
-      req.cookies.refresh_token ??
+      req.signedCookies.refresh_token ??
       req.get('authorization')?.replace('Bearer', '')?.trim();
 
     if (!refreshToken) throw new ForbiddenException('Refresh token malformed!');
+    console.log(refreshToken);
 
     return {
       ...payload,
