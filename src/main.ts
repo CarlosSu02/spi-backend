@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidateGlobalIdsPipe } from './common/pipes';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,16 +39,17 @@ async function bootstrap() {
       'jwt',
     )
     .addSecurityRequirements('jwt')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Ingrese el refresh-token',
-        in: 'header',
-      },
-      'jwt-refresh',
-    )
+    // .addBearerAuth(
+    //   {
+    //     type: 'http',
+    //     scheme: 'bearer',
+    //     bearerFormat: 'JWT',
+    //     description: 'Ingrese el refresh-token',
+    //     in: 'header',
+    //   },
+    //   'jwt-refresh',
+    .addCookieAuth()
+    // )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
@@ -56,11 +58,13 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: process.env.FE_URL ?? 'https://localhost:5173',
+    origin: process.env.FE_URL ?? 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
   });
+
+  app.use(cookieParser(process.env.COOKIE_KEY));
 
   await app.listen(process.env.PORT ?? 3000);
 }

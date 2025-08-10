@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -15,10 +16,21 @@ import {
   GetCurrentUserId,
   Public,
 } from 'src/common/decorators';
-import { ApiBearerAuth, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { CookieOptions, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
+  private cookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    // path: '/auth/refresh',
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 7, // Cambiar al mismo del refreshToken, colocar este valor como una constante
+    signed: true,
+  };
+
   constructor(private authService: AuthService) {}
 
   @Public()
@@ -33,15 +45,33 @@ export class AuthController {
   @Public()
   @Post('local/signin')
   @HttpCode(HttpStatus.OK)
-  signinLocal(@Body() dto: AuthSigninDto) {
-    return this.authService.signinLocal(dto);
+  async signinLocal(
+    @Body() dto: AuthSigninDto,
+    @Res({
+      passthrough: true,
+    })
+    res: Response,
+  ) {
+    const { refresh_token, access_token } =
+      await this.authService.signinLocal(dto);
+
+    res.cookie('refresh_token', refresh_token, this.cookieOptions);
+
+    return {
+      access_token,
+    };
   }
 
   @UseGuards(AtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetCurrentUserId() userId: string) {
-    return this.authService.logout(userId);
+  async logout(
+    @GetCurrentUserId() userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    res.clearCookie('refresh_token');
+
+    return await this.authService.logout(userId);
   }
 
   @Public()
@@ -52,22 +82,20 @@ export class AuthController {
   @ApiOperation({
     summary: 'Refresh token.',
     description:
-      'Este permite obtener un nuevo access token usando el refresh token. En Swagger debe agregar el token de tipo Bearer en el header.',
+      'Este permite obtener un nuevo access token usando el refresh token (cookies).',
   })
-  // @ApiHeader({
-  //   name: 'Authorization',
-  //   description: 'Bearer token with the format "Bearer <refreshToken>"',
-  //   required: true,
-  //   example: 'Bearer your_refresh_token_here',
-  //   schema: {
-  //     type: 'string',
-  //     format: 'Bearer <refreshToken>',
-  //   },
-  // })
-  refresh(
+  async refresh(
     @GetCurrentUserId() userId: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.refreshTokens(userId, refreshToken);
+    const { refresh_token, access_token } =
+      await this.authService.refreshTokens(userId, refreshToken);
+
+    res.cookie('refresh_token', refresh_token, this.cookieOptions);
+
+    return {
+      access_token,
+    };
   }
 }
