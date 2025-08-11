@@ -42,7 +42,7 @@ export class DepartmentsController {
   }
 
   @Get()
-  @Roles(EUserRole.COORDINADOR_AREA)
+  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de departamentos.')
   @ApiCommonResponses({
@@ -50,11 +50,11 @@ export class DepartmentsController {
     okDescription: 'Listado de departamentos.',
   })
   findAll() {
-    return this.departmentsService.findAll();
+    return this.departmentsService.findAllWithCoordinators();
   }
 
   @Get(':id')
-  @Roles(EUserRole.COORDINADOR_AREA)
+  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Información del departamento.')
   @ApiParam({
