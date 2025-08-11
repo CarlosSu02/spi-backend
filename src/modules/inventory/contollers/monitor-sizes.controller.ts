@@ -63,7 +63,7 @@ export class MonitorSizesController {
     okDescription: 'Tamaño de monitor obtenido.',
     notFoundDescription: 'No se encontró el tamaño de monitor solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.monitorSizesService.findOne(id);
   }
 
@@ -82,7 +82,7 @@ export class MonitorSizesController {
     notFoundDescription: 'No se encontró el tamaño de monitor solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateMonitorSizeDto: UpdateMonitorSizeDto,
   ) {
     return this.monitorSizesService.update(id, updateMonitorSizeDto);
@@ -97,7 +97,7 @@ export class MonitorSizesController {
     okDescription: 'Tamaño de monitor eliminado.',
     notFoundDescription: 'No se encontró el tamaño de monitor solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.monitorSizesService.remove(id);
   }
 }

@@ -72,7 +72,7 @@ export class CentersController {
     internalErrorDescription: 'Error interno al obtener el centro.',
     notFoundDescription: 'No se encontró el centro solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.centersService.findOne(id);
   }
 
@@ -95,7 +95,7 @@ export class CentersController {
     notFoundDescription: 'No se encontró el centro solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateCenterDto: UpdateCenterDto,
   ) {
     return this.centersService.update(id, updateCenterDto);
@@ -111,7 +111,7 @@ export class CentersController {
     internalErrorDescription: 'Error interno al eliminar el centro.',
     notFoundDescription: 'No se encontró el centro solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.centersService.remove(id);
   }
 }

@@ -84,7 +84,7 @@ export class AcademicPeriodsController {
     internalErrorDescription: 'Error interno al obtener el periodo.',
     notFoundDescription: 'No se encontró el periodo solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.academicPeriodsService.findOne(id);
   }
 
@@ -108,7 +108,7 @@ export class AcademicPeriodsController {
     notFoundDescription: 'No se encontró el periodo solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateAcademicPeriodDto: UpdateAcademicPeriodDto,
   ) {
     return this.academicPeriodsService.update(id, updateAcademicPeriodDto);
@@ -130,7 +130,7 @@ export class AcademicPeriodsController {
     internalErrorDescription: 'Error interno al eliminar el periodo.',
     notFoundDescription: 'No se encontró el periodo a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.academicPeriodsService.remove(id);
   }
 }

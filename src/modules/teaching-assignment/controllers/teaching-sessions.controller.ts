@@ -87,7 +87,7 @@ export class TeachingSessionsController {
     internalErrorDescription: 'Error interno al obtener la sesión.',
     notFoundDescription: 'No se encontró la sesión solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.teachingSessionsService.findOne(id);
   }
 
@@ -114,7 +114,7 @@ export class TeachingSessionsController {
     notFoundDescription: 'No se encontró la sesión solicitada.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateTeachingSessionDto: UpdateTeachingSessionDto,
   ) {
     return this.teachingSessionsService.update(id, updateTeachingSessionDto);
@@ -135,7 +135,7 @@ export class TeachingSessionsController {
     internalErrorDescription: 'Error interno al eliminar la sesión.',
     notFoundDescription: 'No se encontró la sesión solicitada.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teachingSessionsService.remove(id);
   }
 }

@@ -64,7 +64,7 @@ export class AudioEquipmentController {
     okDescription: 'Equipo de audio obtenido correctamente.',
     notFoundDescription: 'El equipo de audio no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.audioEquipmentService.findOne(id);
   }
 
@@ -80,7 +80,7 @@ export class AudioEquipmentController {
     notFoundDescription: 'El equipo de audio no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateAudioEquipmentDto: UpdateAudioEquipmentDto,
   ) {
     return this.audioEquipmentService.update(id, updateAudioEquipmentDto);
@@ -95,7 +95,7 @@ export class AudioEquipmentController {
     okDescription: 'Equipo de audio eliminado correctamente.',
     notFoundDescription: 'El equipo de audio no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.audioEquipmentService.remove(id);
   }
 }

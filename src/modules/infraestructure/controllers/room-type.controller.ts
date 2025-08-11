@@ -64,7 +64,7 @@ export class RoomTypeController {
     okDescription: 'Tipo de aula obtenido correctamente.',
     notFoundDescription: 'El tipo de aula no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.roomTypeService.findOne(id);
   }
 
@@ -80,7 +80,7 @@ export class RoomTypeController {
     notFoundDescription: 'El tipo de aula no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateRoomTypeDto: UpdateRoomTypeDto,
   ) {
     return this.roomTypeService.update(id, updateRoomTypeDto);
@@ -95,7 +95,7 @@ export class RoomTypeController {
     okDescription: 'Tipo de aula eliminado correctamente.',
     notFoundDescription: 'El tipo de aula no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.roomTypeService.remove(id);
   }
 }

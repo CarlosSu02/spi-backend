@@ -78,7 +78,7 @@ export class UsersController {
     internalErrorDescription: 'Error interno al obtener el usuario.',
     notFoundDescription: 'No se encontró el usuario solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
@@ -98,7 +98,7 @@ export class UsersController {
     internalErrorDescription: 'Error interno al obtener los usuarios por rol.',
     notFoundDescription: 'No se encontraron usuarios para el rol especificado.',
   })
-  findAllUsersWithRole(@Param(ValidateIdPipe) roleId: string) {
+  findAllUsersWithRole(@Param('roleId', ValidateIdPipe) roleId: string) {
     return this.usersService.findAllUsersWithRole(roleId);
   }
 
@@ -118,7 +118,7 @@ export class UsersController {
     notFoundDescription: 'No se encontró el usuario solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -134,7 +134,7 @@ export class UsersController {
     internalErrorDescription: 'Error interno al eliminar el usuario.',
     notFoundDescription: 'No se encontró el usuario solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.usersService.remove(id);
   }
 }

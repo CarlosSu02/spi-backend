@@ -89,7 +89,7 @@ export class CoursesController {
     okDescription: 'Asignatura obtenida correctamente.',
     notFoundDescription: 'La asignatura no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.coursesService.findOne(id);
   }
 
@@ -135,7 +135,7 @@ export class CoursesController {
     notFoundDescription: 'La asignatura no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
     return this.coursesService.update(id, updateCourseDto);
@@ -161,7 +161,7 @@ export class CoursesController {
     okDescription: 'Asignatura eliminada correctamente.',
     notFoundDescription: 'La asignatura no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.coursesService.remove(id);
   }
 }

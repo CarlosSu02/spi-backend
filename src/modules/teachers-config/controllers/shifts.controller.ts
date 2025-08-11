@@ -62,7 +62,7 @@ export class ShiftsController {
     internalErrorDescription: 'Error interno al obtener el turno.',
     notFoundDescription: 'No se encontró el turno solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.shiftsService.findOne(id);
   }
 
@@ -82,7 +82,7 @@ export class ShiftsController {
     notFoundDescription: 'No se encontró el turno a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateShiftDto: UpdateShiftDto,
   ) {
     return this.shiftsService.update(id, updateShiftDto);
@@ -99,7 +99,7 @@ export class ShiftsController {
     internalErrorDescription: 'Error interno al eliminar el turno.',
     notFoundDescription: 'No se encontró el turno a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.shiftsService.remove(id);
   }
 }

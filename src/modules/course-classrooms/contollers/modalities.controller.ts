@@ -83,7 +83,7 @@ export class ModalitiesController {
     okDescription: 'Modalidad de curso obtenida correctamente.',
     notFoundDescription: 'La modalidad de curso no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.modalitiesService.findOne(id);
   }
 
@@ -110,7 +110,7 @@ export class ModalitiesController {
     notFoundDescription: 'La modalidad de curso no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateModalityDto: UpdateModalityDto,
   ) {
     return this.modalitiesService.update(id, updateModalityDto);
@@ -136,7 +136,7 @@ export class ModalitiesController {
     okDescription: 'Modalidad de curso eliminada correctamente.',
     notFoundDescription: 'La modalidad de curso no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.modalitiesService.remove(id);
   }
 }

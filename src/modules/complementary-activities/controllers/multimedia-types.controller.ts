@@ -77,7 +77,7 @@ export class MultimediaTypesController {
     okDescription: 'Tipo de multimedia obtenido correctamente.',
     notFoundDescription: 'El tipo de multimedia no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.multimediaTypesService.findOne(id);
   }
 
@@ -99,7 +99,7 @@ export class MultimediaTypesController {
     notFoundDescription: 'El tipo de multimedia no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateMultimediaTypeDto: UpdateMultimediaTypeDto,
   ) {
     return this.multimediaTypesService.update(id, updateMultimediaTypeDto);
@@ -120,7 +120,7 @@ export class MultimediaTypesController {
     okDescription: 'Tipo de multimedia eliminado correctamente.',
     notFoundDescription: 'El tipo de multimedia no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.multimediaTypesService.remove(id);
   }
 }

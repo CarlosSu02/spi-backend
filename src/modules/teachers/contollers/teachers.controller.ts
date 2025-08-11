@@ -93,7 +93,7 @@ export class TeachersController {
     summary: 'Obtener docente por ID de usuario',
     okDescription: 'Se ha encontrado el docente por ID de usuario.',
   })
-  findTeacherByUserId(@Param(ValidateIdPipe) id: string) {
+  findTeacherByUserId(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersService.findOneByUserId(id);
   }
 
@@ -110,7 +110,7 @@ export class TeachersController {
     summary: 'Obtener un docente por ID',
     okDescription: 'Se ha encontrado el docente.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersService.findOne(id);
   }
 
@@ -127,7 +127,7 @@ export class TeachersController {
     okDescription: 'Se ha actualizado el docente.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateTeacherDto: UpdateTeacherDto,
   ) {
     return this.teachersService.update(id, updateTeacherDto);
@@ -142,7 +142,7 @@ export class TeachersController {
     summary: 'Eliminar un docente por ID',
     okDescription: 'Se ha desactivado el docente.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersService.remove(id);
   }
 }

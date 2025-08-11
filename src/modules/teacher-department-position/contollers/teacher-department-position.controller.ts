@@ -114,7 +114,7 @@ export class TeacherDepartmentPositionController {
   })
   findAllByDepartmentId(
     @Query() query: QueryPaginationDto,
-    @Param(ValidateIdPipe) departmentId: string,
+    @Param('departmentId', ValidateIdPipe) departmentId: string,
   ) {
     return this.teacherDepartmentPositionService.findAllByDepartmentId(
       query,
@@ -172,7 +172,7 @@ export class TeacherDepartmentPositionController {
     internalErrorDescription: 'Error interno al obtener la relación.',
     notFoundDescription: 'No se encontró la relación solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.teacherDepartmentPositionService.findOne(id);
   }
 
@@ -189,7 +189,7 @@ export class TeacherDepartmentPositionController {
     notFoundDescription: 'No se encontró la relación a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body()
     updateTeacherDepartmentPositionDto: UpdateTeacherDepartmentPositionDto,
   ) {
@@ -211,7 +211,7 @@ export class TeacherDepartmentPositionController {
     internalErrorDescription: 'Error interno al eliminar la relación.',
     notFoundDescription: 'No se encontró la relación a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teacherDepartmentPositionService.remove(id);
   }
 }

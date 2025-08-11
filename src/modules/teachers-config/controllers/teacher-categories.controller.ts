@@ -71,7 +71,7 @@ export class TeacherCategoriesController {
       'Error interno al obtener la categoría de docente.',
     notFoundDescription: 'No se encontró la categoría de docente solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.teacherCategoriesService.findOne(id);
   }
 
@@ -93,7 +93,7 @@ export class TeacherCategoriesController {
     notFoundDescription: 'No se encontró la categoría de docente a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateTeacherCategoryDto: UpdateTeacherCategoryDto,
   ) {
     return this.teacherCategoriesService.update(id, updateTeacherCategoryDto);
@@ -111,7 +111,7 @@ export class TeacherCategoriesController {
       'Error interno al eliminar la categoría de docente.',
     notFoundDescription: 'No se encontró la categoría de docente a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teacherCategoriesService.remove(id);
   }
 }

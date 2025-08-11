@@ -86,7 +86,7 @@ export class PostgradsController {
     internalErrorDescription: 'Error interno al obtener postgrado.',
     notFoundDescription: 'No se encontró el postgrado solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.postgradsService.findOne(id);
   }
 
@@ -102,7 +102,7 @@ export class PostgradsController {
     notFoundDescription: 'No se encontró el postgrado a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updatePostgradDto: UpdatePostgradDto,
   ) {
     return this.postgradsService.update(id, updatePostgradDto);
@@ -119,7 +119,7 @@ export class PostgradsController {
     internalErrorDescription: 'Error interno al eliminar postgrado.',
     notFoundDescription: 'No se encontró el postgrado a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.postgradsService.remove(id);
   }
 }

@@ -63,7 +63,7 @@ export class BrandsController {
     okDescription: 'Marca obtenida.',
     notFoundDescription: 'No se encontró la marca solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.brandsService.findOne(id);
   }
 
@@ -82,7 +82,7 @@ export class BrandsController {
     notFoundDescription: 'No se encontró la marca solicitada.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateBrandDto: UpdateBrandDto,
   ) {
     return this.brandsService.update(id, updateBrandDto);
@@ -97,7 +97,7 @@ export class BrandsController {
     okDescription: 'Marca eliminada.',
     notFoundDescription: 'No se encontró la marca solicitada.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.brandsService.remove(id);
   }
 }

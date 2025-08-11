@@ -82,7 +82,7 @@ export class TeachersUndergradController {
     internalErrorDescription: 'Error interno al obtener la relación.',
     notFoundDescription: 'No se encontró la relación solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersUndergradService.findOne(id);
   }
 
@@ -102,7 +102,7 @@ export class TeachersUndergradController {
     notFoundDescription: 'No se encontró la relación a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateTeachersUndergradDto: UpdateUndergradDto,
   ) {
     return this.teachersUndergradService.update(id, updateTeachersUndergradDto);
@@ -119,7 +119,7 @@ export class TeachersUndergradController {
     internalErrorDescription: 'Error interno al eliminar la relación.',
     notFoundDescription: 'No se encontró la relación a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersUndergradService.remove(id);
   }
 }

@@ -63,7 +63,7 @@ export class ConditionsController {
     okDescription: 'Condición obtenida.',
     notFoundDescription: 'No se encontró la condición solicitada.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.conditionService.findOne(id);
   }
 
@@ -82,7 +82,7 @@ export class ConditionsController {
     notFoundDescription: 'No se encontró la condición solicitada.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateConditionDto: UpdateConditionDto,
   ) {
     return this.conditionService.update(id, updateConditionDto);
@@ -97,7 +97,7 @@ export class ConditionsController {
     okDescription: 'Condición eliminada.',
     notFoundDescription: 'No se encontró la condición solicitada.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.conditionService.remove(id);
   }
 }

@@ -108,7 +108,7 @@ export class ComplementaryActivitiesController {
     type: String,
     format: 'uuid',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.complementaryActivitiesService.findOne(id);
   }
 
@@ -159,7 +159,7 @@ export class ComplementaryActivitiesController {
     format: 'uuid',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body()
     updateComplementaryActivityDto: UpdateComplementaryActivityDto,
   ) {
@@ -188,7 +188,7 @@ export class ComplementaryActivitiesController {
     type: String,
     format: 'uuid',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.complementaryActivitiesService.remove(id);
   }
 }

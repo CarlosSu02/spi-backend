@@ -67,7 +67,7 @@ export class RolesController {
     internalErrorDescription: 'Error interno al obtener el rol.',
     notFoundDescription: 'No se encontró el rol solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.rolesService.findOne(id);
   }
 
@@ -86,7 +86,7 @@ export class RolesController {
     notFoundDescription: 'No se encontró el rol solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
   ) {
     return this.rolesService.update(id, updateRoleDto);
@@ -101,7 +101,7 @@ export class RolesController {
     internalErrorDescription: 'Error interno al eliminar el rol.',
     notFoundDescription: 'No se encontró el rol solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.rolesService.remove(id);
   }
 }

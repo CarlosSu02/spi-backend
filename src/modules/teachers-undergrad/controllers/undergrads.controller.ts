@@ -102,7 +102,7 @@ export class UndergradsController {
     internalErrorDescription: 'Error interno al obtener el pregrado.',
     notFoundDescription: 'No se encontró el pregrado solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.undergradsService.findOne(id);
   }
 
@@ -122,7 +122,7 @@ export class UndergradsController {
     notFoundDescription: 'No se encontró el pregrado a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateUndergradDto: UpdateUndergradDto,
   ) {
     return this.undergradsService.update(id, updateUndergradDto);
@@ -139,7 +139,7 @@ export class UndergradsController {
     internalErrorDescription: 'Error interno al eliminar el pregrado.',
     notFoundDescription: 'No se encontró el pregrado a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.undergradsService.remove(id);
   }
 }

@@ -4,23 +4,31 @@ import {
   Injectable,
   PipeTransform,
 } from '@nestjs/common';
+import { validateUuid } from '../utils';
 
 @Injectable()
 export class ValidateIdPipe implements PipeTransform {
   transform(value: any, _metadata: ArgumentMetadata) {
-    const keys = Object.keys(value);
-    const idKey = value[keys[0]];
-    const id = idKey ? idKey : value.id;
+    if (typeof value === 'string') {
+      if (!validateUuid(value)) {
+        throw new BadRequestException('El valor debe ser un UUID válido.');
+      }
+      return value;
+    }
 
-    if (
-      !id
-        .toString()
-        .match(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/g,
+    if (typeof value === 'object') {
+      for (const [key, val] of Object.entries(value)) {
+        if (
+          key.toLocaleLowerCase().includes('id') &&
+          (typeof val !== 'string' || !validateUuid(val))
         )
-    )
-      throw new BadRequestException('Id no válido.');
+          // if (!validateUuid(value))
+          throw new BadRequestException(
+            `El campo <${key}> debe ser un UUID válido.`,
+          );
+      }
+    }
 
-    return id;
+    return value;
   }
 }

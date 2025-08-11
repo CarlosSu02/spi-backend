@@ -72,7 +72,7 @@ export class ClassroomController {
     okDescription: 'Aula obtenida correctamente.',
     notFoundDescription: 'El aula no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.classroomService.findOne(id);
   }
 
@@ -88,7 +88,7 @@ export class ClassroomController {
     notFoundDescription: 'El aula no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateClassroomDto: UpdateClassroomDto,
   ) {
     return this.classroomService.update(id, updateClassroomDto);
@@ -103,7 +103,7 @@ export class ClassroomController {
     okDescription: 'Aula eliminada correctamente.',
     notFoundDescription: 'El aula no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.classroomService.remove(id);
   }
 }

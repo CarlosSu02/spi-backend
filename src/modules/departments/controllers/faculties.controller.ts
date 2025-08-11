@@ -64,7 +64,7 @@ export class FacultiesController {
     okDescription: 'Facultad obtenida correctamente.',
     notFoundDescription: 'La facultad no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.facultiesService.findOne(id);
   }
 
@@ -79,7 +79,7 @@ export class FacultiesController {
     notFoundDescription: 'La facultad no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateFacultyDto: UpdateFacultyDto,
   ) {
     return this.facultiesService.update(id, updateFacultyDto);
@@ -93,7 +93,7 @@ export class FacultiesController {
     okDescription: 'Facultad eliminada correctamente.',
     notFoundDescription: 'La facultad no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.facultiesService.remove(id);
   }
 }

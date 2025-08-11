@@ -85,7 +85,7 @@ export class CourseClassroomsController {
     okDescription: 'Sección de asignatura obtenida correctamente.',
     notFoundDescription: 'La sección de asignatura no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.courseClassroomsService.findOne(id);
   }
 
@@ -112,7 +112,7 @@ export class CourseClassroomsController {
     notFoundDescription: 'La sección de asignatura no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateCourseClassroomDto: UpdateCourseClassroomDto,
   ) {
     return this.courseClassroomsService.update(id, updateCourseClassroomDto);
@@ -138,7 +138,7 @@ export class CourseClassroomsController {
     okDescription: 'Sección de asignatura eliminada correctamente.',
     notFoundDescription: 'La sección de asignatura no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.courseClassroomsService.remove(id);
   }
 }

@@ -68,7 +68,7 @@ export class DepartmentsController {
     okDescription: 'Información del departamento.',
     notFoundDescription: 'El departamento no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.departmentsService.findOne(id);
   }
 
@@ -89,7 +89,7 @@ export class DepartmentsController {
     notFoundDescription: 'El departamento no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateDepartmentDto: UpdateDepartmentDto,
   ) {
     return this.departmentsService.update(id, updateDepartmentDto);
@@ -109,7 +109,7 @@ export class DepartmentsController {
     okDescription: 'Se ha eliminado el departamento.',
     notFoundDescription: 'El departamento no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.departmentsService.remove(id);
   }
 }

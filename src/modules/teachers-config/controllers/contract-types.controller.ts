@@ -71,7 +71,7 @@ export class ContractTypesController {
     internalErrorDescription: 'Error interno al obtener el tipo de contrato.',
     notFoundDescription: 'No se encontró el tipo de contrato solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.contractTypesService.findOne(id);
   }
 
@@ -93,7 +93,7 @@ export class ContractTypesController {
     notFoundDescription: 'No se encontró el tipo de contrato a actualizar.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateContractTypeDto: UpdateContractTypeDto,
   ) {
     return this.contractTypesService.update(id, updateContractTypeDto);
@@ -110,7 +110,7 @@ export class ContractTypesController {
     internalErrorDescription: 'Error interno al eliminar el tipo de contrato.',
     notFoundDescription: 'No se encontró el tipo de contrato a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.contractTypesService.remove(id);
   }
 }

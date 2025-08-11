@@ -60,7 +60,7 @@ export class PositionsController {
     okDescription: 'Cargo obtenido correctamente.',
     notFoundDescription: 'No se encontró el cargo solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.positionsService.findOne(id);
   }
 
@@ -78,7 +78,7 @@ export class PositionsController {
     notFoundDescription: 'No se encontró el cargo solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updatePositionDto: UpdatePositionDto,
   ) {
     return this.positionsService.update(id, updatePositionDto);
@@ -92,7 +92,7 @@ export class PositionsController {
     okDescription: 'Cargo eliminado correctamente.',
     notFoundDescription: 'No se encontró el cargo a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.positionsService.remove(id);
   }
 }

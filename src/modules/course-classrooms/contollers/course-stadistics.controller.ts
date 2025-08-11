@@ -78,7 +78,7 @@ export class CourseStadisticsController {
     okDescription: 'Estadística de asignatura obtenida correctamente.',
     notFoundDescription: 'La estadística de asignatura no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.courseStadisticsService.findOne(id);
   }
 
@@ -99,7 +99,7 @@ export class CourseStadisticsController {
     notFoundDescription: 'La estadística de asignatura no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateCourseStadisticDto: UpdateCourseStadisticDto,
   ) {
     return this.courseStadisticsService.update(id, updateCourseStadisticDto);
@@ -119,7 +119,7 @@ export class CourseStadisticsController {
     okDescription: 'Estadística de asignatura eliminada correctamente.',
     notFoundDescription: 'La estadística de asignatura no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.courseStadisticsService.remove(id);
   }
 }

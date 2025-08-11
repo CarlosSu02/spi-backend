@@ -63,7 +63,7 @@ export class MonitorTypesController {
     okDescription: 'Tipo de monitor obtenido.',
     notFoundDescription: 'No se encontró el tipo de monitor solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.monitorTypesService.findOne(id);
   }
 
@@ -82,7 +82,7 @@ export class MonitorTypesController {
     notFoundDescription: 'No se encontró el tipo de monitor solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateMonitorTypeDto: UpdateMonitorTypeDto,
   ) {
     return this.monitorTypesService.update(id, updateMonitorTypeDto);
@@ -97,7 +97,7 @@ export class MonitorTypesController {
     okDescription: 'Tipo de monitor eliminado.',
     notFoundDescription: 'No se encontró el tipo de monitor solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.monitorTypesService.remove(id);
   }
 }

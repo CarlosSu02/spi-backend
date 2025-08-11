@@ -120,7 +120,7 @@ export class VerificationMediasController {
     okDescription: 'Medio de verificación obtenido correctamente.',
     notFoundDescription: 'El medio de verificación no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.verificationMediasService.findOne(id);
   }
 
@@ -141,7 +141,7 @@ export class VerificationMediasController {
     notFoundDescription: 'El medio de verificación no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateVerificationMediaDto: UpdateVerificationMediaDto,
   ) {
     return this.verificationMediasService.update(
@@ -165,7 +165,7 @@ export class VerificationMediasController {
     okDescription: 'Medio de verificación eliminado correctamente.',
     notFoundDescription: 'El medio de verificación no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.verificationMediasService.remove(id);
   }
 
@@ -184,7 +184,7 @@ export class VerificationMediasController {
     okDescription: 'Archivo eliminado correctamente del medio de verificación.',
     notFoundDescription: 'El archivo del medio de verificación no existe.',
   })
-  removeFile(@Param(ValidateIdPipe) id: string) {
+  removeFile(@Param('id', ValidateIdPipe) id: string) {
     return this.verificationMediasService.removeFile(id);
   }
 
@@ -207,7 +207,7 @@ export class VerificationMediasController {
   })
   removePersonal(
     @GetCurrentUserId() currentUserId: string,
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
   ) {
     return this.verificationMediasService.removePersonal(currentUserId, id);
   }
@@ -232,7 +232,7 @@ export class VerificationMediasController {
   })
   removeFilePersonal(
     @GetCurrentUserId() currentUserId: string,
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
   ) {
     return this.verificationMediasService.removeFilePersonal(currentUserId, id);
   }

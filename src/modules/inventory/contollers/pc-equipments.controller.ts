@@ -69,7 +69,7 @@ export class PcEquipmentsController {
     okDescription: 'Equipo de computo obtenido.',
     notFoundDescription: 'No se encontró el equipo de computo solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.pcEquipmentsService.findOne(id);
   }
 
@@ -88,7 +88,7 @@ export class PcEquipmentsController {
     notFoundDescription: 'No se encontró el equipo de computo solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updatePcEquipmentDto: UpdatePcEquipmentDto,
   ) {
     return this.pcEquipmentsService.update(id, updatePcEquipmentDto);
@@ -103,7 +103,7 @@ export class PcEquipmentsController {
     okDescription: 'Equipo de computo eliminado.',
     notFoundDescription: 'No se encontró el equipo de computo a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.pcEquipmentsService.remove(id);
   }
 }

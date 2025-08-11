@@ -65,7 +65,7 @@ export class AirConditionersController {
     okDescription: 'Aire acondicionado obtenido.',
     notFoundDescription: 'No se encontró el aire acondicionado solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.airConditionersService.findOne(id);
   }
 
@@ -84,7 +84,7 @@ export class AirConditionersController {
     notFoundDescription: 'No se encontró el aire acondicionado solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateAirConditionerDto: UpdateAirConditionerDto,
   ) {
     return this.airConditionersService.update(id, updateAirConditionerDto);
@@ -99,7 +99,7 @@ export class AirConditionersController {
     okDescription: 'Aire acondicionado eliminado.',
     notFoundDescription: 'No se encontró el aire acondicionado solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.airConditionersService.remove(id);
   }
 }

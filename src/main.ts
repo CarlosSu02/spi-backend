@@ -1,9 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ParseUUIDPipe, ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidateGlobalIdsPipe } from './common/pipes';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -11,7 +10,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('/v1/api');
 
-  app.useGlobalPipes(new ValidateGlobalIdsPipe()); // Para no validar uno por uno, los ValidateIdPipe pueden no ser utiles con esto activo.
+  // app.useGlobalPipes(new ValidateGlobalIdsPipe()); // Para no validar uno por uno, los ValidateIdPipe pueden no ser utiles con esto activo.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
   // const { httpAdapter } = app.get(HttpAdapterHost);

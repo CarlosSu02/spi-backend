@@ -65,7 +65,7 @@ export class ConnectivityController {
     okDescription: 'Conectividad obtenida correctamente.',
     notFoundDescription: 'La conectividad no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.connectivityService.findOne(id);
   }
 
@@ -81,7 +81,7 @@ export class ConnectivityController {
     notFoundDescription: 'La conectividad no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateConnectivityDto: UpdateConnectivityDto,
   ) {
     return this.connectivityService.update(id, updateConnectivityDto);
@@ -96,7 +96,7 @@ export class ConnectivityController {
     okDescription: 'Conectividad eliminada correctamente.',
     notFoundDescription: 'La conectividad no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.connectivityService.remove(id);
   }
 }

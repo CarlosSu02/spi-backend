@@ -64,7 +64,7 @@ export class PcTypesController {
     okDescription: 'Tipo de PC obtenido.',
     notFoundDescription: 'No se encontró el tipo de PC solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.pcTypesService.findOne(id);
   }
 
@@ -83,7 +83,7 @@ export class PcTypesController {
     notFoundDescription: 'No se encontró el tipo de PC solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updatePcTypeDto: UpdatePcTypeDto,
   ) {
     return this.pcTypesService.update(id, updatePcTypeDto);
@@ -98,7 +98,7 @@ export class PcTypesController {
     okDescription: 'Tipo de PC eliminado correctamente.',
     notFoundDescription: 'No se encontró el tipo de PC a eliminar.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.pcTypesService.remove(id);
   }
 }

@@ -64,7 +64,7 @@ export class BuildingController {
     okDescription: 'Edificio obtenido correctamente.',
     notFoundDescription: 'El edificio no existe.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.buildingService.findOne(id);
   }
 
@@ -80,7 +80,7 @@ export class BuildingController {
     notFoundDescription: 'El edificio no existe.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body() updateBuildingDto: UpdateBuildingDto,
   ) {
     return this.buildingService.update(id, updateBuildingDto);
@@ -95,7 +95,7 @@ export class BuildingController {
     okDescription: 'Edificio eliminado correctamente.',
     notFoundDescription: 'El edificio no existe.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.buildingService.remove(id);
   }
 }

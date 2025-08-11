@@ -84,7 +84,7 @@ export class ActivityTypesController {
     internalErrorDescription: 'Error interno al obtener el tipo de actividad.',
     notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
-  findOne(@Param(ValidateIdPipe) id: string) {
+  findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.activityTypesService.findOne(id);
   }
 
@@ -111,7 +111,7 @@ export class ActivityTypesController {
     notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
   update(
-    @Param(ValidateIdPipe) id: string,
+    @Param('id', ValidateIdPipe) id: string,
     @Body()
     updateActivityTypeDto: UpdateActivityTypeDto,
   ) {
@@ -134,7 +134,7 @@ export class ActivityTypesController {
     internalErrorDescription: 'Error interno al eliminar el tipo de actividad.',
     notFoundDescription: 'No se encontró el tipo de actividad solicitado.',
   })
-  remove(@Param(ValidateIdPipe) id: string) {
+  remove(@Param('id', ValidateIdPipe) id: string) {
     return this.activityTypesService.remove(id);
   }
 }
