@@ -12,6 +12,7 @@ import { TOutputTeacher } from '../types';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
+import { TCustomOmit } from 'src/common/types';
 
 @Injectable()
 export class TeachersService {
@@ -63,7 +64,16 @@ export class TeachersService {
     return newTeacher;
   }
 
-  async findAll(): Promise<TOutputTeacher[]> {
+  async findAll(): Promise<
+    TCustomOmit<
+      TOutputTeacher,
+      | 'categoryName'
+      | 'contractTypeName'
+      | 'shiftName'
+      | 'postgrads'
+      | 'undergrads'
+    >[]
+  > {
     const teachers = await this.prisma.teacher.findMany({
       select: {
         id: true,
@@ -84,7 +94,14 @@ export class TeachersService {
     // id: teacher.id,
     // })
 
-    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
+    const mappedTeachers: TCustomOmit<
+      TOutputTeacher,
+      | 'categoryName'
+      | 'contractTypeName'
+      | 'shiftName'
+      | 'postgrads'
+      | 'undergrads'
+    >[] = teachers.map((teacher) => ({
       id: teacher.id,
       name: teacher.user.name,
       code: teacher.user.code,
@@ -115,6 +132,19 @@ export class TeachersService {
               name: true,
             },
           },
+          contractType: true,
+          category: true,
+          shift: true,
+          postgraduateDegrees: {
+            include: {
+              postgraduate: true,
+            },
+          },
+          undergradDegrees: {
+            include: {
+              undergraduate: true,
+            },
+          },
         },
       }),
       this.prisma.teacher.count(),
@@ -124,6 +154,8 @@ export class TeachersService {
     // id: teacher.id,
     // })
 
+    console.log(teachers);
+
     const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
       id: teacher.id,
       name: teacher.user.name,
@@ -132,6 +164,17 @@ export class TeachersService {
       contractTypeId: teacher.contractTypeId,
       shiftId: teacher.shiftId,
       userId: teacher.user.id,
+      shiftName: teacher.shift.name,
+      categoryName: teacher.category.name,
+      contractTypeName: teacher.contractType.name,
+      undergrads: teacher.undergradDegrees.map((u) => ({
+        id: u.undergraduate.id,
+        name: u.undergraduate.name,
+      })),
+      postgrads: teacher.postgraduateDegrees.map((u) => ({
+        id: u.postgraduate.id,
+        name: u.postgraduate.name,
+      })),
     }));
 
     return paginateOutput<TOutputTeacher>(mappedTeachers, count, query);

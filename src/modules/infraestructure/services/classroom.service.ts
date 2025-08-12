@@ -25,6 +25,7 @@ export class ClassroomService {
 
   async findAll(): Promise<TClassroom[]> {
     const classrooms = await this.prisma.classroom.findMany();
+    console.log(classrooms.length);
 
     return classrooms;
   }

@@ -43,6 +43,7 @@ import { TOutputTeacher } from 'src/modules/teachers/types';
 import { TDepartment } from 'src/modules/departments/types';
 import { TClassroom } from 'src/modules/infraestructure/types';
 import { Prisma } from '@prisma/client';
+import { TCustomOmit } from 'src/common/types';
 
 interface ParsedTitle {
   year: number;
@@ -640,9 +641,26 @@ export class AcademicAssignmentReportsService {
   }
 
   private findTeacher(
-    teachersMap: Map<string, TOutputTeacher>,
+    teachersMap: Map<
+      string,
+      TCustomOmit<
+        TOutputTeacher,
+        | 'categoryName'
+        | 'contractTypeName'
+        | 'shiftName'
+        | 'postgrads'
+        | 'undergrads'
+      >
+    >,
     teacherCode: string,
-  ): TOutputTeacher {
+  ): TCustomOmit<
+    TOutputTeacher,
+    | 'categoryName'
+    | 'contractTypeName'
+    | 'shiftName'
+    | 'postgrads'
+    | 'undergrads'
+  > {
     const teacher = teachersMap.get(teacherCode);
 
     if (!teacher)
