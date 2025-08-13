@@ -20,7 +20,7 @@ import { UndergradsService } from '../services/undergrads.service';
 import { ApiBody } from '@nestjs/swagger';
 import { CreateUndergradDto, UpdateUndergradDto } from '../dto';
 
-@Controller('undergrads')
+@Controller('teachers-undergrad')
 @Roles(
   EUserRole.ADMIN,
   EUserRole.RRHH,

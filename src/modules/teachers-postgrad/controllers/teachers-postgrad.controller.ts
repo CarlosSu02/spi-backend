@@ -21,7 +21,7 @@ import { UpdatePostgradDto } from '../dto/update-postgrad.dto';
 import { PostgradsService } from '../services/postgrads.service';
 import { ApiBody } from '@nestjs/swagger';
 
-@Controller('postgrads')
+@Controller('teachers-postgrad')
 @Roles(
   EUserRole.ADMIN,
   EUserRole.RRHH,

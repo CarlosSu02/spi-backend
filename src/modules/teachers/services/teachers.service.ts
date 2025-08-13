@@ -154,8 +154,6 @@ export class TeachersService {
     // id: teacher.id,
     // })
 
-    console.log(teachers);
-
     const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
       id: teacher.id,
       name: teacher.user.name,

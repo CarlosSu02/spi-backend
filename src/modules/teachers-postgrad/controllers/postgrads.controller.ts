@@ -23,7 +23,7 @@ import { ValidateIdPipe } from 'src/common/pipes';
 import { TeachersPostgradService } from '../services/teachers-postgrad.service';
 import { QueryPaginationDto } from 'src/common/dto';
 
-@Controller('teachers-postgrad')
+@Controller('postgrads')
 @Roles(
   EUserRole.ADMIN,
   EUserRole.RRHH,
@@ -54,10 +54,10 @@ export class PostgradsController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de postgrados obtenidos correctamente.')
-  @ApiPagination({
-    summary: 'Obtener todos los postgrados',
-    description: 'Devuelve una lista paginada de todos los postgrados.',
-  })
+  // @ApiPagination({
+  //   summary: 'Obtener todos los postgrados',
+  //   description: 'Devuelve una lista paginada de todos los postgrados.',
+  // })
   @ApiCommonResponses({
     summary: 'Obtener todos los postgrados',
     okDescription: 'Listado de postgrados obtenido correctamente.',
@@ -65,8 +65,9 @@ export class PostgradsController {
     internalErrorDescription: 'Error interno al obtener postgrados.',
     notFoundDescription: 'No se encontraron postgrados.',
   })
-  findAll(query: QueryPaginationDto) {
-    return this.teachersPostgradService.findAllWithPagination(query);
+  findAll() {
+    // query: QueryPaginationDto
+    return this.postgradsService.findAll();
   }
 
   @Get('array')

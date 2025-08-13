@@ -25,7 +25,7 @@ import { TeachersUndergradService } from '../services/teachers-undergrad.service
 import { ApiBody } from '@nestjs/swagger';
 import { QueryPaginationDto } from 'src/common/dto';
 
-@Controller('teachers-undergrad')
+@Controller('undergrads')
 @Roles(
   EUserRole.ADMIN,
   EUserRole.RRHH,
@@ -61,10 +61,10 @@ export class UndergradsController {
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de pregrados.')
-  @ApiPagination({
-    summary: 'Obtener todos los pregrados',
-    description: 'Devuelve una lista paginada de todos los pregrados.',
-  })
+  // @ApiPagination({
+  //   summary: 'Obtener todos los pregrados',
+  //   description: 'Devuelve una lista paginada de todos los pregrados.',
+  // })
   @ApiCommonResponses({
     summary: 'Obtener todos los pregrados',
     okDescription: 'Listado de pregrados obtenido correctamente.',
@@ -72,8 +72,8 @@ export class UndergradsController {
     internalErrorDescription: 'Error interno al obtener los pregrados.',
     notFoundDescription: 'No se encontraron pregrados.',
   })
-  findAll(@Query() query: QueryPaginationDto) {
-    return this.teachersUndegradService.findAllWithPagination(query);
+  findAll() { // @Query() query: QueryPaginationDto
+    return this.undergradsService.findAll();
   }
 
   @Get('array')

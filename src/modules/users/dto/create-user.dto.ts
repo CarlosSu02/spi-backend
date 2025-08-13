@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
   Matches,
@@ -26,6 +27,9 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
     message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no se debe estar vacía.' })
+  @Length(1, 150, {
+    message: 'La propiedad <name> debe tener entre 1 y 150 caracteres.',
+  })
   name: string;
 
   @ApiProperty({
@@ -100,7 +104,8 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsEnum(EUserRole, {
     message: `El rol debe ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
   })
-  role: EUserRole;
+  @IsOptional()
+  role: EUserRole = EUserRole.DOCENTE;
 
   @ValidateIf((o: CreateUserDto) =>
     [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(o.role),
