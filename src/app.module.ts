@@ -20,10 +20,12 @@ import { ExcelFilesModule } from './modules/excel-files/excel-files.module';
 import { CourseClassroomsModule } from './modules/course-classrooms/course-classrooms.module';
 import { ComplementaryActivitiesModule } from './modules/complementary-activities/complementary-activities.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
     AuthModule,
+    MailModule,
     PrismaModule,
     UsersModule,
     TeachersConfigModule,
