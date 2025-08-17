@@ -616,6 +616,7 @@ model ResetPasswordToken {
   token      String   @unique
   expiryDate DateTime
   userId     String   @db.Uuid
+  isActive   Boolean  @default(true)
 
   // Relations
   user User @relation(fields: [userId], references: [id])

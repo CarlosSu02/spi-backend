@@ -130,6 +130,17 @@ export class AuthService {
         HttpStatus.OK,
       );
 
+    // Inactivar los tokens anteriores de este usuario
+    await this.prisma.resetPasswordToken.updateMany({
+      where: {
+        userId: existsUser.id,
+        isActive: true,
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + 1);
 
@@ -145,16 +156,21 @@ export class AuthService {
 
     await this.mailService.sendResetPassword(existsUser.email!, token);
 
-    return HttpStatus.NO_CONTENT;
+    // Por si se revisan las peticiones, no averiguar cual existe y cual no.
+    throw new HttpException(
+      'Si el usuario existe, pronto recibirá un correo.',
+      HttpStatus.OK,
+    );
   }
 
   async resetPassword(dto: ResetPasswordDto) {
     const { token, password, passwordConfirm } = dto;
 
-    const existsToken = await this.prisma.resetPasswordToken.findUnique({
+    const existsToken = await this.prisma.resetPasswordToken.findFirst({
       where: {
         token,
         expiryDate: { gte: new Date() },
+        isActive: true,
       },
     });
 
@@ -184,6 +200,15 @@ export class AuthService {
       },
       data: {
         hash: await argon.hash(password),
+      },
+    });
+
+    await this.prisma.resetPasswordToken.update({
+      where: {
+        token, // el token es "unique"
+      },
+      data: {
+        isActive: false,
       },
     });
 
