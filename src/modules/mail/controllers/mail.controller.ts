@@ -16,6 +16,6 @@ export class MailController {
 
   @Post()
   create(@Body() emailDto: EmailDto) {
-    return this.mailService.sendMail(emailDto);
+    return this.mailService.sendMail({ to: emailDto.email });
   }
 }
