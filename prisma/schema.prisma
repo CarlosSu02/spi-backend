@@ -40,8 +40,9 @@ model User {
   roleId       String   @db.Uuid
 
   // Relations
-  role     Role      @relation(fields: [roleId], references: [id])
-  teachers Teacher[]
+  role                Role                 @relation(fields: [roleId], references: [id])
+  teachers            Teacher[]
+  resetPasswordTokens ResetPasswordToken[]
 
   @@map("users") // use map
   @@schema("auth")
@@ -607,6 +608,20 @@ model CommonDatesAcademicPeriods {
   @@unique([pac, pac_modality])
   @@map("common_dates_academic_periods")
   @@schema("academic")
+}
+
+// Para llevar un control de los tokens
+model ResetPasswordToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  token      String   @unique
+  expiryDate DateTime
+  userId     String   @db.Uuid
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("reset_password_tokens")
+  @@schema("auth")
 }
 
 // model Base {

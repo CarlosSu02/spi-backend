@@ -73,7 +73,6 @@ async function main() {
 
   const [
     roles,
-    users,
     undergradDegrees,
     postgradDegrees,
     categories,
@@ -82,8 +81,6 @@ async function main() {
     positions,
     centers,
     faculties,
-    departments,
-    courses,
     brands,
     conditions,
     monitorTypes,
@@ -92,7 +89,6 @@ async function main() {
     connectivities,
     roomTypes,
     audioEquipments,
-    buildings,
     academicPeriods,
     modalities,
     activityTypes,
@@ -101,39 +97,6 @@ async function main() {
   ] = await Promise.all([
     prisma.role.createMany({
       data: rolesSeed,
-      skipDuplicates: true,
-    }),
-    prisma.user.createMany({
-      data: [
-        {
-          name: 'user1',
-          email: 'admin1@gmail.com',
-          code: '12345',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.ADMIN,
-        },
-        {
-          name: 'user2',
-          email: 'teacher1@gmail.com',
-          code: '54321',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.DOCENTE,
-        },
-        {
-          name: 'user3',
-          email: 'rrhh1@gmail.com',
-          code: '78900',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.RRHH,
-        },
-        {
-          name: 'user4',
-          email: 'rrhh2@gmail.com',
-          code: '78910',
-          hash: await argon.hash('Temporal.12345'),
-          roleId: rolesData.RRHH,
-        },
-      ],
       skipDuplicates: true,
     }),
     prisma.undergraduate_Degree.createMany({
@@ -168,14 +131,6 @@ async function main() {
       data: Object.values(facultiesSeed),
       skipDuplicates: true,
     }),
-    prisma.department.createMany({
-      data: Object.values(departmentsSeed),
-      skipDuplicates: true,
-    }),
-    prisma.course.createMany({
-      data: Object.values(coursesSeed),
-      skipDuplicates: true,
-    }),
     prisma.brand.createMany({
       data: Object.values(brandsSeed),
       skipDuplicates: true,
@@ -208,10 +163,6 @@ async function main() {
       data: Object.values(audioEquipmentsSeed),
       skipDuplicates: true,
     }),
-    prisma.building.createMany({
-      data: buildingsSeed,
-      skipDuplicates: true,
-    }),
     prisma.academic_Period.createMany({
       data: academicPeriodsSeed,
       skipDuplicates: true,
@@ -232,6 +183,55 @@ async function main() {
     }),
     prisma.commonDatesAcademicPeriods.createMany({
       data: commonDatesAcademicPeriods,
+      skipDuplicates: true,
+    }),
+  ]);
+
+  // "Segunda" tanda
+  const [users, departments, courses, buildings] = await Promise.all([
+    prisma.user.createMany({
+      data: [
+        {
+          name: 'user1',
+          email: 'admin1@gmail.com',
+          code: '12345',
+          hash: await argon.hash('12345'),
+          roleId: rolesData.ADMIN,
+        },
+        {
+          name: 'user2',
+          email: 'teacher1@gmail.com',
+          code: '54321',
+          hash: await argon.hash('12345'),
+          roleId: rolesData.DOCENTE,
+        },
+        {
+          name: 'user3',
+          email: 'rrhh1@gmail.com',
+          code: '78900',
+          hash: await argon.hash('12345'),
+          roleId: rolesData.RRHH,
+        },
+        {
+          name: 'user4',
+          email: 'rrhh2@gmail.com',
+          code: '78910',
+          hash: await argon.hash('Temporal.12345'),
+          roleId: rolesData.RRHH,
+        },
+      ],
+      skipDuplicates: true,
+    }),
+    prisma.department.createMany({
+      data: Object.values(departmentsSeed),
+      skipDuplicates: true,
+    }),
+    prisma.course.createMany({
+      data: Object.values(coursesSeed),
+      skipDuplicates: true,
+    }),
+    prisma.building.createMany({
+      data: buildingsSeed,
       skipDuplicates: true,
     }),
   ]);
