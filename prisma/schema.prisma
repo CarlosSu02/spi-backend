@@ -597,6 +597,18 @@ model Multimedia_Type {
   @@schema("academic")
 }
 
+model CommonDatesAcademicPeriods {
+  id           String   @id @default(uuid()) @db.Uuid
+  pac          Int
+  pac_modality String   @default("Trimestre") // Trimestre o semestres
+  startDate    DateTime
+  endDate      DateTime
+
+  @@unique([pac, pac_modality])
+  @@map("common_dates_academic_periods")
+  @@schema("academic")
+}
+
 // model Base {
 //   id String @id @default(uuid()) @db.Uuid
 //
