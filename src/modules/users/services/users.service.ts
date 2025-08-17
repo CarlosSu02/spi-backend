@@ -14,6 +14,9 @@ import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
 import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
 import { TeachersPostgradService } from 'src/modules/teachers-postgrad/services/teachers-postgrad.service';
+import { generatePassword } from 'src/common/utils';
+import { MailService } from 'src/modules/mail/services/mail.service';
+import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
 
 @Injectable()
 export class UsersService {
@@ -34,9 +37,22 @@ export class UsersService {
     private readonly teachersUndergradService: TeachersUndergradService,
     @Inject(forwardRef(() => TeachersPostgradService))
     private readonly teachersPostgradService: TeachersPostgradService,
+    private readonly mailService: MailService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
+    let isTempPass = false;
+
+    // Se mandara por correo
+    if (!createUserDto.password) {
+      const tempPassword = generatePassword();
+
+      createUserDto.password = tempPassword;
+      createUserDto.passwordConfirm = tempPassword;
+
+      isTempPass = true;
+    }
+
     const {
       name,
       code,
@@ -114,6 +130,13 @@ export class UsersService {
         postgradId,
       });
     }
+
+    if (isTempPass)
+      await this.mailService.sendMail({
+        to: newUser.email!,
+        subject: 'Contraseña temporal.',
+        html: TEMPLATE_TEMP_PASSWORD(password),
+      });
 
     return newUser;
   }

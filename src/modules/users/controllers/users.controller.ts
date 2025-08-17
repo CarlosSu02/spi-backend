@@ -18,15 +18,20 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from '../../../common/enums';
+import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(forwardRef(() => TeachersService))
+    private readonly teachersService: TeachersService,
+  ) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Usuario creado exitosamente.')
+  @ResponseMessage('Usuario creado exitosamente. Por favor, revise su correo.')
   @ApiBody({
     type: CreateUserDto,
     description: 'Datos para crear usuario',

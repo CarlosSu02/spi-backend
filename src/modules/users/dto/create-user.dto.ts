@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
@@ -61,7 +61,7 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsNotEmpty({ message: 'La propiedad <code> no se debe estar vacía.' })
   code: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Contraseña del usuario.',
     example: 'Password123!',
     required: true,
@@ -69,7 +69,8 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsString({
     message: 'La propiedad <password> debe ser una cadena de texto.',
   })
-  @IsNotEmpty({ message: 'La propiedad <password> no se debe estar vacía.' })
+  // @IsNotEmpty({ message: 'La propiedad <password> no se debe estar vacía.' })
+  @IsOptional()
   @Length(5, 50, {
     message: 'La propiedad <password> debe ser entre 3 y 50 caracteres.',
   })
@@ -78,7 +79,7 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   })
   password: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Confirmación de la contraseña.',
     example: 'Password123!',
     required: true,
@@ -86,9 +87,10 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   @IsString({
     message: 'La propiedad <passwordConfirm> debe ser una cadena de texto.',
   })
-  @IsNotEmpty({
-    message: 'La propiedad <passwordConfirm> no se debe estar vacía.',
-  })
+  // @IsNotEmpty({
+  //   message: 'La propiedad <passwordConfirm> no se debe estar vacía.',
+  // })
+  @IsOptional()
   @Length(5, 50, {
     message: 'La propiedad <passwordConfirm> debe ser entre 3 y 50 caracteres.',
   })

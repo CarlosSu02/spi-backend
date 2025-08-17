@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { EmailDto } from '../dto/email.dto';
 import { SentMessageInfo } from 'nodemailer';
+import { TEMPLATE } from '../constants';
 
 interface ISendMail {
   to: string;
@@ -9,59 +9,6 @@ interface ISendMail {
   subject?: string;
   html?: string;
 }
-
-const TEMPLATE = (link: string): string => `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Cambio de contraseña</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      background-color: #ffffff;
-      max-width: 500px;
-      margin: auto;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 20px;
-      margin-top: 20px;
-      background-color: #007BFF;
-      color: #ffffff;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #777777;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Hola,</h2>
-    <p>Recibimos una solicitud para cambiar tu contraseña. Si tú no solicitaste esto, puedes ignorar este mensaje.</p>
-    <p>Para cambiar tu contraseña, haz clic en el siguiente botón:</p>
-    
-    <a href="${link}" class="button">Cambiar contraseña</a>
-
-    <p class="footer">Este enlace expirará en 1 hora por seguridad.</p>
-  </div>
-</body>
-</html>
-`;
 
 @Injectable()
 export class MailService {
