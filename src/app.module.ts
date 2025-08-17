@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AtGuard, RolesGuard } from './common/guards';
@@ -21,6 +21,7 @@ import { CourseClassroomsModule } from './modules/course-classrooms/course-class
 import { ComplementaryActivitiesModule } from './modules/complementary-activities/complementary-activities.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { MailModule } from './modules/mail/mail.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -67,4 +68,8 @@ import { MailModule } from './modules/mail/mail.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
