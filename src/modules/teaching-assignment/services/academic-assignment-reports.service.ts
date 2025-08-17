@@ -14,6 +14,8 @@ import {
   TCreateAcademicAssignmentReport,
   TAcademicAssignmentReport,
   TUpdateAcademicAssignmentReport,
+  TAcademicPeriod,
+  TPacModality,
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { TeacherDepartmentPositionService } from 'src/modules/teacher-department-position/services/teacher-department-position.service';
@@ -48,7 +50,7 @@ import { TCustomOmit } from 'src/common/types';
 interface ParsedTitle {
   year: number;
   pac: number;
-  pac_modality: 'Trimestre' | 'Semestre';
+  pac_modality: TPacModality;
   title: string;
 }
 
@@ -369,15 +371,22 @@ export class AcademicAssignmentReportsService {
 
   // Con el archivo de excel
   async createFromExcel(data: ExcelResponseDto<AcademicAssignmentDto>) {
-    const { year, pac, pac_modality } = this.parseAcademicTitle(data.subtitle);
+    const { pac_modality } = this.parseAcademicTitle(data.subtitle);
 
+    // FIX: para no depender del titulo, esto se cambiara, del titulo solo se necesitara la modalidad
+    // const academicPeriod =
+    // await this.academicPeriodsService.findOneByYearPacModality(
+    //   year,
+    //   pac,
+    //   pac_modality,
+    // );
+
+    await this.academicPeriodsService.currentAcademicPeriod(pac_modality);
     const academicPeriod =
-      await this.academicPeriodsService.findOneByYearPacModality(
-        year,
-        pac,
-        pac_modality,
+      await this.academicPeriodsService.getNextAcademicPeriod(
+        await this.academicPeriodsService.currentAcademicPeriod(pac_modality),
       );
-    const academicPeriodTitle = `Periodo Académico No. ${pac}, ${pac_modality}, ${year}`;
+    const academicPeriodTitle = `Periodo Académico No. ${academicPeriod.pac}, ${pac_modality}, ${academicPeriod.year}`;
 
     // En cuestion de rendimiento, es mejor hacer las consultas
     // de todos los datos necesarios antes de iterar sobre el archivo
@@ -577,7 +586,7 @@ export class AcademicAssignmentReportsService {
     // Inicialmente permitimos numero o null
     let year: number | null = null;
     let pac: number | null = null;
-    let pac_modality: 'Trimestre' | 'Semestre' = 'Trimestre';
+    let pac_modality: TPacModality = 'Trimestre';
 
     const yearMatch = title.match(/\b(20\d{2})\b/);
     if (yearMatch) {
@@ -600,7 +609,7 @@ export class AcademicAssignmentReportsService {
 
     const modMatch = title.match(/\b(semestre|trimestre)\b/i);
     if (modMatch) {
-      pac_modality = modMatch[1] as 'Trimestre' | 'Semestre';
+      pac_modality = modMatch[1] as TPacModality;
     }
 
     // Valor por defecto si no se encontró

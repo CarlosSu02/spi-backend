@@ -1,11 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAcademicPeriodDto, UpdateAcademicPeriodDto } from '../dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   TCreateAcademicPeriod,
   TAcademicPeriod,
   TUpdateAcademicPeriod,
+  TPacModality,
 } from '../types';
+import { getYear, setYear } from 'date-fns';
+
+type TCurrentAcademicPeriod = {
+  year: number;
+  pac_modality: TPacModality;
+  pac: number;
+};
 
 @Injectable()
 export class AcademicPeriodsService {
@@ -24,6 +36,7 @@ export class AcademicPeriodsService {
   }
 
   async findAll(): Promise<TAcademicPeriod[]> {
+    await this.currentAcademicPeriod();
     const academicPeriods = await this.prisma.academic_Period.findMany();
 
     return academicPeriods;
@@ -98,4 +111,102 @@ export class AcademicPeriodsService {
 
     return academicPeriodDelete;
   }
+
+  currentAcademicPeriod = async (
+    pac_modality: TPacModality = 'Trimestre',
+  ): Promise<TCurrentAcademicPeriod> => {
+    const currentDate = new Date();
+    const yearReplace = 2025;
+    const newDate = setYear(currentDate, yearReplace);
+    const utcDate = new Date(
+      Date.UTC(
+        newDate.getUTCFullYear(),
+        newDate.getUTCMonth(),
+        newDate.getUTCDate(),
+      ),
+    );
+
+    const period = await this.prisma.commonDatesAcademicPeriods.findFirst({
+      where: {
+        startDate: {
+          lte: utcDate,
+        },
+        endDate: {
+          gte: utcDate,
+        },
+        pac_modality,
+      },
+    });
+
+    if (!period)
+      throw new BadRequestException(
+        'No se encontró un periodo que concuerde con la fecha actual.',
+      );
+
+    // const currentPeriod = await this.findOneByYearPacModality(
+    //   getYear(startDate),
+    //   pac,
+    //   pac_modality as 'Trimestre' | 'Semestre',
+    // );
+    //
+    // return currentPeriod;
+
+    return {
+      pac: period.pac,
+      pac_modality,
+      year: getYear(currentDate),
+    };
+  };
+
+  getNextAcademicPeriod = async ({
+    pac,
+    pac_modality,
+    year,
+  }: TCurrentAcademicPeriod) => {
+    const periodSearch = this.handlePeriod({ pac, pac_modality, year });
+
+    return await this.findOneByYearPacModality(
+      periodSearch.updatedYear,
+      periodSearch.updatedPac,
+      pac_modality,
+    );
+  };
+
+  private handlePeriod = ({
+    pac,
+    pac_modality,
+    year,
+  }: TCurrentAcademicPeriod): {
+    updatedPac: number;
+    updatedYear: number;
+  } => {
+    const periods = {
+      Trimestre: {
+        1: {
+          updatedPac: pac + 1,
+          updatedYear: year,
+        },
+        2: {
+          updatedPac: pac + 1,
+          updatedYear: year,
+        },
+        3: {
+          updatedPac: 1,
+          updatedYear: year + 1,
+        },
+      },
+      Semestre: {
+        1: {
+          updatedPac: pac + 1,
+          updatedYear: year,
+        },
+        2: {
+          updatedPac: 1,
+          updatedYear: year + 1,
+        },
+      },
+    };
+
+    return periods[pac_modality][pac];
+  };
 }

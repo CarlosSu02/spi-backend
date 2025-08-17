@@ -14,3 +14,5 @@ export type TCreateAcademicPeriod = Omit<
 
 // Tipo para la actualización
 export type TUpdateAcademicPeriod = Partial<TCreateAcademicPeriod>;
+
+export type TPacModality = 'Trimestre' | 'Semestre';
