@@ -1,6 +1,9 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpCode,
+  HttpException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -9,12 +12,17 @@ import { TTokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { AuthDto, AuthSigninDto } from './dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { nanoid } from 'nanoid';
+import { MailService } from '../mail/services/mail.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   // async signupLocal(dto: AuthDto): Promise<TTokens> {
@@ -105,6 +113,84 @@ export class AuthService {
     });
 
     return;
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email } = dto;
+
+    const existsUser = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!existsUser)
+      throw new HttpException(
+        'Si el usuario existe, pronto recibirá un correo.',
+        HttpStatus.OK,
+      );
+
+    const expiryDate = new Date();
+    expiryDate.setHours(expiryDate.getHours() + 1);
+
+    const token = nanoid(128);
+
+    await this.prisma.resetPasswordToken.create({
+      data: {
+        userId: existsUser.id,
+        token,
+        expiryDate,
+      },
+    });
+
+    await this.mailService.sendResetPassword(existsUser.email!, token);
+
+    return HttpStatus.NO_CONTENT;
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const { token, password, passwordConfirm } = dto;
+
+    const existsToken = await this.prisma.resetPasswordToken.findUnique({
+      where: {
+        token,
+        expiryDate: { gte: new Date() },
+      },
+    });
+
+    if (!existsToken)
+      throw new BadRequestException(
+        'El token de restablecimiento de contraseña no es válido o ha expirado.',
+      );
+
+    if (password !== passwordConfirm)
+      throw new BadRequestException('Las contraseñas no coinciden.');
+
+    const existsUser = await this.prisma.user.findUnique({
+      where: {
+        id: existsToken.userId,
+      },
+    });
+
+    // por si se elimina en el proceso?
+    if (!existsUser)
+      throw new BadRequestException(
+        'No se encontró un usuario asociado a este token.',
+      );
+
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: existsToken.userId,
+      },
+      data: {
+        hash: await argon.hash(password),
+      },
+    });
+
+    return new HttpException(
+      'La contraseña ha sido restablecida correctamente.',
+      HttpStatus.OK,
+    );
   }
 
   async refreshTokens(userId: string, rt: string): Promise<TTokens> {

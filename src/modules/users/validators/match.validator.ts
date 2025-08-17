@@ -11,4 +11,9 @@ export class MatchConstraint implements ValidatorConstraintInterface {
     const relatedValue = (args.object as any)[relatedPropertyName];
     return value === relatedValue;
   }
+
+  defaultMessage(args: ValidationArguments): string {
+    const [relatedPropertyName] = args.constraints;
+    return `La propiedad <${args.property}> debe coincidir con <${relatedPropertyName}>.`;
+  }
 }
