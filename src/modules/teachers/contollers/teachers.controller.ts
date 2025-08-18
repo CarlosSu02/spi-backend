@@ -14,7 +14,12 @@ import {
 import { TeachersService } from '../services/teachers.service';
 import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
-import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
+import {
+  ApiPagination,
+  GetCurrentUserId,
+  ResponseMessage,
+  Roles,
+} from 'src/common/decorators';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { EUserRole } from 'src/common/enums';
 import { ExtractIdInterceptor } from 'src/common/interceptors';
@@ -95,6 +100,17 @@ export class TeachersController {
   })
   findTeacherByUserId(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersService.findOneByUserId(id);
+  }
+
+  @Get('my')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Perfil de docente autenticado.')
+  @ApiCommonResponses({
+    summary: 'Perfil de docente autenticado',
+    createdDescription: 'Perfil de docente autenticado.',
+  })
+  getCurrentProfile(@GetCurrentUserId() userId: string) {
+    return this.teachersService.findOneByUserId(userId);
   }
 
   @Get(':id')

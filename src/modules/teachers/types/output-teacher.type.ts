@@ -1,3 +1,5 @@
+import { TCustomOmit } from 'src/common/types';
+
 export type TOutputTeacher = {
   id: string;
   name: string;
@@ -18,3 +20,8 @@ export type TOutputTeacher = {
     name: string;
   }[];
 };
+
+export type TOutputTeacherCustom = TCustomOmit<
+  TOutputTeacher,
+  'categoryName' | 'contractTypeName' | 'shiftName' | 'postgrads' | 'undergrads'
+>;

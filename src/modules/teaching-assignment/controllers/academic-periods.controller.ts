@@ -67,7 +67,7 @@ export class AcademicPeriodsController {
     return this.academicPeriodsService.findAll();
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -86,6 +86,26 @@ export class AcademicPeriodsController {
   })
   findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.academicPeriodsService.findOne(id);
+  }
+
+  @Get('current')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ApiCommonResponses({
+    summary: 'Obtener periodo académico actual',
+    description: 'Obtiene la información del periodo académico actual.',
+    okDescription: 'Periodo académico obtenido correctamente.',
+    internalErrorDescription: 'Error interno al obtener el periodo.',
+    notFoundDescription: 'No se encontró el periodo solicitado.',
+  })
+  findCurrent() {
+    return this.academicPeriodsService.currentAcademicPeriod();
   }
 
   @Patch(':id')

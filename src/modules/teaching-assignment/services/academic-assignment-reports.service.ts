@@ -131,7 +131,7 @@ export class AcademicAssignmentReportsService {
     // el mismo dia de la creacion del informe
     const existingTeacherDeptPos =
       await this.teacherDepartmentPositionService.findOneByTeacherCodeAndDepartmentId(
-        teacher.user.code,
+        teacher.code,
         departmentId,
       );
 

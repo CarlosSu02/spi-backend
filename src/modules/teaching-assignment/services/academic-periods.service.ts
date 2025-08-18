@@ -12,11 +12,14 @@ import {
   TPacModality,
 } from '../types';
 import { getYear, setYear } from 'date-fns';
+import { TCustomOmit } from 'src/common/types';
 
 type TCurrentAcademicPeriod = {
+  id: string;
   year: number;
   pac_modality: TPacModality;
   pac: number;
+  title: string;
 };
 
 @Injectable()
@@ -151,10 +154,14 @@ export class AcademicPeriodsService {
     //
     // return currentPeriod;
 
+    const year = getYear(currentDate);
+
     return {
+      id: period.id,
       pac: period.pac,
       pac_modality,
-      year: getYear(currentDate),
+      year,
+      title: `No. ${period.pac}, ${pac_modality}, ${year}`,
     };
   };
 
@@ -176,7 +183,7 @@ export class AcademicPeriodsService {
     pac,
     pac_modality,
     year,
-  }: TCurrentAcademicPeriod): {
+  }: TCustomOmit<TCurrentAcademicPeriod, 'id' | 'title'>): {
     updatedPac: number;
     updatedYear: number;
   } => {

@@ -8,11 +8,12 @@ import { CreateTeacherDto } from '../dto/create-teacher.dto';
 import { UpdateTeacherDto } from '../dto/update-teacher.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/modules/users/services/users.service';
-import { TOutputTeacher } from '../types';
+import { TOutputTeacher, TOutputTeacherCustom, TTeacherJoin } from '../types';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
-import { TCustomOmit } from 'src/common/types';
+import { TDepartmentJoin } from 'src/modules/departments/types';
+import { TPosition } from 'src/modules/positions/types';
 
 @Injectable()
 export class TeachersService {
@@ -64,16 +65,7 @@ export class TeachersService {
     return newTeacher;
   }
 
-  async findAll(): Promise<
-    TCustomOmit<
-      TOutputTeacher,
-      | 'categoryName'
-      | 'contractTypeName'
-      | 'shiftName'
-      | 'postgrads'
-      | 'undergrads'
-    >[]
-  > {
+  async findAll(): Promise<TOutputTeacherCustom[]> {
     const teachers = await this.prisma.teacher.findMany({
       select: {
         id: true,
@@ -94,14 +86,7 @@ export class TeachersService {
     // id: teacher.id,
     // })
 
-    const mappedTeachers: TCustomOmit<
-      TOutputTeacher,
-      | 'categoryName'
-      | 'contractTypeName'
-      | 'shiftName'
-      | 'postgrads'
-      | 'undergrads'
-    >[] = teachers.map((teacher) => ({
+    const mappedTeachers: TOutputTeacherCustom[] = teachers.map((teacher) => ({
       id: teacher.id,
       name: teacher.user.name,
       code: teacher.user.code,
@@ -154,26 +139,9 @@ export class TeachersService {
     // id: teacher.id,
     // })
 
-    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) => ({
-      id: teacher.id,
-      name: teacher.user.name,
-      code: teacher.user.code,
-      categoryId: teacher.categoryId,
-      contractTypeId: teacher.contractTypeId,
-      shiftId: teacher.shiftId,
-      userId: teacher.user.id,
-      shiftName: teacher.shift.name,
-      categoryName: teacher.category.name,
-      contractTypeName: teacher.contractType.name,
-      undergrads: teacher.undergradDegrees.map((u) => ({
-        id: u.undergraduate.id,
-        name: u.undergraduate.name,
-      })),
-      postgrads: teacher.postgraduateDegrees.map((u) => ({
-        id: u.postgraduate.id,
-        name: u.postgraduate.name,
-      })),
-    }));
+    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) =>
+      this.mapTeacher(teacher as TTeacherJoin),
+    );
 
     return paginateOutput<TOutputTeacher>(mappedTeachers, count, query);
   }
@@ -193,21 +161,46 @@ export class TeachersService {
     return teacher;
   }
 
-  async findOneByUserId(userId: string) {
+  async findOneByUserId(userId: string): Promise<TOutputTeacher> {
     const teacher = await this.prisma.teacher.findFirst({
       where: {
         userId,
       },
+      relationLoadStrategy: 'join',
       select: {
         id: true,
-        userId: true,
-        shiftId: true,
-        contractTypeId: true,
         categoryId: true,
+        contractTypeId: true,
+        shiftId: true,
         user: {
           select: {
             id: true,
             code: true,
+            name: true,
+          },
+        },
+        contractType: true,
+        category: true,
+        shift: true,
+        postgraduateDegrees: {
+          include: {
+            postgraduate: true,
+          },
+        },
+        undergradDegrees: {
+          include: {
+            undergraduate: true,
+          },
+        },
+        positionHeld: {
+          include: {
+            department: {
+              include: {
+                center: true,
+                faculty: true,
+              },
+            },
+            position: true,
           },
         },
       },
@@ -218,7 +211,7 @@ export class TeachersService {
         `El docente con userId <${userId}> no fue encontrado.`,
       );
 
-    return teacher;
+    return this.mapTeacher(teacher as TTeacherJoin);
   }
 
   // async findTeacherByUserId(userId: string) {
@@ -248,9 +241,10 @@ export class TeachersService {
       where: {
         code,
       },
-      select: {
-        id: true,
-        name: true,
+      relationLoadStrategy: 'join',
+      include: {
+        // id: true,
+        // name: true,
         teachers: {
           select: {
             id: true,
@@ -274,6 +268,7 @@ export class TeachersService {
       id: teacher.teachers[0].id,
       userId: teacher.id,
       name: teacher.name,
+      code: teacher.code,
     };
   }
 
@@ -315,5 +310,37 @@ export class TeachersService {
     });
 
     return !!deleteTeacher;
+  }
+
+  private mapTeacher(teacher: TTeacherJoin):
+    | TOutputTeacher
+    | (TOutputTeacher & {
+        positions: { department: TDepartmentJoin; position: TPosition }[];
+      }) {
+    return {
+      id: teacher.id,
+      name: teacher.user.name,
+      code: teacher.user.code,
+      categoryId: teacher.categoryId,
+      contractTypeId: teacher.contractTypeId,
+      shiftId: teacher.shiftId,
+      userId: teacher.user.id,
+      categoryName: teacher.category.name,
+      contractTypeName: teacher.contractType.name,
+      shiftName: teacher.shift.name,
+      undergrads: teacher.undergradDegrees.map((u) => ({
+        id: u.undergraduate.id,
+        name: u.undergraduate.name,
+      })),
+      postgrads: teacher.postgraduateDegrees.map((u) => ({
+        id: u.postgraduate.id,
+        name: u.postgraduate.name,
+      })),
+      positions: teacher.positionHeld.map((ph) => ({
+        ...ph,
+        department: ph.department,
+        position: ph.position,
+      })),
+    };
   }
 }
