@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiParam } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
@@ -49,7 +50,7 @@ export class CourseStadisticsController {
   }
 
   @Get()
-  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE)
+  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE, EUserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de estadísticas de asignatura.')
   @ApiPagination({
@@ -60,7 +61,7 @@ export class CourseStadisticsController {
     okDescription:
       'Listado de estadísticas de asignatura obtenido correctamente.',
   })
-  findAll(query: QueryPaginationDto) {
+  findAll(@Query() query: QueryPaginationDto) {
     return this.courseStadisticsService.findAllWithPagination(query);
   }
 
@@ -87,13 +88,13 @@ export class CourseStadisticsController {
   @ResponseMessage('Se ha actualizado la estadística de asignatura.')
   @ApiParam({
     name: 'id',
-    description: 'ID de la estadística de asignatura a actualizar',
+    description: 'ID de asignatura de la estadística a actualizar',
     type: String,
     format: 'uuid',
   })
   @ApiBody({ type: UpdateCourseStadisticDto })
   @ApiCommonResponses({
-    summary: 'Actualizar una estadística de asignatura por ID',
+    summary: 'Actualizar una estadística de asignatura por ID de clase.',
     okDescription: 'Estadística de asignatura actualizada correctamente.',
     badRequestDescription: 'Datos inválidos para la actualización.',
     notFoundDescription: 'La estadística de asignatura no existe.',
@@ -121,5 +122,25 @@ export class CourseStadisticsController {
   })
   remove(@Param('id', ValidateIdPipe) id: string) {
     return this.courseStadisticsService.remove(id);
+  }
+
+  @Get('consolidated/:periodId')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Consolidado por ID de periodo académico.')
+  @ApiCommonResponses({
+    summary: 'Generar consolidado de estadísticas para un periodo específico.',
+    okDescription: 'Consolidado generado exitosamente.',
+    badRequestDescription: 'El ID del periodo es inválido.',
+    notFoundDescription:
+      'No se encontraron datos para el periodo especificado.',
+  })
+  @ApiPagination({
+    summary: 'Obtener todas las estadísticas de asignatura',
+  })
+  generateConsolidated(
+    @Query() query: QueryPaginationDto,
+    @Param('periodId', ValidateIdPipe) periodId: string,
+  ) {
+    return this.courseStadisticsService.generateConsolidated(query, periodId);
   }
 }
