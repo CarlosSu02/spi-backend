@@ -176,6 +176,31 @@ export class TeacherDepartmentPositionController {
     return this.teacherDepartmentPositionService.findOne(id);
   }
 
+  @Get('my/department/:departmentId')
+  @Roles(EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Información de la relación personal-departamento por ID.')
+  @ApiCommonResponses({
+    summary:
+      'Obtener una relación personal-departamento por ID de usuario y departamento',
+    okDescription: 'Relación personal-departamento obtenida correctamente.',
+    badRequestDescription:
+      'Parámetros inválidos para obtener la relación personal-departamento.',
+    internalErrorDescription:
+      'Error interno al obtener la relación personal-departamento.',
+    notFoundDescription:
+      'No se encontró la relación personal-departamento solicitada.',
+  })
+  findOnePersonalAndDepartmentId(
+    @GetCurrentUserId() userId: string,
+    @Param('departmentId', ValidateIdPipe) departmentId: string,
+  ) {
+    return this.teacherDepartmentPositionService.findPositionByUserIdAndDepId(
+      userId,
+      departmentId,
+    );
+  }
+
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(

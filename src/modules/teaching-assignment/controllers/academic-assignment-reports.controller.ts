@@ -101,6 +101,33 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.findAllWithPagination(query);
   }
 
+  @Get('periods')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de solamente el periodo donde el usuario autenticado tiene informes.',
+  )
+  @ApiCommonResponses({
+    summary:
+      'Obtener todos los informes de asignación académica del usuario autenticado',
+    okDescription:
+      'Listado de periodos donde el usuario autenticado tiene informes de asignación académica obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener los informes.',
+    internalErrorDescription: 'Error interno al obtener los informes.',
+    notFoundDescription: 'No se encontraron informes de asignación académica.',
+  })
+  findAllOnlyPeriods(@GetCurrentUserId() userId: string) {
+    return this.academicAssignmentReportsService.findAllUserIdOnlyPeriods(
+      userId,
+    );
+  }
+
   @Get('user/:id')
   @Roles(
     EUserRole.ADMIN,
@@ -217,6 +244,38 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.findAllByUserIdAndCode(query, {
       userId,
     });
+  }
+
+  @Get('my/period/:id')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Informe de asignación académica del usuario autenticado obtenido por ID de periodo.',
+  )
+  @ApiCommonResponses({
+    summary: 'Obtener informe del usuario autenticado',
+    okDescription: 'Informe obtenido correctamente.',
+    badRequestDescription: 'Solicitud inválida.',
+    internalErrorDescription: 'Error interno al obtener el informe.',
+    notFoundDescription:
+      'No se encontró un informe para el usuario autenticado en el periodo indicado.',
+  })
+  findOnePersonalAndPeriodId(
+    @GetCurrentUserId() userId: string,
+    @Param('id', ValidateIdPipe) periodId: string,
+  ) {
+    return this.academicAssignmentReportsService.findOneByUserIdAndPeriodId(
+      {
+        userId,
+      },
+      periodId,
+    );
   }
 
   @Get('department/:departmentId')

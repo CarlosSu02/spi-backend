@@ -14,7 +14,6 @@ import {
   TCreateAcademicAssignmentReport,
   TAcademicAssignmentReport,
   TUpdateAcademicAssignmentReport,
-  TAcademicPeriod,
   TPacModality,
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
@@ -46,6 +45,7 @@ import { TDepartment } from 'src/modules/departments/types';
 import { TClassroom } from 'src/modules/infraestructure/types';
 import { Prisma } from '@prisma/client';
 import { TCustomOmit } from 'src/common/types';
+import { TComplementaryActivity } from 'src/modules/complementary-activities/types';
 
 interface ParsedTitle {
   year: number;
@@ -57,6 +57,7 @@ interface ParsedTitle {
 @Injectable()
 export class AcademicAssignmentReportsService {
   private readonly includeOptionsAAR = {
+    period: true,
     teacher: {
       select: {
         id: true,
@@ -96,6 +97,8 @@ export class AcademicAssignmentReportsService {
           },
           include: {
             modality: true,
+            course: true,
+            courseStadistics: true,
           },
         },
       },
@@ -325,6 +328,98 @@ export class AcademicAssignmentReportsService {
     if (!academicAssignmentReport)
       throw new NotFoundException(
         `La asignación académica con id <${id}> no fue encontrada.`,
+      );
+
+    return academicAssignmentReport;
+  }
+
+  async findAllUserIdOnlyPeriods(userId: string) {
+    const academicAssignmentReports =
+      await this.prisma.academic_Assignment_Report.findMany({
+        where: {
+          teacher: {
+            userId,
+          },
+        },
+        select: {
+          period: true,
+        },
+      });
+
+    if (academicAssignmentReports.length === 0)
+      throw new BadRequestException(
+        `No se encontraron informes de asignación académica para el usuario con id <${userId}>`,
+      );
+
+    return academicAssignmentReports.map((p) => p.period);
+  }
+
+  async findOneByUserIdAndPeriodId(
+    user: {
+      userId?: string;
+      code?: string;
+    },
+    periodId: string,
+  ): Promise<
+    TAcademicAssignmentReport & {
+      complementaryActivities: TComplementaryActivity[];
+    }
+  > {
+    // const teacher = await this.teachersService.findOneByUserId(userId);
+    const { userId, code } = user;
+
+    const existsPeriod = await this.academicPeriodsService.findOne(periodId);
+
+    const academicAssignmentReport =
+      await this.prisma.academic_Assignment_Report.findFirst({
+        where: {
+          teacher: {
+            OR: [
+              {
+                userId,
+              },
+              {
+                user: {
+                  code: code ? normalizeText(code) : undefined,
+                },
+              },
+            ],
+          },
+          periodId,
+        },
+        relationLoadStrategy: 'join',
+        include: {
+          ...this.includeOptionsAAR,
+          complementaryActivities: {
+            include: {
+              verificationMedias: {
+                include: {
+                  verificationMediaFiles: true,
+                },
+              },
+              activityType: true,
+            },
+          },
+          // teachingSessions: {
+          //   include: {
+          //     courseClassrooms: {
+          //       include: {
+          //         course: true,
+          //         courseStadistics: true,
+          //       },
+          //     },
+          //   },
+          // },
+        },
+        omit: {
+          teacherId: true,
+          departmentId: true,
+        },
+      });
+
+    if (!academicAssignmentReport)
+      throw new NotFoundException(
+        `No se encontraron informes de asignación académica para el usuario con ID <${userId}> en el periodo <${periodId}>.`,
       );
 
     return academicAssignmentReport;

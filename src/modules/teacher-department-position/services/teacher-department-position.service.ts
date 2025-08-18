@@ -312,6 +312,33 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPosExists;
   }
 
+  async findPositionByUserIdAndDepId(userId: string, departmentId: string) {
+    await this.departmentsService.findOne(departmentId);
+
+    const position = await this.prisma.teacher_Department_Position.findFirst({
+      where: {
+        departmentId,
+        teacher: {
+          userId,
+        },
+      },
+      select: {
+        position: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!position)
+      throw new BadRequestException(
+        `No se encontro un cargo académico para el usuario <${userId}> en el departamento <${departmentId}>.`,
+      );
+
+    return position.position.name;
+  }
+
   async update(
     id: string,
     updateTeacherDepartmentPositionDto: UpdateTeacherDepartmentPositionDto,
