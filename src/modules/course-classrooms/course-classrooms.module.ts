@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CourseClassroomsController } from './contollers/course-classrooms.controller';
 import { CourseStadisticsController } from './contollers/course-stadistics.controller';
 import { CoursesController } from './contollers/courses.controller';
@@ -12,8 +12,10 @@ import {
   ExistsCodeCourseValidator,
   IsValidClassroomConfigConstraint,
 } from './validators';
+import { TeachingAssignmentModule } from '../teaching-assignment/teaching-assignment.module';
 
 @Module({
+  imports: [forwardRef(() => TeachingAssignmentModule)],
   controllers: [
     CourseClassroomsController,
     CoursesController,

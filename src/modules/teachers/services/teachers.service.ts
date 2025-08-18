@@ -14,6 +14,7 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { TDepartmentJoin } from 'src/modules/departments/types';
 import { TPosition } from 'src/modules/positions/types';
+import { UndergradsController } from 'src/modules/teachers-undergrad/controllers/undergrads.controller';
 
 @Injectable()
 export class TeachersService {
@@ -177,6 +178,7 @@ export class TeachersService {
             id: true,
             code: true,
             name: true,
+            email: true,
           },
         },
         contractType: true,
@@ -320,6 +322,7 @@ export class TeachersService {
     return {
       id: teacher.id,
       name: teacher.user.name,
+      email: teacher.user.email ?? undefined,
       code: teacher.user.code,
       categoryId: teacher.categoryId,
       contractTypeId: teacher.contractTypeId,

@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { CreateCourseClassroomDto, UpdateCourseClassroomDto } from '../dto';
 import { CourseClassroomsService } from '../services/course-classrooms.service';
-import { ResponseMessage, Roles } from 'src/common/decorators';
+import {
+  GetCurrentUserId,
+  ResponseMessage,
+  Roles,
+} from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { ApiParam } from '@nestjs/swagger';
@@ -87,6 +91,28 @@ export class CourseClassroomsController {
   })
   findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.courseClassroomsService.findOne(id);
+  }
+
+  @Get('my/current-period')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('La información de las asignaturas del usuario autenticado')
+  @ApiCommonResponses({
+    summary: 'Obtener asignaturas del usuario atenticado',
+    okDescription:
+      'Asignaturas del usuario autenticado obtenidas correctamente.',
+    notFoundDescription:
+      'El usuario autenticado no cuenta con asignaturas asignadas.',
+  })
+  findCurrentPeriod(@GetCurrentUserId() userId: string) {
+    console.log('?');
+    return this.courseClassroomsService.findCurrentPeriodAndUserId(userId);
   }
 
   @Patch(':id')

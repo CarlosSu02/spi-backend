@@ -7,6 +7,11 @@ interface AcademicPeriod {
 export const academicPeriodsSeed: AcademicPeriod[] = [
   {
     year: 2025,
+    pac: 2,
+    pac_modality: 'Trimestre',
+  },
+  {
+    year: 2025,
     pac: 3,
     pac_modality: 'Trimestre',
   },

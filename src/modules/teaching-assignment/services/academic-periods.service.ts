@@ -156,8 +156,14 @@ export class AcademicPeriodsService {
 
     const year = getYear(currentDate);
 
+    const currentPeriod = await this.findOneByYearPacModality(
+      year,
+      period.pac,
+      pac_modality,
+    );
+
     return {
-      id: period.id,
+      id: currentPeriod.id,
       pac: period.pac,
       pac_modality,
       year,

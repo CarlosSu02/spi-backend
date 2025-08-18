@@ -107,7 +107,7 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
     message: `El rol debe ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
   })
   @IsOptional()
-  role: EUserRole = EUserRole.DOCENTE;
+  role: EUserRole;
 
   @ValidateIf((o: CreateUserDto) =>
     [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(o.role),

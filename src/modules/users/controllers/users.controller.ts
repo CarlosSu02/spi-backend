@@ -8,6 +8,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
@@ -85,6 +87,27 @@ export class UsersController {
   })
   findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.usersService.findOne(id);
+  }
+
+  @Get('code/:code')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Información de usuario obtenida por código.')
+  @ApiCommonResponses({
+    summary: 'Obtener usuario por código',
+    description:
+      'Obtiene la información de un usuario específico por su código.',
+    okDescription: 'Usuario obtenido correctamente.',
+    internalErrorDescription: 'Error interno al obtener el usuario.',
+    notFoundDescription: 'No se encontró el usuario solicitado.',
+  })
+  findOneByCode(@Param('code') code: string) {
+    return this.teachersService.findOneByCode(code);
   }
 
   @Get('role/:id')

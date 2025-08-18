@@ -42,7 +42,7 @@ export class DepartmentsController {
   }
 
   @Get()
-  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.ADMIN)
+  @Roles(EUserRole.COORDINADOR_AREA, EUserRole.ADMIN, EUserRole.DOCENTE)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de departamentos.')
   @ApiCommonResponses({
