@@ -22,6 +22,7 @@ import { ComplementaryActivitiesModule } from './modules/complementary-activitie
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { MailModule } from './modules/mail/mail.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       useClass: RolesGuard,
     },
   ],
+  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
