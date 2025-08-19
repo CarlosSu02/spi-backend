@@ -131,6 +131,17 @@ export class TeachersService {
               undergraduate: true,
             },
           },
+          positionHeld: {
+            include: {
+              department: {
+                include: {
+                  center: true,
+                  faculty: true,
+                },
+              },
+              position: true,
+            },
+          },
         },
       }),
       this.prisma.teacher.count(),
@@ -139,6 +150,8 @@ export class TeachersService {
     // const mappedTeachers = teachers.map((teacher) => ({
     // id: teacher.id,
     // })
+
+    console.log(teachers);
 
     const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) =>
       this.mapTeacher(teacher as TTeacherJoin),
