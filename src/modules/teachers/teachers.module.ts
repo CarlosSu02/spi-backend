@@ -12,16 +12,19 @@ import { ContractTypesService } from '../teachers-config/services/contract-types
 import { TeacherCategoriesService } from '../teachers-config/services/teacher-categories.service';
 import { TeachersUndergradModule } from '../teachers-undergrad/teachers-undergrad.module';
 import { UsersModule } from '../users/users.module';
+import { TeacherPreferencesService } from './services/teacher-preferences.service';
+import { TeacherPreferencesController } from './contollers/teacher-preferences.controller';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => TeachersUndergradModule),
   ],
-  controllers: [TeachersController],
+  controllers: [TeachersController, TeacherPreferencesController],
   providers: [
     PrismaService,
     TeachersService,
+    TeacherPreferencesService,
     ShiftsService,
     ContractTypesService,
     TeacherCategoriesService,
@@ -31,6 +34,7 @@ import { UsersModule } from '../users/users.module';
   ],
   exports: [
     TeachersService,
+    TeacherPreferencesService,
     IsValidGradDegreeConstraint,
     IsValidConfigTeacherConstraint,
     IsValidUserIdConstraint,
