@@ -13,7 +13,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["auth", "academic", "infraestructure", "inventory", "public"]
+  schemas  = ["auth", "academic", "infraestructure", "inventory", "public", "ai"]
 }
 
 // # User - Teachers
@@ -68,6 +68,7 @@ model Teacher {
   academicReports     Academic_Assignment_Report[]
   undergradDegrees    TeacherUndergraduateDegree[]
   postgraduateDegrees TeacherPostgraduateDegree[]
+  teacherPreference   TeacherPreference? // 1:1
 
   @@map("teachers")
   @@schema("academic")
@@ -210,8 +211,9 @@ model Course {
   departmentId String  @db.Uuid
 
   // Relations
-  department       Department         @relation(fields: [departmentId], references: [id])
-  Course_Classroom Course_Classroom[]
+  department            Department              @relation(fields: [departmentId], references: [id])
+  Course_Classroom      Course_Classroom[]
+  teacherPreferredClass TeacherPreferredClass[]
 
   @@map("courses")
   @@schema("academic")
@@ -625,10 +627,43 @@ model ResetPasswordToken {
   @@schema("auth")
 }
 
+// Preferencias del docente
+model TeacherPreference {
+  id        String   @id @default(uuid()) @db.Uuid
+  startTime DateTime
+  endTime   DateTime
+  teacherId String   @unique @db.Uuid
+
+  // Relations
+  teacher          Teacher                 @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  preferredClasses TeacherPreferredClass[]
+
+  @@map("teacher_preferences")
+  @@schema("ai")
+}
+
+model TeacherPreferredClass {
+  id                  String @id @default(uuid()) @db.Uuid
+  courseId            String @db.Uuid
+  teacherPreferenceId String @db.Uuid
+
+  // Relations
+  teacherPreference TeacherPreference @relation(fields: [teacherPreferenceId], references: [id], onDelete: Cascade)
+  course            Course            @relation(fields: [courseId], references: [id])
+
+  @@map("teacher_preferred_classes")
+  @@schema("ai")
+}
+
 // model Base {
 //   id String @id @default(uuid()) @db.Uuid
 //
 //   // Relations
 //
 //   @@map("bases")
+// }
+// }
+// }
+// }
+// }
 // }

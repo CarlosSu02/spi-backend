@@ -88,13 +88,14 @@ export class CourseStadisticsController {
   @ResponseMessage('Se ha actualizado la estadística de asignatura.')
   @ApiParam({
     name: 'id',
-    description: 'ID de asignatura de la estadística a actualizar',
+    description:
+      'ID de clase-salón <courseClassroomId> de la estadística a actualizar',
     type: String,
     format: 'uuid',
   })
   @ApiBody({ type: UpdateCourseStadisticDto })
   @ApiCommonResponses({
-    summary: 'Actualizar una estadística de asignatura por ID de clase.',
+    summary: 'Actualizar una estadística de asignatura por ID de clase-salón.',
     okDescription: 'Estadística de asignatura actualizada correctamente.',
     badRequestDescription: 'Datos inválidos para la actualización.',
     notFoundDescription: 'La estadística de asignatura no existe.',

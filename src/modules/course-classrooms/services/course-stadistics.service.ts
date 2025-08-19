@@ -8,7 +8,6 @@ import { CreateCourseStadisticDto, UpdateCourseStadisticDto } from '../dto';
 import {
   TCreateCourseStadistic,
   TCourseStadistic,
-  TUpdateCourseStadistic,
   TOutputConsolidated,
 } from '../types';
 import { CourseClassroomsService } from './course-classrooms.service';
@@ -16,7 +15,6 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { AcademicPeriodsService } from 'src/modules/teaching-assignment/services/academic-periods.service';
-import { ApiPagination } from 'src/common/decorators';
 
 @Injectable()
 export class CourseStadisticsService {
