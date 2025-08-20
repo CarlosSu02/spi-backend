@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsInt, IsUUID } from 'class-validator';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
-import { IsValidIdsInventoryConfigConstraint } from 'src/modules/inventory/validators';
 import { ECourseClassroomConfig } from '../enums';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsValidClassroomConfigConstraint } from '../validators';
 
 export class CreateCourseStadisticDto {
   @ApiProperty({ description: 'Cantidad de APB.', example: 10, required: true })
@@ -39,7 +39,7 @@ export class CreateCourseStadisticDto {
   })
   @ValidatorConstraintDecorator(
     ECourseClassroomConfig.COURSE_CLASSROOM,
-    IsValidIdsInventoryConfigConstraint,
+    IsValidClassroomConfigConstraint,
   )
   courseClassroomId: string;
 }
