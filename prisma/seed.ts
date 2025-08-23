@@ -20,6 +20,7 @@ import {
   postgraduatesSeed,
   rolesSeed,
   shiftsSeed,
+  usersSeed,
 } from './data';
 import {
   audioEquipmentsSeed,
@@ -36,6 +37,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   const rolesData = handleData(rolesSeed);
+
   const commonDatesAcademicPeriods: {
     pac: number;
     startDate: Date;
@@ -188,40 +190,7 @@ async function main() {
   ]);
 
   // "Segunda" tanda
-  const [users, departments, courses, buildings] = await Promise.all([
-    prisma.user.createMany({
-      data: [
-        {
-          name: 'user1',
-          email: 'admin1@gmail.com',
-          code: '12345',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.ADMIN,
-        },
-        {
-          name: 'user2',
-          email: 'teacher1@gmail.com',
-          code: '54321',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.DOCENTE,
-        },
-        {
-          name: 'user3',
-          email: 'rrhh1@gmail.com',
-          code: '78900',
-          hash: await argon.hash('12345'),
-          roleId: rolesData.RRHH,
-        },
-        {
-          name: 'user4',
-          email: 'rrhh2@gmail.com',
-          code: '78910',
-          hash: await argon.hash('Temporal.12345'),
-          roleId: rolesData.RRHH,
-        },
-      ],
-      skipDuplicates: true,
-    }),
+  const [departments, courses, buildings] = await Promise.all([
     prisma.department.createMany({
       data: Object.values(departmentsSeed),
       skipDuplicates: true,
@@ -238,7 +207,37 @@ async function main() {
 
   console.log({ roles });
 
-  console.log({ users });
+  // Users
+  let createdUser = 0;
+  for (const user of usersSeed(rolesData)) {
+    const passwordHash = await argon.hash(user.hash);
+
+    await prisma.user.upsert({
+      where: {
+        email: user.email,
+      },
+      update: {},
+      create: {
+        name: user.name,
+        email: user.email,
+        code: user.code,
+        hash: passwordHash,
+        userRoles: {
+          create: user.roleIds.map((id) => ({
+            role: {
+              connect: {
+                id,
+              },
+            },
+          })),
+        },
+      },
+    });
+
+    createdUser++;
+  }
+
+  console.log({ users: createdUser });
 
   // Pregrados
   console.log({ undergradDegrees });

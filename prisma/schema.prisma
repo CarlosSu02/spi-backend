@@ -18,10 +18,11 @@ datasource db {
 
 // # User - Teachers
 model Role {
-  id          String  @id @default(uuid()) @db.Uuid
-  name        String  @unique
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @unique
   description String?
-  users       User[]
+  // users       User[]
+  userRoles   UserRole[]
 
   @@map("roles")
   @@schema("auth")
@@ -37,14 +38,28 @@ model User {
   hash         String
   hashedRt     String?
   activeStatus Boolean  @default(true) // para no eliminar al usuario, solo desactivarlo
-  roleId       String   @db.Uuid
+  // roleId       String   @db.Uuid
 
   // Relations
-  role                Role                 @relation(fields: [roleId], references: [id])
+  // role                Role                 @relation(fields: [roleId], references: [id])
   teachers            Teacher[]
   resetPasswordTokens ResetPasswordToken[]
+  userRoles           UserRole[]
 
   @@map("users") // use map
+  @@schema("auth")
+}
+
+model UserRole {
+  userId String @db.Uuid
+  roleId String @db.Uuid
+
+  // Relations
+  role Role @relation(fields: [roleId], references: [id])
+  User User @relation(fields: [userId], references: [id])
+
+  @@id([userId, roleId])
+  @@map("user_roles")
   @@schema("auth")
 }
 
@@ -233,6 +248,7 @@ model Teacher_Department_Position {
   department Department @relation(fields: [departmentId], references: [id])
 
   @@unique([teacherId, departmentId, positionId])
+  @@unique([teacherId, departmentId]) // Para que un docente solo pueda estar una vez en un departamento, esta quiza invalida la anterior.
   @@map("teacher_department_position")
   @@schema("academic")
 }
@@ -661,9 +677,4 @@ model TeacherPreferredClass {
 //   // Relations
 //
 //   @@map("bases")
-// }
-// }
-// }
-// }
-// }
 // }

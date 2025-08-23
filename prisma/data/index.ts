@@ -11,3 +11,4 @@ export * from './courses.data';
 export * from './academic-periods.data';
 export * from './modalities.data';
 export * from './activity-types.data';
+export * from './users.data';
