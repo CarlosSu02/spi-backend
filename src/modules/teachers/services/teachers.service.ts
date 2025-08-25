@@ -14,7 +14,6 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { TDepartmentJoin } from 'src/modules/departments/types';
 import { TPosition } from 'src/modules/positions/types';
-import { UndergradsController } from 'src/modules/teachers-undergrad/controllers/undergrads.controller';
 
 @Injectable()
 export class TeachersService {
@@ -34,6 +33,8 @@ export class TeachersService {
       userId,
       undergradId,
       postgradId,
+      departmentId,
+      positionId,
     } = createTeacherDto;
 
     const newTeacher = await this.prisma.teacher.create({
@@ -55,6 +56,18 @@ export class TeachersService {
                 create: [
                   {
                     undergraduate: { connect: { id: undergradId } },
+                  },
+                ],
+              },
+            }
+          : {}),
+        ...(positionId && departmentId
+          ? {
+              positionHeld: {
+                create: [
+                  {
+                    position: { connect: { id: positionId } },
+                    department: { connect: { id: departmentId } },
                   },
                 ],
               },

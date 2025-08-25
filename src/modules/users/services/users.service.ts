@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   forwardRef,
   Inject,
   Injectable,
@@ -12,11 +13,13 @@ import { TUser } from '../types';
 import { RolesService } from './roles.service';
 import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
-import { TeachersUndergradService } from 'src/modules/teachers-undergrad/services/teachers-undergrad.service';
-import { TeachersPostgradService } from 'src/modules/teachers-postgrad/services/teachers-postgrad.service';
 import { generatePassword } from 'src/common/utils';
 import { MailService } from 'src/modules/mail/services/mail.service';
 import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
+import { TJwtPayload } from 'src/modules/auth/types';
+import { EPosition } from 'src/modules/positions/enums';
+import { TeacherDepartmentPositionService } from 'src/modules/teacher-department-position/services/teacher-department-position.service';
+import { PositionsService } from 'src/modules/positions/services/positions.service';
 
 @Injectable()
 export class UsersService {
@@ -27,20 +30,99 @@ export class UsersService {
     email: true,
     activeStatus: true,
     // roleId: true,
-    role: true,
+    userRoles: {
+      include: {
+        role: true,
+      },
+    },
   };
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly roleService: RolesService,
-    @Inject(forwardRef(() => TeachersUndergradService))
-    private readonly teachersUndergradService: TeachersUndergradService,
-    @Inject(forwardRef(() => TeachersPostgradService))
-    private readonly teachersPostgradService: TeachersPostgradService,
     private readonly mailService: MailService,
+    @Inject(forwardRef(() => TeacherDepartmentPositionService))
+    private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
+    @Inject(forwardRef(() => PositionsService))
+    private readonly positionsService: PositionsService,
   ) {}
 
+  async createUserWithDeptAndPosition(
+    createUserDto: CreateUserDto,
+    currentUser: TJwtPayload,
+  ) {
+    const { sub: userId, roles } = currentUser;
+
+    // Verifica si el usuario no tiene ninguno de los roles DOCENTE o COORDINADOR_AREA, y en ese caso crea el usuario.
+    if (
+      !createUserDto.roles.some((role) =>
+        [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(role),
+      )
+    )
+      return await this.create(createUserDto);
+
+    // Ya existe el decorador... validacion extra
+    if (roles.length === 1 && roles.includes(EUserRole.DOCENTE))
+      throw new ForbiddenException(
+        'Los docentes no pueden asignar un departamento.',
+      );
+
+    if (
+      roles.includes(EUserRole.COORDINADOR_AREA) &&
+      !roles.includes(EUserRole.ADMIN)
+    ) {
+      const currentUserDepartment =
+        await this.teacherDepartmentPositionService.findOneByUserId(userId);
+      createUserDto.departmentId = currentUserDepartment.departmentId;
+    }
+
+    // Si no es coordinador exclusivo ni tiene rol ajeno a docente y coordinador
+    // if (
+    //   !roles.some((role) =>
+    //     [EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION].includes(
+    //       role as EUserRole,
+    //     ),
+    //   )
+    // )
+    //   throw new ForbiddenException(
+    //     'No tiene permisos para asignar un departamento.',
+    //   );
+
+    if (!createUserDto.departmentId)
+      throw new BadRequestException(
+        `Debe ingresar el departamento al que pertenerá el docente.`,
+      );
+
+    // Position
+    const postionNone = await this.positionsService.findOneByName(
+      EPosition.NONE,
+    );
+
+    if (roles.includes(EUserRole.DOCENTE) && createUserDto.positionId)
+      throw new ForbiddenException('Los docentes no pueden asignar un cargo.');
+
+    if (
+      roles.includes(EUserRole.COORDINADOR_AREA) &&
+      createUserDto.positionId &&
+      createUserDto.positionId !== postionNone.id
+    ) {
+      createUserDto.positionId = postionNone.id; // por defecto
+    }
+
+    if (!createUserDto.positionId)
+      throw new BadRequestException(
+        `Debe ingresar el cargo académico <positionId> que tendrá el docente en el departamento.`,
+      );
+
+    return await this.create(createUserDto);
+  }
+
   async create(createUserDto: CreateUserDto) {
+    // Rol DOCENTE por defecto, no se coloca en el dto, ya que al actualizarlo...
+    // ...toma el que este por defecto
+    if (createUserDto.roles.length === 0)
+      createUserDto.roles.push(EUserRole.DOCENTE);
+
     let isTempPass = false;
 
     // Se mandara por correo
@@ -59,12 +141,14 @@ export class UsersService {
       email,
       password,
       passwordConfirm,
-      role,
+      roles,
       categoryId,
       contractTypeId,
       shiftId,
       undergradId,
       postgradId,
+      positionId,
+      departmentId,
     } = createUserDto;
 
     if (passwordConfirm !== password)
@@ -74,62 +158,85 @@ export class UsersService {
 
     const hash = await argon.hash(password);
 
-    const roleExists = await this.roleService.findOneByName(role);
+    const roleEntities = await Promise.all(
+      roles.map((role) => this.roleService.findOneByName(role)),
+    );
 
     const baseData = {
       name,
       code,
       email,
       hash,
-      roleId: roleExists.id,
+      // roles: roleEntities.map((role) => role.id),
+      userRoles: {
+        create: roleEntities.map((role) => ({
+          role: {
+            connect: {
+              id: role.id,
+            },
+          },
+        })),
+      },
     };
 
-    const data = [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
-      roleExists.name as EUserRole,
-    )
+    const hasTeacherRole = roleEntities.some((role) =>
+      [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(
+        role.name as EUserRole,
+      ),
+    );
+
+    // Crear aca toda la relacion, por si ocurre un problema...
+    // ...al momento de crear el perfil de teacher, no sea en teachersService.
+    const data = hasTeacherRole
       ? {
           ...baseData,
-          teachers: {
-            create: [
-              {
-                category: { connect: { id: categoryId } },
-                contractType: { connect: { id: contractTypeId } },
-                shift: { connect: { id: shiftId } },
+          teacher: {
+            create: {
+              category: { connect: { id: categoryId } },
+              contractType: { connect: { id: contractTypeId } },
+              shift: { connect: { id: shiftId } },
+              undergradDegrees: {
+                create: [
+                  {
+                    undergraduate: { connect: { id: undergradId } },
+                  },
+                ],
               },
-            ],
+              ...(postgradId
+                ? {
+                    undergradDegrees: {
+                      create: [
+                        {
+                          undergraduate: { connect: { id: undergradId } },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+              ...(positionId && departmentId
+                ? {
+                    positionHeld: {
+                      create: [
+                        {
+                          position: { connect: { id: positionId } },
+                          department: { connect: { id: departmentId } },
+                        },
+                      ],
+                    },
+                  }
+                : {}),
+            },
           },
         }
       : baseData;
 
     const newUser = await this.prisma.user.create({
-      data,
+      data: {
+        ...data,
+      },
     });
 
     if (!newUser) throw new BadRequestException('Error al crear el usuario.');
-
-    if (
-      [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
-        roleExists.name as EUserRole,
-      ) &&
-      undergradId
-    ) {
-      await this.teachersUndergradService.create({
-        userId: newUser.id,
-        undergradId,
-      });
-    }
-
-    if (
-      [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].includes(
-        roleExists.name as EUserRole,
-      ) &&
-      postgradId
-    ) {
-      await this.teachersPostgradService.create({
-        userId: newUser.id,
-        postgradId,
-      });
-    }
 
     if (isTempPass)
       await this.mailService.sendMail({
@@ -176,7 +283,11 @@ export class UsersService {
 
     const users = await this.prisma.user.findMany({
       where: {
-        roleId,
+        userRoles: {
+          some: {
+            roleId,
+          },
+        },
       },
       select: this.selectPropsUser,
     });
@@ -188,7 +299,12 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<TUser> {
-    const { name, code, email, password, role, activeStatus } = updateUserDto;
+    const { name, code, email, password, roles, activeStatus } = updateUserDto;
+
+    const roleEntities =
+      roles && roles.length
+        ? await this.roleService.findManyByNames(roles)
+        : [];
 
     const userUpdate = await this.prisma.user.update({
       where: {
@@ -199,7 +315,17 @@ export class UsersService {
         code,
         email,
         hash: password && (await argon.hash(password)),
-        roleId: role && (await this.roleService.findOneByName(role)).id,
+        // roleId: role && (await this.roleService.findOneByName(role)).id,
+        userRoles: {
+          deleteMany: {},
+          create: roleEntities.map((role) => ({
+            role: {
+              connect: {
+                id: role.id,
+              },
+            },
+          })),
+        },
         activeStatus,
       },
       select: this.selectPropsUser,
@@ -209,9 +335,12 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<boolean> {
-    const deleteUser = await this.prisma.user.delete({
+    const deleteUser = await this.prisma.user.update({
       where: {
         id,
+      },
+      data: {
+        activeStatus: false,
       },
     });
 

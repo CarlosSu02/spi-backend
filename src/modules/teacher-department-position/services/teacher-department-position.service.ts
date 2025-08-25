@@ -249,6 +249,7 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPos;
   }
 
+  // Solo devuelve el que tenga "jefe de departamento"
   async findOneByUserId(id: string): Promise<TTeacherInclude> {
     const coordinatorPosition = await this.positionsService.findOneByName(
       EPosition.DEPARTMENT_HEAD,

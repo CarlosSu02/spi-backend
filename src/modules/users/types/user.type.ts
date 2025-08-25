@@ -6,6 +6,12 @@ export type TUser = {
   code: string;
   email: string | null;
   // roleId: string;
-  role: TRole;
+  // userRoles: {
+  //   role: TRole;
+  // }[];
+  userRoles: {
+    role: TRole;
+  }[];
+  // role: TRole;
   activeStatus: boolean;
 };

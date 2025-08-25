@@ -47,6 +47,8 @@ export class TeachersController {
     return this.teachersService.create(createTeacherDto);
   }
 
+  // FIX: eliminar esto, ya que cuando se crea un usuario, si es DOCENTE o COORDINADOR_AREA,...
+  // ...se debe elegir el departamento al que pertenece
   @Post('my')
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado un perfil de docente.')

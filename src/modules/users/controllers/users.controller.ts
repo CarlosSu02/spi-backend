@@ -10,10 +10,11 @@ import {
   HttpStatus,
   forwardRef,
   Inject,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
-import { ResponseMessage } from 'src/common/decorators';
+import { GetCurrentUser, ResponseMessage } from 'src/common/decorators';
 import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -21,6 +22,7 @@ import { ValidateIdPipe } from 'src/common/pipes';
 import { Roles } from 'src/common/decorators';
 import { EUserRole } from '../../../common/enums';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
+import { TJwtPayload } from 'src/modules/auth/types';
 
 @Controller('users')
 export class UsersController {
@@ -46,8 +48,36 @@ export class UsersController {
     badRequestDescription: 'Datos inválidos para la creación del usuario.',
     internalErrorDescription: 'Error interno al crear el usuario.',
   })
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @GetCurrentUser() currentUser: TJwtPayload,
+  ) {
+    if (
+      createUserDto.roles.some((rol) =>
+        [EUserRole.RRHH, EUserRole.ADMIN, EUserRole.DIRECCION].includes(rol),
+      ) &&
+      [EUserRole.COORDINADOR_AREA, EUserRole.DOCENTE].some((rol) =>
+        currentUser.roles.includes(rol),
+      )
+    )
+      throw new ForbiddenException(
+        'Coordinadores de área o docentes no pueden asignar roles de RRHH, ADMIN o DIRECCIÓN.',
+      );
+
+    if (
+      createUserDto.roles.includes(EUserRole.COORDINADOR_AREA) &&
+      ![EUserRole.ADMIN, EUserRole.RRHH].some((role) =>
+        currentUser.roles.includes(role),
+      )
+    )
+      throw new ForbiddenException(
+        'Solo RRHH o Admin pueden asignar el rol de COORDINADOR_AREA.',
+      );
+
+    return this.usersService.createUserWithDeptAndPosition(
+      createUserDto,
+      currentUser,
+    );
   }
 
   @Get()
@@ -69,7 +99,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
+  @Get('one/:id')
   @Roles(
     EUserRole.ADMIN,
     EUserRole.COORDINADOR_AREA,
@@ -152,6 +182,7 @@ export class UsersController {
     return this.usersService.update(id, updateUserDto);
   }
 
+  // No se elimina, solo se desactiva
   @Delete(':id')
   @Roles(EUserRole.ADMIN)
   @HttpCode(HttpStatus.OK)

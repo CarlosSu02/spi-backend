@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -98,20 +99,31 @@ export class CreateUserDto extends PartialType(CreateTeacherDto) {
   passwordConfirm: string;
 
   @ApiProperty({
-    description: 'Rol del usuario.',
-    example: EUserRole.DOCENTE,
+    description: 'Roles del usuario.',
+    example: [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA],
     enum: EUserRole,
     required: true,
   })
+  @IsArray({ message: 'Los roles deben enviarse en un arreglo.' })
   @IsEnum(EUserRole, {
-    message: `El rol debe ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
+    each: true,
+    message: `Los roles deben ser uno de los siguientes: ${Object.values(EUserRole).join(', ')}`,
   })
-  @IsOptional()
-  role: EUserRole;
+  // @IsOptional()
+  @IsNotEmpty({
+    message: `El usuario debe contener al menos un rol.`,
+  })
+  roles: EUserRole[];
 
-  @ValidateIf((o: CreateUserDto) =>
-    [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(o.role),
-  )
+  @ValidateIf((o: CreateUserDto) => {
+    return (
+      Array.isArray(o.roles) &&
+      o.roles.length > 0 &&
+      o.roles.some((role) =>
+        [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(role),
+      )
+    );
+  })
   @Validate(TeacherRequiredFieldsForRoleConstraint)
   dummyFieldForTeacher: string;
 }

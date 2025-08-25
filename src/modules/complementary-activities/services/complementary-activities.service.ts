@@ -14,7 +14,6 @@ import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
-import { TCustomOmit } from 'src/common/types';
 import { VerificationMediasService } from './verification-medias.service';
 
 @Injectable()

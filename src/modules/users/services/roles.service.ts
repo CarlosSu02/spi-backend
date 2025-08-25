@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TRole } from '../types';
+import { EUserRole } from 'src/common/enums';
 
 @Injectable()
 export class RolesService {
@@ -23,6 +28,19 @@ export class RolesService {
 
     // if (roles.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    return roles;
+  }
+
+  async findManyByNames(names: EUserRole[]): Promise<TRole[]> {
+    const roles = await this.prisma.role.findMany({
+      where: { name: { in: names } },
+    });
+
+    if (roles.length === 0)
+      throw new BadRequestException(
+        `No se encontraron roles con los nombres: ${names.join(', ')}.`,
+      );
 
     return roles;
   }

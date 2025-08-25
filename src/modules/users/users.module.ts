@@ -9,12 +9,16 @@ import { TeachersUndergradModule } from '../teachers-undergrad/teachers-undergra
 import { TeachersPostgradModule } from '../teachers-postgrad/teachers-postgrad.module';
 import { TeachersModule } from '../teachers/teachers.module';
 import { MailModule } from '../mail/mail.module';
+import { TeacherDepartmentPositionModule } from '../teacher-department-position/teacher-department-position.module';
+import { PositionsModule } from '../positions/positions.module';
 
 @Module({
   imports: [
     forwardRef(() => TeachersModule),
     forwardRef(() => TeachersUndergradModule),
     forwardRef(() => TeachersPostgradModule),
+    forwardRef(() => TeacherDepartmentPositionModule),
+    forwardRef(() => PositionsModule),
     MailModule,
   ],
   controllers: [UsersController, RolesController],

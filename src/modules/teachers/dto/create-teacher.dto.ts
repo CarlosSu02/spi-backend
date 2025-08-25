@@ -13,6 +13,8 @@ import {
   IsValidUserIdConstraint,
 } from '../validators';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
+import { IsValidPositionIdConstraint } from 'src/modules/positions/validators';
+import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 
 export class CreateTeacherDto {
   @ApiProperty({
@@ -123,4 +125,14 @@ export class CreateTeacherDto {
   })
   @Validate(IsValidUserIdConstraint)
   currentUserId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  @Validate(IsValidDepartmentIdConstraint)
+  departmentId: string;
+
+  @IsOptional()
+  @IsUUID()
+  @Validate(IsValidPositionIdConstraint)
+  positionId: string;
 }
