@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpCode,
   HttpException,
   HttpStatus,
   Injectable,
@@ -11,7 +10,7 @@ import * as argon from 'argon2';
 import { TTokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
-import { AuthDto, AuthSigninDto } from './dto';
+import { AuthSigninDto } from './dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { nanoid } from 'nanoid';
 import { MailService } from '../mail/services/mail.service';
@@ -74,12 +73,21 @@ export class AuthService {
       where: {
         OR: [{ email }, { code }],
       },
+      relationLoadStrategy: 'join',
       select: {
         id: true,
         email: true,
         code: true,
         hash: true,
-        role: true,
+        userRoles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
         activeStatus: true,
       },
     });
@@ -91,9 +99,11 @@ export class AuthService {
 
     if (!passwordMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email ?? user.code, [
-      user.role.name,
-    ]);
+    const tokens = await this.getTokens(
+      user.id,
+      user.email ?? user.code,
+      user.userRoles.map((ur) => ur.role.name),
+    );
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
@@ -194,15 +204,6 @@ export class AuthService {
         'No se encontró un usuario asociado a este token.',
       );
 
-    const updatedUser = await this.prisma.user.update({
-      where: {
-        id: existsToken.userId,
-      },
-      data: {
-        hash: await argon.hash(password),
-      },
-    });
-
     await this.prisma.resetPasswordToken.update({
       where: {
         token, // el token es "unique"
@@ -229,7 +230,15 @@ export class AuthService {
         code: true,
         hash: true,
         hashedRt: true,
-        role: true,
+        userRoles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -239,9 +248,11 @@ export class AuthService {
 
     if (!rtMatches) throw new ForbiddenException('Access denied!');
 
-    const tokens = await this.getTokens(user.id, user.email ?? user.code, [
-      user.role.name,
-    ]);
+    const tokens = await this.getTokens(
+      user.id,
+      user.email ?? user.code,
+      user.userRoles.map((userRole) => userRole.role.name),
+    );
     await this.updateRtHash(user.id, tokens.refresh_token);
 
     return tokens;
