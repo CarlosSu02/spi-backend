@@ -11,7 +11,7 @@ export class TeacherCategoriesService {
   async create(
     createTeacherCategoryDto: CreateTeacherCategoryDto,
   ): Promise<TTeacherCategory> {
-    const newTeacherCategory = await this.prisma.teacher_Category.create({
+    const newTeacherCategory = await this.prisma.teacherCategory.create({
       data: {
         ...createTeacherCategoryDto,
       },
@@ -21,7 +21,7 @@ export class TeacherCategoriesService {
   }
 
   async findAll(): Promise<TTeacherCategory[]> {
-    const teacherCategories = await this.prisma.teacher_Category.findMany();
+    const teacherCategories = await this.prisma.teacherCategory.findMany();
 
     // if (teacherCategories.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
@@ -30,7 +30,7 @@ export class TeacherCategoriesService {
   }
 
   async findOne(id: string): Promise<TTeacherCategory> {
-    const teacherCategory = await this.prisma.teacher_Category.findUnique({
+    const teacherCategory = await this.prisma.teacherCategory.findUnique({
       where: {
         id,
       },
@@ -45,7 +45,7 @@ export class TeacherCategoriesService {
   }
 
   async findOneByName(name: string): Promise<TTeacherCategory> {
-    const teacherCategory = await this.prisma.teacher_Category.findUnique({
+    const teacherCategory = await this.prisma.teacherCategory.findUnique({
       where: {
         name,
       },
@@ -63,7 +63,7 @@ export class TeacherCategoriesService {
     id: string,
     updateTeacherCategoryDto: UpdateTeacherCategoryDto,
   ): Promise<TTeacherCategory> {
-    const teacherCategoryUpdate = await this.prisma.teacher_Category.update({
+    const teacherCategoryUpdate = await this.prisma.teacherCategory.update({
       where: {
         id,
       },
@@ -76,7 +76,7 @@ export class TeacherCategoriesService {
   }
 
   async remove(id: string): Promise<TTeacherCategory> {
-    const teacherCategoryDelete = await this.prisma.teacher_Category.delete({
+    const teacherCategoryDelete = await this.prisma.teacherCategory.delete({
       where: {
         id,
       },

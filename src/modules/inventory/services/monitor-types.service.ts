@@ -10,7 +10,7 @@ export class MonitorTypesService {
   async create(
     createMonitorTypeDto: CreateMonitorTypeDto,
   ): Promise<TCreateMonitorType> {
-    const newMonitorType = await this.prisma.monitor_Type.create({
+    const newMonitorType = await this.prisma.monitorType.create({
       data: {
         ...createMonitorTypeDto,
       },
@@ -20,13 +20,13 @@ export class MonitorTypesService {
   }
 
   async findAll(): Promise<TMonitorType[]> {
-    const monitorTypes = await this.prisma.monitor_Type.findMany();
+    const monitorTypes = await this.prisma.monitorType.findMany();
 
     return monitorTypes;
   }
 
   async findOne(id: string): Promise<TMonitorType> {
-    const monitorType = await this.prisma.monitor_Type.findUnique({
+    const monitorType = await this.prisma.monitorType.findUnique({
       where: {
         id,
       },
@@ -44,7 +44,7 @@ export class MonitorTypesService {
     id: string,
     updateMonitorTypeDto: UpdateMonitorTypeDto,
   ): Promise<TUpdateMonitorType> {
-    const monitorTypeUpdate = await this.prisma.monitor_Type.update({
+    const monitorTypeUpdate = await this.prisma.monitorType.update({
       where: {
         id,
       },
@@ -57,7 +57,7 @@ export class MonitorTypesService {
   }
 
   async remove(id: string): Promise<TMonitorType> {
-    const monitorTypeDelete = await this.prisma.monitor_Type.delete({
+    const monitorTypeDelete = await this.prisma.monitorType.delete({
       where: {
         id,
       },

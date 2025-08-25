@@ -8,7 +8,7 @@ export class PcTypesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createPcTypeDto: CreatePcTypeDto): Promise<TCreatePcType> {
-    const newPcType = await this.prisma.pC_Type.create({
+    const newPcType = await this.prisma.pcType.create({
       data: {
         ...createPcTypeDto,
       },
@@ -18,13 +18,13 @@ export class PcTypesService {
   }
 
   async findAll(): Promise<TPcType[]> {
-    const pcTypes = await this.prisma.pC_Type.findMany();
+    const pcTypes = await this.prisma.pcType.findMany();
 
     return pcTypes;
   }
 
   async findOne(id: string): Promise<TPcType> {
-    const pcType = await this.prisma.pC_Type.findUnique({
+    const pcType = await this.prisma.pcType.findUnique({
       where: {
         id,
       },
@@ -42,7 +42,7 @@ export class PcTypesService {
     id: string,
     updatePcTypeDto: UpdatePcTypeDto,
   ): Promise<TUpdatePcType> {
-    const pcTypeUpdate = await this.prisma.pC_Type.update({
+    const pcTypeUpdate = await this.prisma.pcType.update({
       where: {
         id,
       },
@@ -55,7 +55,7 @@ export class PcTypesService {
   }
 
   async remove(id: string): Promise<TPcType> {
-    const pcTypeDelete = await this.prisma.pC_Type.delete({
+    const pcTypeDelete = await this.prisma.pcType.delete({
       where: {
         id,
       },

@@ -11,7 +11,7 @@ export class MultimediaTypesService {
   async create(
     createMultimediaTypeDto: CreateMultimediaTypeDto,
   ): Promise<TMultimediaType> {
-    const newMultimediaType = await this.prisma.multimedia_Type.create({
+    const newMultimediaType = await this.prisma.multimediaType.create({
       data: {
         ...createMultimediaTypeDto,
       },
@@ -21,13 +21,13 @@ export class MultimediaTypesService {
   }
 
   async findAll(): Promise<TMultimediaType[]> {
-    const multimediaTypes = await this.prisma.multimedia_Type.findMany();
+    const multimediaTypes = await this.prisma.multimediaType.findMany();
 
     return multimediaTypes;
   }
 
   async findOne(id: string): Promise<TMultimediaType> {
-    const multimediaType = await this.prisma.multimedia_Type.findUnique({
+    const multimediaType = await this.prisma.multimediaType.findUnique({
       where: {
         id,
       },
@@ -42,7 +42,7 @@ export class MultimediaTypesService {
   }
 
   async findOneByDescription(description: string): Promise<TMultimediaType> {
-    const multimediaType = await this.prisma.multimedia_Type.findFirst({
+    const multimediaType = await this.prisma.multimediaType.findFirst({
       where: {
         description: {
           contains: description,
@@ -63,7 +63,7 @@ export class MultimediaTypesService {
     id: string,
     updateMultimediaTypeDto: UpdateMultimediaTypeDto,
   ): Promise<TMultimediaType> {
-    const multimediaTypeUpdate = await this.prisma.multimedia_Type.update({
+    const multimediaTypeUpdate = await this.prisma.multimediaType.update({
       where: {
         id,
       },
@@ -76,7 +76,7 @@ export class MultimediaTypesService {
   }
 
   async remove(id: string): Promise<TMultimediaType> {
-    const multimediaTypeDelete = await this.prisma.multimedia_Type.delete({
+    const multimediaTypeDelete = await this.prisma.multimediaType.delete({
       where: {
         id,
       },

@@ -42,7 +42,7 @@ export class VerificationMediasService {
             files,
           );
 
-    const newVerificationMedia = await this.prisma.verification_Media.create({
+    const newVerificationMedia = await this.prisma.verificationMedia.create({
       data: {
         ...createVerificationMediaDto,
         verificationMediaFiles: {
@@ -61,7 +61,7 @@ export class VerificationMediasService {
   }
 
   async findAll(): Promise<TVerificationMedia[]> {
-    const verificationMedias = await this.prisma.verification_Media.findMany({
+    const verificationMedias = await this.prisma.verificationMedia.findMany({
       relationLoadStrategy: 'join',
       include: {
         verificationMediaFiles: true,
@@ -75,14 +75,14 @@ export class VerificationMediasService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TVerificationMedia>> {
     const [verificationMedias, count] = await Promise.all([
-      this.prisma.verification_Media.findMany({
+      this.prisma.verificationMedia.findMany({
         ...paginate(query),
         relationLoadStrategy: 'join',
         include: {
           verificationMediaFiles: true,
         },
       }),
-      this.prisma.complementary_Activity.count(),
+      this.prisma.complementaryActivity.count(),
     ]);
 
     return paginateOutput<TVerificationMedia>(verificationMedias, count, query);
@@ -99,7 +99,7 @@ export class VerificationMediasService {
     const { userId, code } = user;
 
     const [verificationMedias, count] = await Promise.all([
-      this.prisma.verification_Media.findMany({
+      this.prisma.verificationMedia.findMany({
         where: {
           complementaryActivity: {
             assignmentReport: {
@@ -124,7 +124,7 @@ export class VerificationMediasService {
           verificationMediaFiles: true,
         },
       }),
-      this.prisma.academic_Assignment_Report.count({
+      this.prisma.academicAssignmentReport.count({
         where: {
           teacher: {
             userId,
@@ -141,7 +141,7 @@ export class VerificationMediasService {
     return paginateOutput<TVerificationMedia>(verificationMedias, count, query);
   }
   async findOne(id: string): Promise<TVerificationMedia> {
-    const verificationMedia = await this.prisma.verification_Media.findUnique({
+    const verificationMedia = await this.prisma.verificationMedia.findUnique({
       where: {
         id,
       },
@@ -179,7 +179,7 @@ export class VerificationMediasService {
     //   dataToUpdate.multimediaTypeId = multimediaTypeExists.id;
     // }
 
-    const verificationMediaUpdate = await this.prisma.verification_Media.update(
+    const verificationMediaUpdate = await this.prisma.verificationMedia.update(
       {
         where: {
           id,
@@ -194,7 +194,7 @@ export class VerificationMediasService {
   }
 
   async remove(id: string): Promise<TVerificationMedia> {
-    const verificationMediaDelete = await this.prisma.verification_Media.delete(
+    const verificationMediaDelete = await this.prisma.verificationMedia.delete(
       {
         where: {
           id,
@@ -212,7 +212,7 @@ export class VerificationMediasService {
   // VerificationMedia => File
   async removeFile(id: string): Promise<TVerificationMediaFile> {
     const verificationMediaDelete =
-      await this.prisma.verification_Media_File.delete({
+      await this.prisma.verificationMediaFile.delete({
         where: {
           id,
         },
@@ -225,7 +225,7 @@ export class VerificationMediasService {
     currentUserId: string,
     id: string,
   ): Promise<TVerificationMedia> {
-    const verificationMedia = await this.prisma.verification_Media.findFirst({
+    const verificationMedia = await this.prisma.verificationMedia.findFirst({
       where: {
         id,
         complementaryActivity: {
@@ -247,7 +247,7 @@ export class VerificationMediasService {
         `El medio de verificación no fue encontrado.`,
       );
 
-    const verificationMediaDelete = await this.prisma.verification_Media.delete(
+    const verificationMediaDelete = await this.prisma.verificationMedia.delete(
       {
         where: { id },
         relationLoadStrategy: 'join',
@@ -264,7 +264,7 @@ export class VerificationMediasService {
     id: string,
   ): Promise<TVerificationMediaFile> {
     const verificationMediaFile =
-      await this.prisma.verification_Media_File.findFirst({
+      await this.prisma.verificationMediaFile.findFirst({
         where: {
           id,
           verificationMedia: {
@@ -285,7 +285,7 @@ export class VerificationMediasService {
       );
 
     const verificationMediaDelete =
-      await this.prisma.verification_Media_File.delete({
+      await this.prisma.verificationMediaFile.delete({
         where: { id },
       });
 

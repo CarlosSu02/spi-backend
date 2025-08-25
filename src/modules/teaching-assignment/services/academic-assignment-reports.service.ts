@@ -155,7 +155,7 @@ export class AcademicAssignmentReportsService {
     }
 
     const newAcademicAssignmentReport =
-      await this.prisma.academic_Assignment_Report.create({
+      await this.prisma.academicAssignmentReport.create({
         data: {
           teacherId: teacher.id,
           departmentId,
@@ -184,7 +184,7 @@ export class AcademicAssignmentReportsService {
 
   async findAll(): Promise<TAcademicAssignmentReport[]> {
     const academicAssignmentReports =
-      await this.prisma.academic_Assignment_Report.findMany({
+      await this.prisma.academicAssignmentReport.findMany({
         relationLoadStrategy: 'join',
         include: {
           teachingSession: {
@@ -202,7 +202,7 @@ export class AcademicAssignmentReportsService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TAcademicAssignmentReport>> {
     const [academicAssignmentReports, count] = await Promise.all([
-      this.prisma.academic_Assignment_Report.findMany({
+      this.prisma.academicAssignmentReport.findMany({
         ...paginate(query),
         relationLoadStrategy: 'join',
         include: this.includeOptionsAAR,
@@ -211,7 +211,7 @@ export class AcademicAssignmentReportsService {
           departmentId: true,
         },
       }),
-      this.prisma.academic_Assignment_Report.count(),
+      this.prisma.academicAssignmentReport.count(),
     ]);
 
     return paginateOutput<TAcademicAssignmentReport>(
@@ -232,7 +232,7 @@ export class AcademicAssignmentReportsService {
     const { userId, code } = user;
 
     const [academicAssignmentReports, count] = await Promise.all([
-      this.prisma.academic_Assignment_Report.findMany({
+      this.prisma.academicAssignmentReport.findMany({
         where: {
           teacher: {
             OR: [
@@ -255,7 +255,7 @@ export class AcademicAssignmentReportsService {
           departmentId: true,
         },
       }),
-      this.prisma.academic_Assignment_Report.count({
+      this.prisma.academicAssignmentReport.count({
         where: {
           teacher: {
             userId,
@@ -287,7 +287,7 @@ export class AcademicAssignmentReportsService {
     };
 
     const [academicAssignmentReports, count] = await Promise.all([
-      this.prisma.academic_Assignment_Report.findMany({
+      this.prisma.academicAssignmentReport.findMany({
         where,
         ...paginate(query),
         relationLoadStrategy: 'join',
@@ -297,7 +297,7 @@ export class AcademicAssignmentReportsService {
           departmentId: true,
         },
       }),
-      this.prisma.academic_Assignment_Report.count({
+      this.prisma.academicAssignmentReport.count({
         where,
       }),
     ]);
@@ -319,7 +319,7 @@ export class AcademicAssignmentReportsService {
 
   async findOne(id: string): Promise<TAcademicAssignmentReport> {
     const academicAssignmentReport =
-      await this.prisma.academic_Assignment_Report.findUnique({
+      await this.prisma.academicAssignmentReport.findUnique({
         where: {
           id,
         },
@@ -335,7 +335,7 @@ export class AcademicAssignmentReportsService {
 
   async findAllUserIdOnlyPeriods(userId: string) {
     const academicAssignmentReports =
-      await this.prisma.academic_Assignment_Report.findMany({
+      await this.prisma.academicAssignmentReport.findMany({
         where: {
           teacher: {
             userId,
@@ -371,7 +371,7 @@ export class AcademicAssignmentReportsService {
     const existsPeriod = await this.academicPeriodsService.findOne(periodId);
 
     const academicAssignmentReport =
-      await this.prisma.academic_Assignment_Report.findFirst({
+      await this.prisma.academicAssignmentReport.findFirst({
         where: {
           teacher: {
             OR: [
@@ -430,7 +430,7 @@ export class AcademicAssignmentReportsService {
     updateAcademicAssignmentReportDto: UpdateAcademicAssignmentReportDto,
   ): Promise<TUpdateAcademicAssignmentReport> {
     const academicAssignmentReportUpdate =
-      await this.prisma.academic_Assignment_Report.update({
+      await this.prisma.academicAssignmentReport.update({
         where: {
           id,
         },
@@ -444,7 +444,7 @@ export class AcademicAssignmentReportsService {
 
   async remove(id: string): Promise<TAcademicAssignmentReport> {
     const academicAssignmentReportDelete =
-      await this.prisma.academic_Assignment_Report.delete({
+      await this.prisma.academicAssignmentReport.delete({
         where: {
           id,
         },
@@ -455,7 +455,7 @@ export class AcademicAssignmentReportsService {
 
   async removeAll(id: string): Promise<Prisma.BatchPayload> {
     const academicAssignmentReportDelete =
-      await this.prisma.academic_Assignment_Report.deleteMany({
+      await this.prisma.academicAssignmentReport.deleteMany({
         where: {
           periodId: id, // Elimina todos los informes del periodo académico
         },
@@ -636,7 +636,7 @@ export class AcademicAssignmentReportsService {
       // Creamos CourseClassroom
       const courseClassrooms: TCreateCourseClassroom[] = await Promise.all(
         courses.map((cc) =>
-          this.prisma.course_Classroom.create({
+          this.prisma.courseClassroom.create({
             data: {
               ...cc,
               teachingSessionId: teachingSession.id,

@@ -10,7 +10,7 @@ export class MonitorSizesService {
   async create(
     createMonitorSizeDto: CreateMonitorSizeDto,
   ): Promise<TCreateMonitorSize> {
-    const newMonitorSize = await this.prisma.monitor_Size.create({
+    const newMonitorSize = await this.prisma.monitorSize.create({
       data: {
         ...createMonitorSizeDto,
       },
@@ -20,13 +20,13 @@ export class MonitorSizesService {
   }
 
   async findAll(): Promise<TMonitorSize[]> {
-    const monitorSizes = await this.prisma.monitor_Size.findMany();
+    const monitorSizes = await this.prisma.monitorSize.findMany();
 
     return monitorSizes;
   }
 
   async findOne(id: string): Promise<TMonitorSize> {
-    const monitorSize = await this.prisma.monitor_Size.findUnique({
+    const monitorSize = await this.prisma.monitorSize.findUnique({
       where: {
         id,
       },
@@ -44,7 +44,7 @@ export class MonitorSizesService {
     id: string,
     updateMonitorSizeDto: UpdateMonitorSizeDto,
   ): Promise<TUpdateMonitorSize> {
-    const monitorSizeUpdate = await this.prisma.monitor_Size.update({
+    const monitorSizeUpdate = await this.prisma.monitorSize.update({
       where: {
         id,
       },
@@ -57,7 +57,7 @@ export class MonitorSizesService {
   }
 
   async remove(id: string): Promise<TMonitorSize> {
-    const monitorSizeDelete = await this.prisma.monitor_Size.delete({
+    const monitorSizeDelete = await this.prisma.monitorSize.delete({
       where: {
         id,
       },

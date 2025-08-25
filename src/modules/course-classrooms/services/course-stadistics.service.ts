@@ -27,7 +27,7 @@ export class CourseStadisticsService {
   async create(
     createCourseStadisticDto: CreateCourseStadisticDto,
   ): Promise<TCreateCourseStadistic> {
-    const newCourseStadistic = await this.prisma.course_Stadistic.create({
+    const newCourseStadistic = await this.prisma.courseStadistic.create({
       data: {
         ...createCourseStadisticDto,
       },
@@ -37,7 +37,7 @@ export class CourseStadisticsService {
   }
 
   async findAll(): Promise<TCourseStadistic[]> {
-    const courseStadistics = await this.prisma.course_Stadistic.findMany();
+    const courseStadistics = await this.prisma.courseStadistic.findMany();
 
     return courseStadistics;
   }
@@ -46,17 +46,17 @@ export class CourseStadisticsService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TCourseStadistic>> {
     const [courseStadistics, count] = await Promise.all([
-      this.prisma.course_Stadistic.findMany({
+      this.prisma.courseStadistic.findMany({
         ...paginate(query),
       }),
-      this.prisma.course_Stadistic.count(),
+      this.prisma.courseStadistic.count(),
     ]);
 
     return paginateOutput<TCourseStadistic>(courseStadistics, count, query);
   }
 
   async findOne(id: string): Promise<TCourseStadistic> {
-    const courseStadistic = await this.prisma.course_Stadistic.findUnique({
+    const courseStadistic = await this.prisma.courseStadistic.findUnique({
       where: {
         id,
       },
@@ -88,7 +88,7 @@ export class CourseStadisticsService {
       }
     }
 
-    const courseStadisticUpdate = await this.prisma.course_Stadistic.updateMany(
+    const courseStadisticUpdate = await this.prisma.courseStadistic.updateMany(
       {
         where: {
           courseClassroomId: id,
@@ -103,7 +103,7 @@ export class CourseStadisticsService {
   }
 
   async remove(id: string): Promise<TCourseStadistic> {
-    const courseStadisticDelete = await this.prisma.course_Stadistic.delete({
+    const courseStadisticDelete = await this.prisma.courseStadistic.delete({
       where: {
         id,
       },
@@ -127,7 +127,7 @@ export class CourseStadisticsService {
     //   await this.academicPeriodsService.currentAcademicPeriod();
 
     const [allCoursesStadistics, count] = await Promise.all([
-      this.prisma.course_Stadistic.findMany({
+      this.prisma.courseStadistic.findMany({
         ...paginate(query),
         where: {
           courseClassroom: {
@@ -190,7 +190,7 @@ export class CourseStadisticsService {
           },
         },
       }),
-      this.prisma.course_Stadistic.count({
+      this.prisma.courseStadistic.count({
         where: {
           courseClassroom: {
             teachingSession: {

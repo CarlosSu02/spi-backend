@@ -13,7 +13,7 @@ export class PcEquipmentsService {
   async create(
     createPcEquipmentDto: CreatePcEquipmentDto,
   ): Promise<TCreatePcEquipment> {
-    const newPcEquipment = await this.prisma.pC_Equipment.create({
+    const newPcEquipment = await this.prisma.pcEquipment.create({
       data: {
         ...createPcEquipmentDto,
       },
@@ -23,7 +23,7 @@ export class PcEquipmentsService {
   }
 
   async findAll(): Promise<TPcEquipment[]> {
-    const pcEquipments = await this.prisma.pC_Equipment.findMany();
+    const pcEquipments = await this.prisma.pcEquipment.findMany();
 
     return pcEquipments;
   }
@@ -32,17 +32,17 @@ export class PcEquipmentsService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TPcEquipment>> {
     const [pcEquipments, count] = await Promise.all([
-      this.prisma.pC_Equipment.findMany({
+      this.prisma.pcEquipment.findMany({
         ...paginate(query),
       }),
-      this.prisma.pC_Equipment.count(),
+      this.prisma.pcEquipment.count(),
     ]);
 
     return paginateOutput<TPcEquipment>(pcEquipments, count, query);
   }
 
   async findOne(id: string): Promise<TPcEquipment> {
-    const pcEquipment = await this.prisma.pC_Equipment.findUnique({
+    const pcEquipment = await this.prisma.pcEquipment.findUnique({
       where: {
         id,
       },
@@ -58,7 +58,7 @@ export class PcEquipmentsService {
     id: string,
     updatePcEquipmentDto: UpdatePcEquipmentDto,
   ): Promise<TUpdatePcEquipment> {
-    const pcEquipmentUpdate = await this.prisma.pC_Equipment.update({
+    const pcEquipmentUpdate = await this.prisma.pcEquipment.update({
       where: {
         id,
       },
@@ -71,7 +71,7 @@ export class PcEquipmentsService {
   }
 
   async remove(id: string): Promise<TPcEquipment> {
-    const pcEquipmentDelete = await this.prisma.pC_Equipment.delete({
+    const pcEquipmentDelete = await this.prisma.pcEquipment.delete({
       where: {
         id,
       },

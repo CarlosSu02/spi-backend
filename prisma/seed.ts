@@ -101,19 +101,19 @@ async function main() {
       data: rolesSeed,
       skipDuplicates: true,
     }),
-    prisma.undergraduate_Degree.createMany({
+    prisma.undergraduateDegree.createMany({
       data: careersSeed,
       skipDuplicates: true,
     }),
-    prisma.postgraduate_Degree.createMany({
+    prisma.postgraduateDegree.createMany({
       data: postgraduatesSeed,
       skipDuplicates: true,
     }),
-    prisma.teacher_Category.createMany({
+    prisma.teacherCategory.createMany({
       data: categoriesSeed,
       skipDuplicates: true,
     }),
-    prisma.contract_Type.createMany({
+    prisma.contractType.createMany({
       data: contractsSeed,
       skipDuplicates: true,
     }),
@@ -141,15 +141,15 @@ async function main() {
       data: Object.values(conditionsSeed),
       skipDuplicates: true,
     }),
-    prisma.monitor_Type.createMany({
+    prisma.monitorType.createMany({
       data: Object.values(monitorTypesSeed),
       skipDuplicates: true,
     }),
-    prisma.monitor_Size.createMany({
+    prisma.monitorSize.createMany({
       data: Object.values(monitorSizesSeed),
       skipDuplicates: true,
     }),
-    prisma.pC_Type.createMany({
+    prisma.pcType.createMany({
       data: Object.values(pcTypesSeed),
       skipDuplicates: true,
     }),
@@ -157,15 +157,15 @@ async function main() {
       data: Object.values(connectivitiesSeed),
       skipDuplicates: true,
     }),
-    prisma.room_Type.createMany({
+    prisma.roomType.createMany({
       data: Object.values(roomTypesSeed),
       skipDuplicates: true,
     }),
-    prisma.audio_Equipment.createMany({
+    prisma.audioEquipment.createMany({
       data: Object.values(audioEquipmentsSeed),
       skipDuplicates: true,
     }),
-    prisma.academic_Period.createMany({
+    prisma.academicPeriod.createMany({
       data: academicPeriodsSeed,
       skipDuplicates: true,
     }),
@@ -173,11 +173,11 @@ async function main() {
       data: modalitiesSeed,
       skipDuplicates: true,
     }),
-    prisma.activity_Type.createMany({
+    prisma.activityType.createMany({
       data: activityTypesSeed,
       skipDuplicates: true,
     }),
-    prisma.multimedia_Type.createMany({
+    prisma.multimediaType.createMany({
       data: Object.values(MULTIMEDIA_TYPES).map((mt) => ({
         description: mt,
       })),

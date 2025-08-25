@@ -8,7 +8,7 @@ export class RoomTypeService {
   constructor(private prisma: PrismaService) {}
 
   async create(createRoomTypeDto: CreateRoomTypeDto): Promise<TCreateRoomType> {
-    const newRoomType = await this.prisma.room_Type.create({
+    const newRoomType = await this.prisma.roomType.create({
       data: {
         ...createRoomTypeDto,
       },
@@ -18,13 +18,13 @@ export class RoomTypeService {
   }
 
   async findAll(): Promise<TRoomType[]> {
-    const roomTypes = await this.prisma.room_Type.findMany();
+    const roomTypes = await this.prisma.roomType.findMany();
 
     return roomTypes;
   }
 
   async findOne(id: string): Promise<TRoomType> {
-    const roomType = await this.prisma.room_Type.findUnique({
+    const roomType = await this.prisma.roomType.findUnique({
       where: {
         id,
       },
@@ -42,7 +42,7 @@ export class RoomTypeService {
     id: string,
     updateRoomTypeDto: UpdateRoomTypeDto,
   ): Promise<TUpdateRoomType> {
-    const roomTypeUpdate = await this.prisma.room_Type.update({
+    const roomTypeUpdate = await this.prisma.roomType.update({
       where: {
         id,
       },
@@ -55,7 +55,7 @@ export class RoomTypeService {
   }
 
   async remove(id: string): Promise<TRoomType> {
-    const roomTypeDelete = await this.prisma.room_Type.delete({
+    const roomTypeDelete = await this.prisma.roomType.delete({
       where: {
         id,
       },

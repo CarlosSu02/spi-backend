@@ -52,7 +52,7 @@ export class IsValidGradDegreeConstraint
   }
 
   async getPostgradIds(): Promise<string[]> {
-    const postgrads = await this.prisma.postgraduate_Degree.findMany({
+    const postgrads = await this.prisma.postgraduateDegree.findMany({
       select: {
         id: true,
       },

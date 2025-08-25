@@ -10,7 +10,7 @@ export class ActivityTypesService {
   async create(
     createActivityTypeDto: CreateActivityTypeDto,
   ): Promise<TActivityType> {
-    const newActivityType = await this.prisma.activity_Type.create({
+    const newActivityType = await this.prisma.activityType.create({
       data: {
         ...createActivityTypeDto,
       },
@@ -20,13 +20,13 @@ export class ActivityTypesService {
   }
 
   async findAll(): Promise<TActivityType[]> {
-    const activityTypes = await this.prisma.activity_Type.findMany();
+    const activityTypes = await this.prisma.activityType.findMany();
 
     return activityTypes;
   }
 
   async findOne(id: string): Promise<TActivityType> {
-    const activityType = await this.prisma.activity_Type.findUnique({
+    const activityType = await this.prisma.activityType.findUnique({
       where: {
         id,
       },
@@ -41,7 +41,7 @@ export class ActivityTypesService {
   }
 
   async findOneByName(name: string): Promise<TActivityType> {
-    const activityType = await this.prisma.activity_Type.findFirst({
+    const activityType = await this.prisma.activityType.findFirst({
       where: {
         name: {
           equals: name,
@@ -62,7 +62,7 @@ export class ActivityTypesService {
     id: string,
     updateActivityTypeDto: UpdateActivityTypeDto,
   ): Promise<TActivityType> {
-    const activityTypeUpdate = await this.prisma.activity_Type.update({
+    const activityTypeUpdate = await this.prisma.activityType.update({
       where: {
         id,
       },
@@ -75,7 +75,7 @@ export class ActivityTypesService {
   }
 
   async remove(id: string): Promise<TActivityType> {
-    const activityTypeDelete = await this.prisma.activity_Type.delete({
+    const activityTypeDelete = await this.prisma.activityType.delete({
       where: {
         id,
       },

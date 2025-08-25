@@ -71,7 +71,7 @@ export class TeacherDepartmentPositionService {
 
     // primero obtener el primer dato, ya que un docente solo puede tener un cargo en el mismo departamento
     const teacherDeptPosExists =
-      await this.prisma.teacher_Department_Position.findFirst({
+      await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
           AND: [
             {
@@ -91,7 +91,7 @@ export class TeacherDepartmentPositionService {
       );
 
     const newTeacherDeptPos =
-      await this.prisma.teacher_Department_Position.create({
+      await this.prisma.teacherDepartmentPosition.create({
         data: {
           teacherId: teacher.id,
           departmentId,
@@ -105,7 +105,7 @@ export class TeacherDepartmentPositionService {
 
   async findAll(): Promise<TOutputTeacherDeptPos[]> {
     const teacherDeptPos =
-      await this.prisma.teacher_Department_Position.findMany({
+      await this.prisma.teacherDepartmentPosition.findMany({
         // Se puede usar include tambien...
         select: this.selectOptionsTDP,
       });
@@ -123,11 +123,11 @@ export class TeacherDepartmentPositionService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TOutputTeacherDeptPos>> {
     const [teacherDeptPos, count] = await Promise.all([
-      this.prisma.teacher_Department_Position.findMany({
+      this.prisma.teacherDepartmentPosition.findMany({
         ...paginate(query),
         select: this.selectOptionsTDP,
       }),
-      this.prisma.teacher_Department_Position.count(),
+      this.prisma.teacherDepartmentPosition.count(),
     ]);
 
     // if (teacherDeptPoss.length === 0)
@@ -161,12 +161,12 @@ export class TeacherDepartmentPositionService {
     };
 
     const [teacherDeptPos, count] = await Promise.all([
-      this.prisma.teacher_Department_Position.findMany({
+      this.prisma.teacherDepartmentPosition.findMany({
         where: omitTeacherId ? whereOmitId : where,
         ...paginate(query),
         select: this.selectOptionsTDP,
       }),
-      this.prisma.teacher_Department_Position.count({
+      this.prisma.teacherDepartmentPosition.count({
         where: omitTeacherId ? whereOmitId : where,
       }),
     ]);
@@ -234,7 +234,7 @@ export class TeacherDepartmentPositionService {
 
   async findOne(id: string): Promise<TTeacherDeptPos> {
     const teacherDeptPos =
-      await this.prisma.teacher_Department_Position.findUnique({
+      await this.prisma.teacherDepartmentPosition.findUnique({
         where: {
           id,
         },
@@ -256,7 +256,7 @@ export class TeacherDepartmentPositionService {
     );
 
     const teacherDeptPos =
-      await this.prisma.teacher_Department_Position.findFirst({
+      await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
           AND: [
             {
@@ -292,7 +292,7 @@ export class TeacherDepartmentPositionService {
     const teacher = await this.teachersService.findOneByCode(teacherCode);
 
     const teacherDeptPosExists =
-      await this.prisma.teacher_Department_Position.findFirst({
+      await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
           AND: [
             {
@@ -316,7 +316,7 @@ export class TeacherDepartmentPositionService {
   async findPositionByUserIdAndDepId(userId: string, departmentId: string) {
     await this.departmentsService.findOne(departmentId);
 
-    const position = await this.prisma.teacher_Department_Position.findFirst({
+    const position = await this.prisma.teacherDepartmentPosition.findFirst({
       where: {
         departmentId,
         teacher: {
@@ -358,7 +358,7 @@ export class TeacherDepartmentPositionService {
     }
 
     const teacherDeptPosUpdate =
-      await this.prisma.teacher_Department_Position.update({
+      await this.prisma.teacherDepartmentPosition.update({
         where: {
           id,
         },
@@ -372,7 +372,7 @@ export class TeacherDepartmentPositionService {
 
   async remove(id: string): Promise<TTeacherDeptPos> {
     const teacherDeptPosDelete =
-      await this.prisma.teacher_Department_Position.delete({
+      await this.prisma.teacherDepartmentPosition.delete({
         where: {
           id,
         },

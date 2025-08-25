@@ -46,7 +46,7 @@ export class ComplementaryActivitiesService {
       await this.activityTypesService.findOneByName(activityType);
 
     const newComplementaryActivity =
-      await this.prisma.complementary_Activity.create({
+      await this.prisma.complementaryActivity.create({
         data: {
           ...dataToCreate,
           activityTypeId: activityTypeExists.id,
@@ -85,7 +85,7 @@ export class ComplementaryActivitiesService {
 
   async findAll(): Promise<TComplementaryActivity[]> {
     const complementaryActivities =
-      await this.prisma.complementary_Activity.findMany({
+      await this.prisma.complementaryActivity.findMany({
         relationLoadStrategy: 'join',
         ...this.includeOptionsCA,
       });
@@ -97,12 +97,12 @@ export class ComplementaryActivitiesService {
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TComplementaryActivity>> {
     const [complementaryActivities, count] = await Promise.all([
-      this.prisma.complementary_Activity.findMany({
+      this.prisma.complementaryActivity.findMany({
         ...paginate(query),
         relationLoadStrategy: 'join',
         ...this.includeOptionsCA,
       }),
-      this.prisma.complementary_Activity.count(),
+      this.prisma.complementaryActivity.count(),
     ]);
 
     return paginateOutput<TComplementaryActivity>(
@@ -123,7 +123,7 @@ export class ComplementaryActivitiesService {
     const { userId, code } = user;
 
     const [complementaryActivities, count] = await Promise.all([
-      this.prisma.complementary_Activity.findMany({
+      this.prisma.complementaryActivity.findMany({
         where: {
           assignmentReport: {
             teacher: {
@@ -144,7 +144,7 @@ export class ComplementaryActivitiesService {
         relationLoadStrategy: 'join',
         ...this.includeOptionsCA,
       }),
-      this.prisma.academic_Assignment_Report.count({
+      this.prisma.academicAssignmentReport.count({
         where: {
           teacher: {
             userId,
@@ -166,7 +166,7 @@ export class ComplementaryActivitiesService {
   }
 
   async findOne(id: string): Promise<TComplementaryActivity> {
-    const activityType = await this.prisma.complementary_Activity.findUnique({
+    const activityType = await this.prisma.complementaryActivity.findUnique({
       where: {
         id,
       },
@@ -183,7 +183,7 @@ export class ComplementaryActivitiesService {
   }
 
   async findUserCodeByActivityId(id: string): Promise<string> {
-    const userInfo = await this.prisma.complementary_Activity.findUnique({
+    const userInfo = await this.prisma.complementaryActivity.findUnique({
       where: {
         id,
       },
@@ -222,7 +222,7 @@ export class ComplementaryActivitiesService {
       activityType &&
       (await this.activityTypesService.findOneByName(activityType));
 
-    const activityTypeUpdate = await this.prisma.complementary_Activity.update({
+    const activityTypeUpdate = await this.prisma.complementaryActivity.update({
       where: {
         id,
       },
@@ -238,7 +238,7 @@ export class ComplementaryActivitiesService {
   }
 
   async remove(id: string): Promise<TComplementaryActivity> {
-    const activityTypeDelete = await this.prisma.complementary_Activity.delete({
+    const activityTypeDelete = await this.prisma.complementaryActivity.delete({
       where: {
         id,
       },

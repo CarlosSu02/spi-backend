@@ -11,7 +11,7 @@ export class UndergradsService {
   async create(
     createUndergradDto: CreateUndergradDto,
   ): Promise<TUndergraduateDegree> {
-    const newUndergrad = await this.prisma.undergraduate_Degree.create({
+    const newUndergrad = await this.prisma.undergraduateDegree.create({
       data: {
         ...createUndergradDto,
       },
@@ -21,7 +21,7 @@ export class UndergradsService {
   }
 
   async findAll(): Promise<TUndergraduateDegree[]> {
-    const undergrads = await this.prisma.undergraduate_Degree.findMany();
+    const undergrads = await this.prisma.undergraduateDegree.findMany();
 
     // if (undergrads.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
@@ -30,7 +30,7 @@ export class UndergradsService {
   }
 
   async findAllArray(): Promise<string[]> {
-    const undergrads = await this.prisma.undergraduate_Degree.findMany({
+    const undergrads = await this.prisma.undergraduateDegree.findMany({
       select: { name: true },
     });
 
@@ -39,7 +39,7 @@ export class UndergradsService {
   }
 
   async findOne(id: string): Promise<TUndergraduateDegree> {
-    const undergrad = await this.prisma.undergraduate_Degree.findUnique({
+    const undergrad = await this.prisma.undergraduateDegree.findUnique({
       where: {
         id,
       },
@@ -54,7 +54,7 @@ export class UndergradsService {
   }
 
   async findOneByName(name: string): Promise<TUndergraduateDegree> {
-    const undergrad = await this.prisma.undergraduate_Degree.findUnique({
+    const undergrad = await this.prisma.undergraduateDegree.findUnique({
       where: {
         name,
       },
@@ -72,7 +72,7 @@ export class UndergradsService {
     id: string,
     updateUndergradDto: UpdateUndergradDto,
   ): Promise<TUndergraduateDegree> {
-    const undergradUpdate = await this.prisma.undergraduate_Degree.update({
+    const undergradUpdate = await this.prisma.undergraduateDegree.update({
       where: {
         id,
       },
@@ -85,7 +85,7 @@ export class UndergradsService {
   }
 
   async remove(id: string): Promise<TUndergraduateDegree> {
-    const undergradDelete = await this.prisma.undergraduate_Degree.delete({
+    const undergradDelete = await this.prisma.undergraduateDegree.delete({
       where: {
         id,
       },

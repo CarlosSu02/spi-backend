@@ -14,7 +14,7 @@ export class TeachingSessionsService {
   async create(
     createTeachingSessionDto: CreateTeachingSessionDto,
   ): Promise<TCreateTeachingSession> {
-    const newTeachingSession = await this.prisma.teaching_Session.create({
+    const newTeachingSession = await this.prisma.teachingSession.create({
       data: {
         ...createTeachingSessionDto,
       },
@@ -24,13 +24,13 @@ export class TeachingSessionsService {
   }
 
   async findAll(): Promise<TTeachingSession[]> {
-    const teachingSessions = await this.prisma.teaching_Session.findMany();
+    const teachingSessions = await this.prisma.teachingSession.findMany();
 
     return teachingSessions;
   }
 
   async findOne(id: string): Promise<TTeachingSession> {
-    const teachingSession = await this.prisma.teaching_Session.findUnique({
+    const teachingSession = await this.prisma.teachingSession.findUnique({
       where: {
         id,
       },
@@ -48,7 +48,7 @@ export class TeachingSessionsService {
     id: string,
     updateTeachingSessionDto: UpdateTeachingSessionDto,
   ): Promise<TUpdateTeachingSession> {
-    const teachingSessionUpdate = await this.prisma.teaching_Session.update({
+    const teachingSessionUpdate = await this.prisma.teachingSession.update({
       where: {
         id,
       },
@@ -61,7 +61,7 @@ export class TeachingSessionsService {
   }
 
   async remove(id: string): Promise<TTeachingSession> {
-    const teachingSessionDelete = await this.prisma.teaching_Session.delete({
+    const teachingSessionDelete = await this.prisma.teachingSession.delete({
       where: {
         id,
       },

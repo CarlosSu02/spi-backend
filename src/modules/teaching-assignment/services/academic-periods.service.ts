@@ -29,7 +29,7 @@ export class AcademicPeriodsService {
   async create(
     createAcademicPeriodDto: CreateAcademicPeriodDto,
   ): Promise<TCreateAcademicPeriod> {
-    const newAcademicPeriod = await this.prisma.academic_Period.create({
+    const newAcademicPeriod = await this.prisma.academicPeriod.create({
       data: {
         ...createAcademicPeriodDto,
       },
@@ -40,13 +40,13 @@ export class AcademicPeriodsService {
 
   async findAll(): Promise<TAcademicPeriod[]> {
     await this.currentAcademicPeriod();
-    const academicPeriods = await this.prisma.academic_Period.findMany();
+    const academicPeriods = await this.prisma.academicPeriod.findMany();
 
     return academicPeriods;
   }
 
   async findOne(id: string): Promise<TAcademicPeriod> {
-    const academicPeriod = await this.prisma.academic_Period.findUnique({
+    const academicPeriod = await this.prisma.academicPeriod.findUnique({
       where: {
         id,
       },
@@ -65,7 +65,7 @@ export class AcademicPeriodsService {
     pac: number,
     pac_modality: 'Trimestre' | 'Semestre',
   ): Promise<TAcademicPeriod> {
-    const academicPeriod = await this.prisma.academic_Period.findFirst({
+    const academicPeriod = await this.prisma.academicPeriod.findFirst({
       where: {
         AND: [
           {
@@ -93,7 +93,7 @@ export class AcademicPeriodsService {
     id: string,
     updateAcademicPeriodDto: UpdateAcademicPeriodDto,
   ): Promise<TUpdateAcademicPeriod> {
-    const academicPeriodUpdate = await this.prisma.academic_Period.update({
+    const academicPeriodUpdate = await this.prisma.academicPeriod.update({
       where: {
         id,
       },
@@ -106,7 +106,7 @@ export class AcademicPeriodsService {
   }
 
   async remove(id: string): Promise<TAcademicPeriod> {
-    const academicPeriodDelete = await this.prisma.academic_Period.delete({
+    const academicPeriodDelete = await this.prisma.academicPeriod.delete({
       where: {
         id,
       },

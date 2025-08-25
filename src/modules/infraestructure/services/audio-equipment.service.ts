@@ -14,7 +14,7 @@ export class AudioEquipmentService {
   async create(
     createAudioEquipmentDto: CreateAudioEquipmentDto,
   ): Promise<TCreateAudioEquipment> {
-    const newAudioEquipment = await this.prisma.audio_Equipment.create({
+    const newAudioEquipment = await this.prisma.audioEquipment.create({
       data: {
         ...createAudioEquipmentDto,
       },
@@ -24,13 +24,13 @@ export class AudioEquipmentService {
   }
 
   async findAll(): Promise<TAudioEquipment[]> {
-    const audioEquipments = await this.prisma.audio_Equipment.findMany();
+    const audioEquipments = await this.prisma.audioEquipment.findMany();
 
     return audioEquipments;
   }
 
   async findOne(id: string): Promise<TAudioEquipment> {
-    const audioEquipment = await this.prisma.audio_Equipment.findUnique({
+    const audioEquipment = await this.prisma.audioEquipment.findUnique({
       where: {
         id,
       },
@@ -48,7 +48,7 @@ export class AudioEquipmentService {
     id: string,
     updateAudioEquipmentDto: UpdateAudioEquipmentDto,
   ): Promise<TUpdateAudioEquipment> {
-    const audioEquipmentUpdate = await this.prisma.audio_Equipment.update({
+    const audioEquipmentUpdate = await this.prisma.audioEquipment.update({
       where: {
         id,
       },
@@ -61,7 +61,7 @@ export class AudioEquipmentService {
   }
 
   async remove(id: string): Promise<TAudioEquipment> {
-    const audioEquipmentDelete = await this.prisma.audio_Equipment.delete({
+    const audioEquipmentDelete = await this.prisma.audioEquipment.delete({
       where: {
         id,
       },

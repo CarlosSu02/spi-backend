@@ -19,7 +19,7 @@ export class CourseClassroomsService {
   async create(
     createCourseClassroomDto: CreateCourseClassroomDto,
   ): Promise<TCreateCourseClassroom> {
-    const newCourseClassroom = await this.prisma.course_Classroom.create({
+    const newCourseClassroom = await this.prisma.courseClassroom.create({
       data: {
         ...createCourseClassroomDto,
       },
@@ -29,7 +29,7 @@ export class CourseClassroomsService {
   }
 
   async findAll(): Promise<TCourseClassroom[]> {
-    const courseClassrooms = await this.prisma.course_Classroom.findMany();
+    const courseClassrooms = await this.prisma.courseClassroom.findMany();
 
     return courseClassrooms;
   }
@@ -37,7 +37,7 @@ export class CourseClassroomsService {
   async findAllWithSelectAndPeriodId(
     periodId: string,
   ): Promise<TCourseClassroomSelectPeriod[]> {
-    const courseClassrooms = await this.prisma.course_Classroom.findMany({
+    const courseClassrooms = await this.prisma.courseClassroom.findMany({
       where: {
         // courseId: course.id,
         // days: days.toString(),
@@ -70,7 +70,7 @@ export class CourseClassroomsService {
   }
 
   async findOne(id: string): Promise<TCourseClassroom> {
-    const courseClassroom = await this.prisma.course_Classroom.findUnique({
+    const courseClassroom = await this.prisma.courseClassroom.findUnique({
       where: {
         id,
       },
@@ -90,7 +90,7 @@ export class CourseClassroomsService {
     const currentPeriodData =
       await this.academicPeriodsService.currentAcademicPeriod();
 
-    const courseClassrooms = await this.prisma.course_Classroom.findMany({
+    const courseClassrooms = await this.prisma.courseClassroom.findMany({
       where: {
         teachingSession: {
           assignmentReport: {
@@ -136,7 +136,7 @@ export class CourseClassroomsService {
     id: string,
     updateCourseClassroomDto: UpdateCourseClassroomDto,
   ): Promise<TUpdateCourseClassroom> {
-    const courseClassroomUpdate = await this.prisma.course_Classroom.update({
+    const courseClassroomUpdate = await this.prisma.courseClassroom.update({
       where: {
         id,
       },
@@ -149,7 +149,7 @@ export class CourseClassroomsService {
   }
 
   async remove(id: string): Promise<TCourseClassroom> {
-    const courseClassroomDelete = await this.prisma.course_Classroom.delete({
+    const courseClassroomDelete = await this.prisma.courseClassroom.delete({
       where: {
         id,
       },

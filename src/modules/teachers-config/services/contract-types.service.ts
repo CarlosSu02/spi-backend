@@ -11,7 +11,7 @@ export class ContractTypesService {
   async create(
     createContractTypeDto: CreateContractTypeDto,
   ): Promise<TContractType> {
-    const newContractType = await this.prisma.contract_Type.create({
+    const newContractType = await this.prisma.contractType.create({
       data: {
         ...createContractTypeDto,
       },
@@ -21,7 +21,7 @@ export class ContractTypesService {
   }
 
   async findAll(): Promise<TContractType[]> {
-    const contractTypes = await this.prisma.contract_Type.findMany();
+    const contractTypes = await this.prisma.contractType.findMany();
 
     // if (contractTypes.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
@@ -30,7 +30,7 @@ export class ContractTypesService {
   }
 
   async findOne(id: string): Promise<TContractType> {
-    const contractType = await this.prisma.contract_Type.findUnique({
+    const contractType = await this.prisma.contractType.findUnique({
       where: {
         id,
       },
@@ -45,7 +45,7 @@ export class ContractTypesService {
   }
 
   async findOneByName(name: string): Promise<TContractType> {
-    const contractType = await this.prisma.contract_Type.findUnique({
+    const contractType = await this.prisma.contractType.findUnique({
       where: {
         name,
       },
@@ -68,7 +68,7 @@ export class ContractTypesService {
     id: string,
     updateContractTypeDto: UpdateContractTypeDto,
   ): Promise<TContractType> {
-    const contractTypeUpdate = await this.prisma.contract_Type.update({
+    const contractTypeUpdate = await this.prisma.contractType.update({
       where: {
         id,
       },
@@ -81,7 +81,7 @@ export class ContractTypesService {
   }
 
   async remove(id: string): Promise<TContractType> {
-    const contractTypeDelete = await this.prisma.contract_Type.delete({
+    const contractTypeDelete = await this.prisma.contractType.delete({
       where: {
         id,
       },
