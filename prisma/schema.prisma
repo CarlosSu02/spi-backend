@@ -42,7 +42,7 @@ model User {
 
   // Relations
   // role                Role                 @relation(fields: [roleId], references: [id])
-  teachers            Teacher[]
+  teacher             Teacher?
   resetPasswordTokens ResetPasswordToken[]
   userRoles           UserRole[]
 
@@ -70,7 +70,7 @@ model Teacher {
   categoryId     String @db.Uuid
   contractTypeId String @db.Uuid
   shiftId        String @db.Uuid
-  userId         String @db.Uuid
+  userId         String @unique @db.Uuid
 
   // Relations
   // undergrad                  Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
@@ -297,6 +297,7 @@ model Classroom {
   connectivityId   String? @db.Uuid
   audioEquipmentId String? @db.Uuid
   conditionId      String? @db.Uuid
+  maxCapacitiy     Int?
 
   // Relations
   building         Building           @relation(fields: [buildingId], references: [id])
@@ -461,11 +462,11 @@ model Course_Classroom {
   observation       String?
 
   // Relations
-  course           Course             @relation(fields: [courseId], references: [id])
-  classroom        Classroom          @relation(fields: [classroomId], references: [id])
-  teachingSession  Teaching_Session   @relation(fields: [teachingSessionId], references: [id], onDelete: Cascade)
-  modality         Modality           @relation(fields: [modalityId], references: [id])
-  courseStadistics Course_Stadistic[]
+  course          Course            @relation(fields: [courseId], references: [id])
+  classroom       Classroom         @relation(fields: [classroomId], references: [id])
+  teachingSession Teaching_Session  @relation(fields: [teachingSessionId], references: [id], onDelete: Cascade)
+  modality        Modality          @relation(fields: [modalityId], references: [id])
+  courseStadistic Course_Stadistic?
 
   @@unique([courseId, classroomId, teachingSessionId, groupCode])
   @@map("course_classrooms")
@@ -511,7 +512,7 @@ model Academic_Assignment_Report {
   teacher                 Teacher                  @relation(fields: [teacherId], references: [id])
   period                  Academic_Period          @relation(fields: [periodId], references: [id])
   complementaryActivities Complementary_Activity[]
-  teachingSessions        Teaching_Session[]
+  teachingSession         Teaching_Session?
 
   @@unique([teacherId, departmentId, periodId])
   @@map("academic_assignment_reports")
@@ -522,7 +523,7 @@ model Teaching_Session {
   id                 String    @id @default(uuid()) @db.Uuid
   consultHour        DateTime?
   tutoringHour       DateTime?
-  assignmentReportId String    @db.Uuid
+  assignmentReportId String    @unique @db.Uuid
 
   // Relations
   assignmentReport Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id], onDelete: Cascade)
@@ -538,7 +539,7 @@ model Course_Stadistic {
   RPB               Int
   NSP               Int
   ABD               Int
-  courseClassroomId String @db.Uuid
+  courseClassroomId String @unique @db.Uuid
 
   // Relations
   courseClassroom Course_Classroom @relation(fields: [courseClassroomId], references: [id], onDelete: Cascade)
@@ -557,9 +558,9 @@ model Complementary_Activity {
   activityTypeId     String   @db.Uuid
 
   // Relations
-  assignmentReport   Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id], onDelete: Cascade)
-  activityType       Activity_Type              @relation(fields: [activityTypeId], references: [id])
-  verificationMedias Verification_Media[]
+  assignmentReport  Academic_Assignment_Report @relation(fields: [assignmentReportId], references: [id], onDelete: Cascade)
+  activityType      Activity_Type              @relation(fields: [activityTypeId], references: [id])
+  verificationMedia Verification_Media?
 
   @@map("complementary_activities")
   @@schema("academic")
@@ -580,7 +581,7 @@ model Activity_Type {
 model Verification_Media {
   id          String @id @default(uuid()) @db.Uuid
   description String
-  activityId  String @db.Uuid
+  activityId  String @unique @db.Uuid
 
   // Relations
   complementaryActivity  Complementary_Activity?   @relation(fields: [activityId], references: [id])

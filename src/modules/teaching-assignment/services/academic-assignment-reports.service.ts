@@ -76,7 +76,7 @@ export class AcademicAssignmentReportsService {
         name: true,
       },
     },
-    teachingSessions: {
+    teachingSession: {
       include: {
         courseClassrooms: {
           // select: {
@@ -98,7 +98,7 @@ export class AcademicAssignmentReportsService {
           include: {
             modality: true,
             course: true,
-            courseStadistics: true,
+            courseStadistic: true,
           },
         },
       },
@@ -160,7 +160,7 @@ export class AcademicAssignmentReportsService {
           teacherId: teacher.id,
           departmentId,
           periodId,
-          teachingSessions: {
+          teachingSession: {
             create: {
               consultHour: currentDate, // Fecha actual
               // +1 hour
@@ -175,7 +175,7 @@ export class AcademicAssignmentReportsService {
           teacherId: true,
           departmentId: true,
           periodId: true,
-          teachingSessions: true,
+          teachingSession: true,
         },
       });
 
@@ -187,7 +187,7 @@ export class AcademicAssignmentReportsService {
       await this.prisma.academic_Assignment_Report.findMany({
         relationLoadStrategy: 'join',
         include: {
-          teachingSessions: {
+          teachingSession: {
             include: {
               courseClassrooms: true,
             },
@@ -392,7 +392,7 @@ export class AcademicAssignmentReportsService {
           ...this.includeOptionsAAR,
           complementaryActivities: {
             include: {
-              verificationMedias: {
+              verificationMedia: {
                 include: {
                   verificationMediaFiles: true,
                 },
@@ -596,7 +596,7 @@ export class AcademicAssignmentReportsService {
     const allAcademicAssignmentReports = await this.findAll();
     const results: TAcademicAssignmentReport[] &
       {
-        teachingSessions: {
+        teachingSession: {
           courseClassrooms: TCreateCourseClassroom[];
         };
       }[] = [];
@@ -624,16 +624,14 @@ export class AcademicAssignmentReportsService {
       // y en este punto nadie podria eliminarlo, ya que se estan creando en el mismo momento
       // pero nunca se sabe, asi que lo dejamos por si acaso
       const teachingSession =
-        academicAssignmentReport.teachingSessions! &&
-        academicAssignmentReport.teachingSessions.length !== 0
-          ? academicAssignmentReport.teachingSessions[0]
-          : await this.teachingSessionsService.create({
-              consultHour: formatISO(new Date().toISOString()),
-              tutoringHour: formatISO(
-                new Date(new Date().getTime() + 3600000), // +1 hour
-              ),
-              assignmentReportId: academicAssignmentReport.id,
-            } as CreateTeachingSessionDto);
+        academicAssignmentReport.teachingSession ??
+        (await this.teachingSessionsService.create({
+          consultHour: formatISO(new Date().toISOString()),
+          tutoringHour: formatISO(
+            new Date(new Date().getTime() + 3600000), // +1 hour
+          ),
+          assignmentReportId: academicAssignmentReport.id,
+        } as CreateTeachingSessionDto));
 
       // Creamos CourseClassroom
       const courseClassrooms: TCreateCourseClassroom[] = await Promise.all(
@@ -642,7 +640,7 @@ export class AcademicAssignmentReportsService {
             data: {
               ...cc,
               teachingSessionId: teachingSession.id,
-              courseStadistics: {
+              courseStadistic: {
                 create: {
                   APB: 0, // Asignación por defecto
                   ABD: 0, // Asignación por defecto
@@ -657,7 +655,7 @@ export class AcademicAssignmentReportsService {
 
       results.push({
         ...academicAssignmentReport,
-        teachingSessions: {
+        teachingSession: {
           ...teachingSession,
           courseClassrooms: courseClassrooms.map((cc) => ({
             ...cc,

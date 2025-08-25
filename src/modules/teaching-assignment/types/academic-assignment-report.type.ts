@@ -15,7 +15,7 @@ export type TAcademicAssignmentReport = {
   };
   period?: TAcademicPeriod;
   // complementaryActivities?: TComplementaryActivity[];
-  teachingSessions?: TTeachingSession[];
+  teachingSession?: TTeachingSession | null;
 };
 
 // Tipo para la creación

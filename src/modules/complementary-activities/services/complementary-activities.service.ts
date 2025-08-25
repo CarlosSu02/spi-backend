@@ -21,7 +21,7 @@ export class ComplementaryActivitiesService {
   private readonly includeOptionsCA = {
     include: {
       activityType: true,
-      verificationMedias: {
+      verificationMedia: {
         include: {
           verificationMediaFiles: true,
         },
@@ -71,7 +71,7 @@ export class ComplementaryActivitiesService {
     // manejo de archivos, para no modificar tanto, de momento utilizaremos el create de verificationMediasService
     const newVerificationMedia = await this.verificationMediasService.create(
       {
-        description: createComplementaryActivityDto.description,
+        description,
         activityId: newComplementaryActivity.id,
       },
       files,
@@ -79,7 +79,7 @@ export class ComplementaryActivitiesService {
 
     return {
       ...newComplementaryActivity,
-      verificationMedias: [newVerificationMedia],
+      verificationMedia: newVerificationMedia,
     };
   }
 

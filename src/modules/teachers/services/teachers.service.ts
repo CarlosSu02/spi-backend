@@ -271,7 +271,7 @@ export class TeachersService {
       include: {
         // id: true,
         // name: true,
-        teachers: {
+        teacher: {
           select: {
             id: true,
             userId: true,
@@ -285,13 +285,13 @@ export class TeachersService {
       },
     });
 
-    if (!teacher)
+    if (!teacher || !teacher.teacher)
       throw new NotFoundException(
         `El docente con el código <${code}> no fue encontrado.`,
       );
 
     return {
-      id: teacher.teachers[0].id,
+      id: teacher.teacher.id,
       userId: teacher.id,
       name: teacher.name,
       code: teacher.code,

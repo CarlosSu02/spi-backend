@@ -10,7 +10,7 @@ export type TComplementaryActivity = {
   activityTypeId: string;
   // assignmentReport?: TAssignmentReport;
   activityType: TActivityType;
-  verificationMedias: TVerificationMedia[];
+  verificationMedia: TVerificationMedia | null;
 };
 
 // export type TCreateComplementaryActivity = Omit<
