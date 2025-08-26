@@ -6,9 +6,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TransformInterceptor } from './common/interceptors';
 import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
-import { TeachersUndergradModule } from './modules/teachers-undergrad/teachers-undergrad.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
-import { TeachersPostgradModule } from './modules/teachers-postgrad/teachers-postgrad.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { CentersModule } from './modules/centers/centers.module';
 import { PositionsModule } from './modules/positions/positions.module';
@@ -23,6 +21,7 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { MailModule } from './modules/mail/mail.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AppController } from './app.controller';
+import { TeachersDegreesModule } from './modules/teachers-degrees/teachers-degrees.module';
 
 @Module({
   imports: [
@@ -31,8 +30,6 @@ import { AppController } from './app.controller';
     PrismaModule,
     UsersModule,
     TeachersConfigModule,
-    TeachersUndergradModule,
-    TeachersPostgradModule,
     TeachersModule,
     DepartmentsModule,
     CentersModule,
@@ -45,6 +42,7 @@ import { AppController } from './app.controller';
     CourseClassroomsModule,
     ComplementaryActivitiesModule,
     CloudinaryModule,
+    TeachersDegreesModule,
   ],
   providers: [
     {

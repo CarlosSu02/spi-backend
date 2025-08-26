@@ -5,8 +5,8 @@ import {
   ValidationArguments,
 } from 'class-validator';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UndergradsService } from 'src/modules/teachers-undergrad/services/undergrads.service';
 import { EDegreeType } from '../enums';
+import { UndergradsService } from 'src/modules/teachers-degrees/services/undergrads.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

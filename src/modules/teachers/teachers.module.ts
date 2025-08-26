@@ -10,15 +10,15 @@ import {
 import { ShiftsService } from '../teachers-config/services/shifts.service';
 import { ContractTypesService } from '../teachers-config/services/contract-types.service';
 import { TeacherCategoriesService } from '../teachers-config/services/teacher-categories.service';
-import { TeachersUndergradModule } from '../teachers-undergrad/teachers-undergrad.module';
 import { UsersModule } from '../users/users.module';
 import { TeacherPreferencesService } from './services/teacher-preferences.service';
 import { TeacherPreferencesController } from './contollers/teacher-preferences.controller';
+import { TeachersDegreesModule } from '../teachers-degrees/teachers-degrees.module';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
-    forwardRef(() => TeachersUndergradModule),
+    forwardRef(() => TeachersDegreesModule),
   ],
   controllers: [TeachersController, TeacherPreferencesController],
   providers: [

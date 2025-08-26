@@ -1,18 +1,15 @@
 import { TCustomOmit, TCustomPick } from 'src/common/types';
-import { TCenter } from 'src/modules/centers/types';
-import {
-  TDepartment,
-  TDepartmentJoin,
-  TFaculty,
-} from 'src/modules/departments/types';
+import { TDepartmentJoin } from 'src/modules/departments/types';
 import { TPosition } from 'src/modules/positions/types';
 import {
   TContractType,
   TShift,
   TTeacherCategory,
 } from 'src/modules/teachers-config/types';
-import { TPostgraduateDegree } from 'src/modules/teachers-postgrad/types';
-import { TUndergraduateDegree } from 'src/modules/teachers-undergrad/types';
+import {
+  TPostgraduateDegree,
+  TUndergraduateDegree,
+} from 'src/modules/teachers-degrees/types';
 import { TUser } from 'src/modules/users/types';
 
 export type TTeacher = {

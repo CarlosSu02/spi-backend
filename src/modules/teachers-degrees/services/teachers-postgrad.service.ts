@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { TTeacherPostgrad } from '../types';
