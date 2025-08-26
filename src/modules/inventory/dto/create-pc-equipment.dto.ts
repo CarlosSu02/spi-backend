@@ -8,9 +8,9 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
-import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 import { EInventoryConfig } from '../enums';
 import { IsValidIdsInventoryConfigConstraint } from '../validators';
+import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
 
 export class CreatePcEquipmentDto {
   @ApiProperty({

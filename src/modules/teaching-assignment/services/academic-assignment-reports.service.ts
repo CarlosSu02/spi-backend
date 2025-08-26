@@ -19,7 +19,6 @@ import {
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
 import { AcademicPeriodsService } from './academic-periods.service';
-import { DepartmentsService } from 'src/modules/departments/services/departments.service';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
@@ -37,7 +36,6 @@ import { ClassroomService } from 'src/modules/infraestructure/services/classroom
 import { TeachingSessionsService } from './teaching-sessions.service';
 import { CourseClassroomsService } from 'src/modules/course-classrooms/services/course-classrooms.service';
 import { TOutputTeacher } from 'src/modules/teachers/types';
-import { TDepartment } from 'src/modules/departments/types';
 import { TClassroom } from 'src/modules/infraestructure/types';
 import { Prisma } from '@prisma/client';
 import { TCustomOmit } from 'src/common/types';
@@ -46,6 +44,8 @@ import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { CreateTeacherDepartmentPositionDto } from 'src/modules/teachers/dto/create-teacher-department-position.dto';
 import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
+import { DepartmentsService } from 'src/modules/centers/services/departments.service';
+import { TDepartment } from 'src/modules/centers/types';
 
 interface ParsedTitle {
   year: number;

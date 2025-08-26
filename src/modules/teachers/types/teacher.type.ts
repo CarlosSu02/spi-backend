@@ -1,5 +1,5 @@
 import { TCustomOmit, TCustomPick } from 'src/common/types';
-import { TDepartmentJoin } from 'src/modules/departments/types';
+import { TDepartmentJoin } from 'src/modules/centers/types';
 import {
   TContractType,
   TPosition,

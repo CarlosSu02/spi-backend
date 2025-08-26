@@ -1,4 +1,4 @@
-import { TDepartment } from 'src/modules/departments/types';
+import { TDepartment } from 'src/modules/centers/types';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TTeacher } from 'src/modules/teachers/types';
 

@@ -1,8 +1,8 @@
-import { TDepartment } from 'src/modules/departments/types';
 import { TTeacher } from 'src/modules/teachers/types';
 import { TAcademicPeriod } from './academid-period.type';
 import { TTeachingSession } from './teaching-session.type';
 import { TUser } from 'src/modules/users/types';
+import { TDepartment } from 'src/modules/centers/types';
 
 export type TAcademicAssignmentReport = {
   id: string;

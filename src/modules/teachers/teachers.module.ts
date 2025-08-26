@@ -11,17 +11,17 @@ import { UsersModule } from '../users/users.module';
 import { TeacherPreferencesService } from './services/teacher-preferences.service';
 import { TeacherPreferencesController } from './contollers/teacher-preferences.controller';
 import { TeachersDegreesModule } from '../teachers-degrees/teachers-degrees.module';
-import { DepartmentsModule } from '../departments/departments.module';
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 import { TeacherDepartmentPositionController } from './contollers/teacher-department-position.controller';
 import { TeacherDepartmentPositionService } from './services/teacher-department-position.service';
+import { CentersModule } from '../centers/centers.module';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => TeachersDegreesModule),
     TeachersConfigModule,
-    DepartmentsModule,
+    CentersModule,
   ],
   controllers: [
     TeachersController,

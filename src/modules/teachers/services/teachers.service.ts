@@ -12,8 +12,8 @@ import { TOutputTeacher, TOutputTeacherCustom, TTeacherJoin } from '../types';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
-import { TDepartmentJoin } from 'src/modules/departments/types';
 import { TPosition } from 'src/modules/teachers-config/types';
+import { TDepartmentJoin } from 'src/modules/centers/types';
 
 @Injectable()
 export class TeachersService {

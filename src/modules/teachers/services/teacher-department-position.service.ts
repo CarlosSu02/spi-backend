@@ -17,9 +17,9 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { formatDateTimeZone, paginate, paginateOutput } from 'src/common/utils';
-import { DepartmentsService } from 'src/modules/departments/services/departments.service';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
+import { DepartmentsService } from 'src/modules/centers/services/departments.service';
 
 @Injectable()
 export class TeacherDepartmentPositionService {

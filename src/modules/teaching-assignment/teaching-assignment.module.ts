@@ -9,16 +9,16 @@ import { TeachingSessionsController } from './controllers/teaching-sessions.cont
 import { TeachersModule } from '../teachers/teachers.module';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from './validators';
 import { ExcelFilesModule } from '../excel-files/excel-files.module';
-import { DepartmentsModule } from '../departments/departments.module';
 import { CourseClassroomsModule } from '../course-classrooms/course-classrooms.module';
 import { InfraestructureModule } from '../infraestructure/infraestructure.module';
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
+import { CentersModule } from '../centers/centers.module';
 
 @Module({
   imports: [
     TeachersModule,
     TeachersConfigModule,
-    DepartmentsModule,
+    CentersModule,
     ExcelFilesModule,
     CourseClassroomsModule,
     InfraestructureModule,

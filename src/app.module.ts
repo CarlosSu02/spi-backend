@@ -7,7 +7,6 @@ import { UsersModule } from './modules/users/users.module';
 import { TransformInterceptor } from './common/interceptors';
 import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
-import { DepartmentsModule } from './modules/departments/departments.module';
 import { CentersModule } from './modules/centers/centers.module';
 import { InfraestructureModule } from './modules/infraestructure/infraestructure.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -29,7 +28,6 @@ import { TeachersDegreesModule } from './modules/teachers-degrees/teachers-degre
     UsersModule,
     TeachersConfigModule,
     TeachersModule,
-    DepartmentsModule,
     CentersModule,
     InfraestructureModule,
     InventoryModule,

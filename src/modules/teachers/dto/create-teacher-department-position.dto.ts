@@ -8,7 +8,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { formatISO } from 'date-fns';
-import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
+import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 

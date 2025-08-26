@@ -10,9 +10,9 @@ import {
 } from 'class-validator';
 import { normalizeText } from 'src/common/utils';
 import { Transform } from 'class-transformer';
-import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 import { ExistsCodeCourseValidator } from '../validators';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
 
 export class CreateCourseDto {
   @ApiProperty({

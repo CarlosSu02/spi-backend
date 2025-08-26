@@ -7,8 +7,8 @@ import {
   IsUUID,
 } from 'class-validator';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
-import { ECenterConfig } from 'src/modules/departments/enums';
-import { IsValidCenterConfigConstraint } from 'src/modules/departments/validators';
+import { ECenterConfig } from 'src/modules/centers/enums';
+import { IsValidCenterConfigConstraint } from 'src/modules/centers/validators';
 
 export class CreateBuildingDto {
   @ApiProperty({

@@ -1,10 +1,10 @@
 import { IsUUID, IsNotEmpty, Validate } from 'class-validator';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
-import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 import { ETeachingAssignmentConfig } from '../enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from '../validators';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
 
 export class CreateAcademicAssignmentReportDto {
   @ApiProperty({

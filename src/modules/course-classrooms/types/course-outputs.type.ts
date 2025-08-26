@@ -1,4 +1,4 @@
-import { TDepartment } from 'src/modules/departments/types';
+import { TDepartment } from 'src/modules/centers/types';
 
 export type TOutputCourseWithSelect = {
   id: string;
