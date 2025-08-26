@@ -17,9 +17,9 @@ import { generatePassword } from 'src/common/utils';
 import { MailService } from 'src/modules/mail/services/mail.service';
 import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
 import { TJwtPayload } from 'src/modules/auth/types';
-import { TeacherDepartmentPositionService } from 'src/modules/teacher-department-position/services/teacher-department-position.service';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
+import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 
 @Injectable()
 export class UsersService {

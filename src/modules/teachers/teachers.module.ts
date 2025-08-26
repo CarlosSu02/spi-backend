@@ -7,27 +7,32 @@ import {
   IsValidGradDegreeConstraint,
   IsValidUserIdConstraint,
 } from './validators';
-import { ShiftsService } from '../teachers-config/services/shifts.service';
-import { ContractTypesService } from '../teachers-config/services/contract-types.service';
-import { TeacherCategoriesService } from '../teachers-config/services/teacher-categories.service';
 import { UsersModule } from '../users/users.module';
 import { TeacherPreferencesService } from './services/teacher-preferences.service';
 import { TeacherPreferencesController } from './contollers/teacher-preferences.controller';
 import { TeachersDegreesModule } from '../teachers-degrees/teachers-degrees.module';
+import { DepartmentsModule } from '../departments/departments.module';
+import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
+import { TeacherDepartmentPositionController } from './contollers/teacher-department-position.controller';
+import { TeacherDepartmentPositionService } from './services/teacher-department-position.service';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => TeachersDegreesModule),
+    TeachersConfigModule,
+    DepartmentsModule,
   ],
-  controllers: [TeachersController, TeacherPreferencesController],
+  controllers: [
+    TeachersController,
+    TeacherPreferencesController,
+    TeacherDepartmentPositionController,
+  ],
   providers: [
     PrismaService,
     TeachersService,
     TeacherPreferencesService,
-    ShiftsService,
-    ContractTypesService,
-    TeacherCategoriesService,
+    TeacherDepartmentPositionService,
     IsValidGradDegreeConstraint,
     IsValidConfigTeacherConstraint,
     IsValidUserIdConstraint,
@@ -35,6 +40,7 @@ import { TeachersDegreesModule } from '../teachers-degrees/teachers-degrees.modu
   exports: [
     TeachersService,
     TeacherPreferencesService,
+    TeacherDepartmentPositionService,
     IsValidGradDegreeConstraint,
     IsValidConfigTeacherConstraint,
     IsValidUserIdConstraint,

@@ -17,8 +17,6 @@ import {
   TPacModality,
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
-import { TeacherDepartmentPositionService } from 'src/modules/teacher-department-position/services/teacher-department-position.service';
-import { CreateTeacherDepartmentPositionDto } from 'src/modules/teacher-department-position/dto/create-teacher-department-position.dto';
 import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
 import { AcademicPeriodsService } from './academic-periods.service';
 import { DepartmentsService } from 'src/modules/departments/services/departments.service';
@@ -46,6 +44,8 @@ import { TCustomOmit } from 'src/common/types';
 import { TComplementaryActivity } from 'src/modules/complementary-activities/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
+import { CreateTeacherDepartmentPositionDto } from 'src/modules/teachers/dto/create-teacher-department-position.dto';
+import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 
 interface ParsedTitle {
   year: number;

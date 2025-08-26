@@ -9,7 +9,6 @@ import { TeachersConfigModule } from './modules/teachers-config/teachers-config.
 import { TeachersModule } from './modules/teachers/teachers.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
 import { CentersModule } from './modules/centers/centers.module';
-import { TeacherDepartmentPositionModule } from './modules/teacher-department-position/teacher-department-position.module';
 import { InfraestructureModule } from './modules/infraestructure/infraestructure.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { TeachingAssignmentModule } from './modules/teaching-assignment/teaching-assignment.module';
@@ -32,7 +31,6 @@ import { TeachersDegreesModule } from './modules/teachers-degrees/teachers-degre
     TeachersModule,
     DepartmentsModule,
     CentersModule,
-    TeacherDepartmentPositionModule,
     InfraestructureModule,
     InventoryModule,
     TeachingAssignmentModule,

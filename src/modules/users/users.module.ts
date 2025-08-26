@@ -7,13 +7,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { TeacherRequiredFieldsForRoleConstraint } from './validators/teacher-required-fields.validator';
 import { TeachersModule } from '../teachers/teachers.module';
 import { MailModule } from '../mail/mail.module';
-import { TeacherDepartmentPositionModule } from '../teacher-department-position/teacher-department-position.module';
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 
 @Module({
   imports: [
     forwardRef(() => TeachersModule),
-    forwardRef(() => TeacherDepartmentPositionModule),
     forwardRef(() => TeachersConfigModule),
     MailModule,
   ],
