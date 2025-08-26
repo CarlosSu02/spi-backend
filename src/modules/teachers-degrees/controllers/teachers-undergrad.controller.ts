@@ -8,9 +8,11 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiCommonResponses,
+  ApiPagination,
   ResponseMessage,
   Roles,
 } from 'src/common/decorators';
@@ -18,7 +20,13 @@ import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { UndergradsService } from '../services/undergrads.service';
 import { ApiBody } from '@nestjs/swagger';
-import { CreateUndergradDto, UpdateUndergradDto } from '../dto';
+import {
+  CreateTeacherUndergradDto,
+  CreateUndergradDto,
+  UpdateUndergradDto,
+} from '../dto';
+import { TeachersUndergradService } from '../services/teachers-undergrad.service';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('teachers-undergrad')
 @Roles(
@@ -29,14 +37,16 @@ import { CreateUndergradDto, UpdateUndergradDto } from '../dto';
   EUserRole.COORDINADOR_AREA,
 )
 export class TeachersUndergradController {
-  constructor(private readonly teachersUndergradService: UndergradsService) {}
+  constructor(
+    private readonly teachersUndergradService: TeachersUndergradService,
+  ) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado la relación docente-pregrado.')
   @ApiBody({
-    type: CreateUndergradDto,
+    type: CreateTeacherUndergradDto,
     description: 'Datos para crear una relación docente-pregrado.',
   })
   @ApiCommonResponses({
@@ -45,7 +55,7 @@ export class TeachersUndergradController {
     badRequestDescription: 'Datos inválidos para crear la relación.',
     internalErrorDescription: 'Error interno al crear la relación.',
   })
-  create(@Body() createTeachersUndergradDto: CreateUndergradDto) {
+  create(@Body() createTeachersUndergradDto: CreateTeacherUndergradDto) {
     return this.teachersUndergradService.create(createTeachersUndergradDto);
   }
 
@@ -61,52 +71,56 @@ export class TeachersUndergradController {
     internalErrorDescription: 'Error interno al obtener las relaciones.',
     notFoundDescription: 'No se encontraron relaciones.',
   })
-  findAll() {
-    return this.teachersUndergradService.findAll();
+  @ApiPagination({
+    summary: 'Obtener todas las relaciones docente-pregrado',
+    description: 'Devuelve una lista paginada de todos los docente-pregrado.',
+  })
+  findAll(@Query() query: QueryPaginationDto) {
+    return this.teachersUndergradService.findAllWithPagination(query);
   }
 
-  @Get('array')
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de relaciones docente-pregrado en formato array.')
-  findAllArray() {
-    return this.teachersUndergradService.findAllArray();
-  }
+  // @Get('array')
+  // @HttpCode(HttpStatus.OK)
+  // @ResponseMessage('Listado de relaciones docente-pregrado en formato array.')
+  // findAllArray() {
+  //   return this.teachersUndergradService.findAllArray();
+  // }
 
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Relación docente-pregrado obtenida correctamente.')
-  @ApiCommonResponses({
-    summary: 'Obtener relación docente-pregrado por ID',
-    okDescription: 'Relación obtenida correctamente.',
-    badRequestDescription: 'ID inválido para obtener la relación.',
-    internalErrorDescription: 'Error interno al obtener la relación.',
-    notFoundDescription: 'No se encontró la relación solicitada.',
-  })
-  findOne(@Param('id', ValidateIdPipe) id: string) {
-    return this.teachersUndergradService.findOne(id);
-  }
-
-  @Patch(':id')
-  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Relación docente-pregrado actualizada correctamente.')
-  @ApiBody({
-    type: UpdateUndergradDto,
-    description: 'Datos para actualizar una relación docente-pregrado.',
-  })
-  @ApiCommonResponses({
-    summary: 'Actualizar relación docente-pregrado por ID',
-    okDescription: 'Relación actualizada correctamente.',
-    badRequestDescription: 'Datos inválidos para actualizar la relación.',
-    internalErrorDescription: 'Error interno al actualizar la relación.',
-    notFoundDescription: 'No se encontró la relación a actualizar.',
-  })
-  update(
-    @Param('id', ValidateIdPipe) id: string,
-    @Body() updateTeachersUndergradDto: UpdateUndergradDto,
-  ) {
-    return this.teachersUndergradService.update(id, updateTeachersUndergradDto);
-  }
+  // @Get(':id')
+  // @HttpCode(HttpStatus.OK)
+  // @ResponseMessage('Relación docente-pregrado obtenida correctamente.')
+  // @ApiCommonResponses({
+  //   summary: 'Obtener relación docente-pregrado por ID',
+  //   okDescription: 'Relación obtenida correctamente.',
+  //   badRequestDescription: 'ID inválido para obtener la relación.',
+  //   internalErrorDescription: 'Error interno al obtener la relación.',
+  //   notFoundDescription: 'No se encontró la relación solicitada.',
+  // })
+  // findOne(@Param('id', ValidateIdPipe) id: string) {
+  //   return this.teachersUndergradService.findOne(id);
+  // }
+  //
+  // @Patch(':id')
+  // @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
+  // @HttpCode(HttpStatus.OK)
+  // @ResponseMessage('Relación docente-pregrado actualizada correctamente.')
+  // @ApiBody({
+  //   type: UpdateUndergradDto,
+  //   description: 'Datos para actualizar una relación docente-pregrado.',
+  // })
+  // @ApiCommonResponses({
+  //   summary: 'Actualizar relación docente-pregrado por ID',
+  //   okDescription: 'Relación actualizada correctamente.',
+  //   badRequestDescription: 'Datos inválidos para actualizar la relación.',
+  //   internalErrorDescription: 'Error interno al actualizar la relación.',
+  //   notFoundDescription: 'No se encontró la relación a actualizar.',
+  // })
+  // update(
+  //   @Param('id', ValidateIdPipe) id: string,
+  //   @Body() updateTeachersUndergradDto: UpdateUndergradDto,
+  // ) {
+  //   return this.teachersUndergradService.update(id, updateTeachersUndergradDto);
+  // }
 
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
@@ -119,7 +133,10 @@ export class TeachersUndergradController {
     internalErrorDescription: 'Error interno al eliminar la relación.',
     notFoundDescription: 'No se encontró la relación a eliminar.',
   })
-  remove(@Param('id', ValidateIdPipe) id: string) {
-    return this.teachersUndergradService.remove(id);
+  remove(
+    @Param('userId', ValidateIdPipe) userId: string,
+    @Param('postgradId', ValidateIdPipe) postgradId: string,
+  ) {
+    return this.teachersUndergradService.remove(userId, postgradId);
   }
 }

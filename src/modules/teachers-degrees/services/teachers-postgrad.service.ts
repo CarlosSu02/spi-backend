@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
-import { TTeacherPostgrad } from '../types';
+import { TCreateTeacherPostgrad, TTeacherPostgrad } from '../types';
 import { CreateTeacherPostgradDto } from '../dto';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
@@ -16,7 +16,7 @@ export class TeachersPostgradService {
 
   async create(
     createTeacherPostgradDto: CreateTeacherPostgradDto,
-  ): Promise<TTeacherPostgrad> {
+  ): Promise<TCreateTeacherPostgrad> {
     const { userId, postgradId: postgraduateId } = createTeacherPostgradDto;
 
     const teacher = await this.teachersService.findOneByUserId(userId);
@@ -33,33 +33,101 @@ export class TeachersPostgradService {
   }
 
   async findAll(): Promise<TTeacherPostgrad[]> {
-    const results = await this.prisma.teacherPostgraduateDegree.findMany({
+    const results = await this.prisma.postgraduateDegree.findMany({
       relationLoadStrategy: 'join',
       include: {
-        teacher: true,
-        postgraduate: true,
+        postgraduateDegrees: {
+          select: {
+            teacher: {
+              select: {
+                id: true,
+                userId: true,
+                user: {
+                  select: {
+                    name: true,
+                    code: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    return results;
+    return results.map(({ id, name, postgraduateDegrees }) => ({
+      id,
+      name,
+      count: postgraduateDegrees.length,
+      teachers: postgraduateDegrees.map(
+        ({
+          teacher: {
+            id,
+            user: { name, code },
+            userId,
+          },
+        }) => ({
+          id: userId,
+          teacherId: id,
+          name,
+          code,
+        }),
+      ),
+    }));
   }
 
   async findAllWithPagination(
     query: QueryPaginationDto,
   ): Promise<IPaginateOutput<TTeacherPostgrad>> {
     const [results, count] = await Promise.all([
-      this.prisma.teacherPostgraduateDegree.findMany({
-        ...paginate(query),
+      this.prisma.postgraduateDegree.findMany({
+        ...paginate({ page: query.page, size: query.size ?? '3' }),
         relationLoadStrategy: 'join',
         include: {
-          teacher: true,
-          postgraduate: true,
+          postgraduateDegrees: {
+            select: {
+              teacher: {
+                select: {
+                  id: true,
+                  userId: true,
+                  user: {
+                    select: {
+                      name: true,
+                      code: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       }),
-      this.prisma.teacherPostgraduateDegree.count(),
+      this.prisma.postgraduateDegree.count(),
     ]);
 
-    return paginateOutput<TTeacherPostgrad>(results, count, query);
+    return paginateOutput<TTeacherPostgrad>(
+      results.map(({ id, name, postgraduateDegrees }) => ({
+        id,
+        name,
+        count: postgraduateDegrees.length,
+        teachers: postgraduateDegrees.map(
+          ({
+            teacher: {
+              id,
+              user: { name, code },
+              userId,
+            },
+          }) => ({
+            id: userId,
+            teacherId: id,
+            name,
+            code,
+          }),
+        ),
+      })),
+      count,
+      query,
+    );
   }
 
   async remove(userId: string, postgradId: string): Promise<boolean> {

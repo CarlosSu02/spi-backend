@@ -8,7 +8,6 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  Query,
 } from '@nestjs/common';
 import { CreateUndergradDto } from '../dto/create-undergrad.dto';
 import { UpdateUndergradDto } from '../dto/update-undergrad.dto';
@@ -16,14 +15,12 @@ import { UndergradsService } from '../services/undergrads.service';
 import { EUserRole } from 'src/common/enums';
 import {
   ApiCommonResponses,
-  ApiPagination,
   ResponseMessage,
   Roles,
 } from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { TeachersUndergradService } from '../services/teachers-undergrad.service';
 import { ApiBody } from '@nestjs/swagger';
-import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('undergrads')
 @Roles(
@@ -72,7 +69,8 @@ export class UndergradsController {
     internalErrorDescription: 'Error interno al obtener los pregrados.',
     notFoundDescription: 'No se encontraron pregrados.',
   })
-  findAll() { // @Query() query: QueryPaginationDto
+  findAll() {
+    // @Query() query: QueryPaginationDto
     return this.undergradsService.findAll();
   }
 

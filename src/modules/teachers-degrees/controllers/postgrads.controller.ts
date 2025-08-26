@@ -15,13 +15,11 @@ import { PostgradsService } from '../services/postgrads.service';
 import { EUserRole } from 'src/common/enums';
 import {
   ApiCommonResponses,
-  ApiPagination,
   ResponseMessage,
   Roles,
 } from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { TeachersPostgradService } from '../services/teachers-postgrad.service';
-import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('postgrads')
 @Roles(
