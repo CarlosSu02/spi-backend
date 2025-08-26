@@ -13,7 +13,7 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { TDepartmentJoin } from 'src/modules/departments/types';
-import { TPosition } from 'src/modules/positions/types';
+import { TPosition } from 'src/modules/teachers-config/types';
 
 @Injectable()
 export class TeachersService {

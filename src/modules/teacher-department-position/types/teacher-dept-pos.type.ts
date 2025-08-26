@@ -1,5 +1,5 @@
 import { TDepartment } from 'src/modules/departments/types';
-import { TPosition } from 'src/modules/positions/types';
+import { TPosition } from 'src/modules/teachers-config/types';
 import { TTeacher } from 'src/modules/teachers/types';
 
 export type TTeacherDeptPos = {

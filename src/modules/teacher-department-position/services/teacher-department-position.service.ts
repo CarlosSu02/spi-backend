@@ -17,9 +17,9 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { formatDateTimeZone, paginate, paginateOutput } from 'src/common/utils';
-import { EPosition } from 'src/modules/positions/enums';
-import { PositionsService } from 'src/modules/positions/services/positions.service';
 import { DepartmentsService } from 'src/modules/departments/services/departments.service';
+import { EPosition } from 'src/modules/teachers-config/enums';
+import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
@@ -104,11 +104,12 @@ export class TeacherDepartmentPositionService {
   }
 
   async findAll(): Promise<TOutputTeacherDeptPos[]> {
-    const teacherDeptPos =
-      await this.prisma.teacherDepartmentPosition.findMany({
+    const teacherDeptPos = await this.prisma.teacherDepartmentPosition.findMany(
+      {
         // Se puede usar include tambien...
         select: this.selectOptionsTDP,
-      });
+      },
+    );
 
     // if (teacherDeptPoss.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []

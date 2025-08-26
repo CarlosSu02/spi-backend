@@ -1,8 +1,8 @@
 import { TCustomOmit, TCustomPick } from 'src/common/types';
 import { TDepartmentJoin } from 'src/modules/departments/types';
-import { TPosition } from 'src/modules/positions/types';
 import {
   TContractType,
+  TPosition,
   TShift,
   TTeacherCategory,
 } from 'src/modules/teachers-config/types';

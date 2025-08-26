@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { formatISO } from 'date-fns';
 import { IsValidDepartmentIdConstraint } from 'src/modules/departments/validators/is-valid-department-id.validator';
-import { IsValidPositionIdConstraint } from 'src/modules/positions/validators';
+import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 
 export class CreateTeacherDepartmentPositionDto {

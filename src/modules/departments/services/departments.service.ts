@@ -3,11 +3,10 @@ import { CreateDepartmentDto } from '../dto/create-department.dto';
 import { UpdateDepartmentDto } from '../dto/update-department.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TDepartment } from '../types';
-import { EPosition } from 'src/modules/positions/enums';
-import { TeacherCategoriesController } from 'src/modules/teachers-config/controllers/teacher-categories.controller';
-import { TPosition } from 'src/modules/positions/types';
 import { TUser } from 'src/modules/users/types';
 import { TCustomPick } from 'src/common/types';
+import { EPosition } from 'src/modules/teachers-config/enums';
+import { TPosition } from 'src/modules/teachers-config/types';
 
 @Injectable()
 export class DepartmentsService {

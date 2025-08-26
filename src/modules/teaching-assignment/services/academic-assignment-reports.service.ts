@@ -18,8 +18,6 @@ import {
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { TeacherDepartmentPositionService } from 'src/modules/teacher-department-position/services/teacher-department-position.service';
-import { PositionsService } from 'src/modules/positions/services/positions.service';
-import { EPosition } from 'src/modules/positions/enums';
 import { CreateTeacherDepartmentPositionDto } from 'src/modules/teacher-department-position/dto/create-teacher-department-position.dto';
 import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
 import { AcademicPeriodsService } from './academic-periods.service';
@@ -46,6 +44,8 @@ import { TClassroom } from 'src/modules/infraestructure/types';
 import { Prisma } from '@prisma/client';
 import { TCustomOmit } from 'src/common/types';
 import { TComplementaryActivity } from 'src/modules/complementary-activities/types';
+import { EPosition } from 'src/modules/teachers-config/enums';
+import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 
 interface ParsedTitle {
   year: number;

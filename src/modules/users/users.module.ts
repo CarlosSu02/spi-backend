@@ -8,13 +8,13 @@ import { TeacherRequiredFieldsForRoleConstraint } from './validators/teacher-req
 import { TeachersModule } from '../teachers/teachers.module';
 import { MailModule } from '../mail/mail.module';
 import { TeacherDepartmentPositionModule } from '../teacher-department-position/teacher-department-position.module';
-import { PositionsModule } from '../positions/positions.module';
+import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 
 @Module({
   imports: [
     forwardRef(() => TeachersModule),
     forwardRef(() => TeacherDepartmentPositionModule),
-    forwardRef(() => PositionsModule),
+    forwardRef(() => TeachersConfigModule),
     MailModule,
   ],
   controllers: [UsersController, RolesController],

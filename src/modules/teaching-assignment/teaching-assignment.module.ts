@@ -10,16 +10,16 @@ import { TeachersModule } from '../teachers/teachers.module';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from './validators';
 import { ExcelFilesModule } from '../excel-files/excel-files.module';
 import { TeacherDepartmentPositionModule } from '../teacher-department-position/teacher-department-position.module';
-import { PositionsModule } from '../positions/positions.module';
 import { DepartmentsModule } from '../departments/departments.module';
 import { CourseClassroomsModule } from '../course-classrooms/course-classrooms.module';
 import { InfraestructureModule } from '../infraestructure/infraestructure.module';
+import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 
 @Module({
   imports: [
     TeachersModule,
     TeacherDepartmentPositionModule,
-    PositionsModule,
+    TeachersConfigModule,
     DepartmentsModule,
     ExcelFilesModule,
     CourseClassroomsModule,
