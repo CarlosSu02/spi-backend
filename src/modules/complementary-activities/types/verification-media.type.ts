@@ -10,6 +10,7 @@ export type TVerificationMedia = {
 export type TVerificationMediaFile = {
   id: string;
   url: string;
+  public_id: string;
   multimediaTypeId: string;
   verificationMediaId: string;
 };

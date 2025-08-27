@@ -9,12 +9,13 @@ import {
   CreateComplementaryActivityDto,
   UpdateComplementaryActivityDto,
 } from '../dto';
-import { TComplementaryActivity } from '../types';
+import { TComplementaryActivity, TVerificationMediaFile } from '../types';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
 import { VerificationMediasService } from './verification-medias.service';
+import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
 
 @Injectable()
 export class ComplementaryActivitiesService {
@@ -32,6 +33,7 @@ export class ComplementaryActivitiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activityTypesService: ActivityTypesService,
+    private readonly cloudinaryService: CloudinaryService,
     @Inject(forwardRef(() => VerificationMediasService))
     private readonly verificationMediasService: VerificationMediasService,
   ) {}
@@ -166,20 +168,21 @@ export class ComplementaryActivitiesService {
   }
 
   async findOne(id: string): Promise<TComplementaryActivity> {
-    const activityType = await this.prisma.complementaryActivity.findUnique({
-      where: {
-        id,
-      },
-      relationLoadStrategy: 'join',
-      ...this.includeOptionsCA,
-    });
+    const complementaryActivity =
+      await this.prisma.complementaryActivity.findUnique({
+        where: {
+          id,
+        },
+        relationLoadStrategy: 'join',
+        ...this.includeOptionsCA,
+      });
 
-    if (!activityType)
+    if (!complementaryActivity)
       throw new NotFoundException(
         `La actividad complementaria con id ${id} no fue encontrada.`,
       );
 
-    return activityType;
+    return complementaryActivity;
   }
 
   async findUserCodeByActivityId(id: string): Promise<string> {
@@ -238,14 +241,37 @@ export class ComplementaryActivitiesService {
   }
 
   async remove(id: string): Promise<TComplementaryActivity> {
-    const activityTypeDelete = await this.prisma.complementaryActivity.delete({
-      where: {
-        id,
-      },
-      relationLoadStrategy: 'join',
-      ...this.includeOptionsCA,
-    });
+    const complementaryActivity = await this.findOne(id);
+    // await this.prisma.complementaryActivity.findUnique({
+    //   where: {
+    //     id,
+    //   },
+    //   relationLoadStrategy: 'join',
+    //   ...this.includeOptionsCA,
+    // });
 
-    return activityTypeDelete;
+    if (
+      complementaryActivity.verificationMedia &&
+      complementaryActivity.verificationMedia?.verificationMediaFiles.length !==
+        0
+    ) {
+      const public_ids =
+        complementaryActivity.verificationMedia.verificationMediaFiles.map(
+          ({ public_id }: TVerificationMediaFile) => public_id,
+        );
+
+      await this.cloudinaryService.removeMultiple(public_ids);
+    }
+
+    const complementaryActivityDelete =
+      await this.prisma.complementaryActivity.delete({
+        where: {
+          id,
+        },
+        relationLoadStrategy: 'join',
+        ...this.includeOptionsCA,
+      });
+
+    return complementaryActivityDelete;
   }
 }

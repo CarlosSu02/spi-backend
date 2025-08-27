@@ -119,7 +119,7 @@ export class CloudinaryService {
     const extension = filename.split('.').pop();
     const fileName = `${nameWithoutExt}-${timestamp}`;
     const resourceType = this.getResourceType(mimetype);
-    const folder = `${code}/${subject}`;
+    const folder = `SPI/${code}/${subject}`;
 
     return new Promise((resolve, reject) => {
       const uploadOptions: UploadApiOptions = {
@@ -163,7 +163,7 @@ export class CloudinaryService {
 
   async getFilesByFolder(code: string, subject: string) {
     try {
-      const folderPath = `${code}/${subject}`;
+      const folderPath = `SPI/${code}/${subject}`;
       const [images, documents] = await Promise.all([
         this.getImages(folderPath),
         this.getFiles(folderPath),
@@ -240,6 +240,69 @@ export class CloudinaryService {
     }
   }
 
+  // Remove
+  async remove(public_id: string) {
+    try {
+      const res = (await cloudinary.uploader.destroy(
+        public_id,
+        this.optionsDeleteFile([public_id]),
+      )) as {
+        result: string;
+      };
+
+      if (!res)
+        throw new BadRequestException(
+          `Error al eliminar el archivo, no se recibió ninguna respuesta del servicio.`,
+        );
+
+      if (res.result !== 'ok') throw new Error(res.result);
+
+      return res;
+    } catch (error) {
+      throw new BadRequestException(
+        `Error al eliminar el archivo: <${error as string}>`,
+      );
+    }
+  }
+
+  async removeMultiple(public_ids: string[]) {
+    try {
+      const res = (await cloudinary.api.delete_resources(
+        public_ids,
+        this.optionsDeleteFile(public_ids),
+      )) as {
+        deleted: Record<string, string>;
+      };
+
+      if (!res || !res.deleted) {
+        throw new BadRequestException(
+          `Error al eliminar los archivos, no se recibió ninguna respuesta válida del servicio.`,
+        );
+      }
+
+      const errores = Object.entries(res.deleted).filter(
+        ([_, status]) => status !== 'deleted',
+      );
+
+      if (errores.length > 0) {
+        const details = errores
+          .map(([id, status]) => `${id}: ${status}`)
+          .join(', ');
+        throw new BadRequestException(
+          `Error al eliminar los siguientes archivos: ${details}`,
+        );
+      }
+
+      return res;
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        `Error al eliminar los archivos: <${error as string}>`,
+      );
+    }
+  }
+
+  // Private functions
   private formatFileResponse(resource: TCloudinaryResource): TFileResponse {
     return {
       public_id: resource.public_id,
@@ -288,5 +351,19 @@ export class CloudinaryService {
         `Error al obtener archivos: ${error.message}`,
       );
     }
+  }
+
+  private optionsDeleteFile(public_ids: string[]) {
+    const isRaw = public_ids.some((id) =>
+      id.match(/\.(pdf|docx?|doc?|xlsx?|xls?|pptx?|ppt?|zip)$/i),
+    );
+
+    const options: Record<string, any> = {};
+    if (isRaw) {
+      options.resource_type = 'raw';
+      options.invalidate = true;
+    }
+
+    return options;
   }
 }

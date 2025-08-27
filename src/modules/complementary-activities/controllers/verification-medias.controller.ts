@@ -212,7 +212,7 @@ export class VerificationMediasController {
     return this.verificationMediasService.removePersonal(currentUserId, id);
   }
 
-  @Delete('file/:id')
+  @Delete('file/personal/:id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
     'Se ha eliminado un archivo de los medios de verificación (usuario autenticado).',

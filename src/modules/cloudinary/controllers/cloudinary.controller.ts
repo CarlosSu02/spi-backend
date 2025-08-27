@@ -10,6 +10,7 @@ import {
   Param,
   BadRequestException,
   InternalServerErrorException,
+  Delete,
 } from '@nestjs/common';
 import { multerConfig } from '../configs/multer.config';
 import { CloudinaryService } from '../services/cloudinary.service';
@@ -136,5 +137,20 @@ export class CloudinaryController {
         'Error interno del servidor al subir archivo',
       );
     }
+  }
+
+  @Delete(':public_id')
+  @ApiCommonResponses({
+    summary: 'Elimina archivo por public_id',
+    description: 'Elimina un archivo con solo colocar el public_id del mismo.',
+    okDescription: 'Archivo eliminado exitosamente',
+    internalErrorDescription: 'Error interno del servidor.',
+    notFoundDescription:
+      'No se logró eliminar el archivo asociado al public_id.',
+  })
+  async remove(@Query('public_id') public_id: string) {
+    if (!public_id) throw new BadRequestException('El public_id es requerido');
+
+    return await this.cloudinaryService.remove(public_id);
   }
 }

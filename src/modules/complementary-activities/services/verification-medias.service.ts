@@ -33,7 +33,7 @@ export class VerificationMediasService {
   ): Promise<TVerificationMedia> {
     const filesParsed: TCustomPick<
       TVerificationMediaFile,
-      'url' | 'multimediaTypeId'
+      'url' | 'multimediaTypeId' | 'public_id'
     >[] =
       files.length === 0
         ? []
@@ -179,38 +179,50 @@ export class VerificationMediasService {
     //   dataToUpdate.multimediaTypeId = multimediaTypeExists.id;
     // }
 
-    const verificationMediaUpdate = await this.prisma.verificationMedia.update(
-      {
-        where: {
-          id,
-        },
-        data: {
-          ...updateVerificationMediaDto,
-        },
+    const verificationMediaUpdate = await this.prisma.verificationMedia.update({
+      where: {
+        id,
       },
-    );
+      data: {
+        ...updateVerificationMediaDto,
+      },
+    });
 
     return verificationMediaUpdate;
   }
 
   async remove(id: string): Promise<TVerificationMedia> {
-    const verificationMediaDelete = await this.prisma.verificationMedia.delete(
-      {
-        where: {
-          id,
-        },
-        relationLoadStrategy: 'join',
-        include: {
-          verificationMediaFiles: true,
-        },
+    const verificationMediaDelete = await this.prisma.verificationMedia.delete({
+      where: {
+        id,
       },
-    );
+      relationLoadStrategy: 'join',
+      include: {
+        verificationMediaFiles: true,
+      },
+    });
 
     return verificationMediaDelete;
   }
 
   // VerificationMedia => File
   async removeFile(id: string): Promise<TVerificationMediaFile> {
+    const file = await this.prisma.verificationMediaFile.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!file)
+      throw new BadRequestException(
+        `El archivo con id <${id}> no fue encontrado.`,
+      );
+
+    // Eliminar de Cloudinary primero
+    await this.cloudinaryService.remove(
+      (file as TVerificationMediaFile).public_id,
+    );
+
     const verificationMediaDelete =
       await this.prisma.verificationMediaFile.delete({
         where: {
@@ -247,26 +259,33 @@ export class VerificationMediasService {
         `El medio de verificación no fue encontrado.`,
       );
 
-    const verificationMediaDelete = await this.prisma.verificationMedia.delete(
-      {
-        where: { id },
-        relationLoadStrategy: 'join',
-        include: { verificationMediaFiles: true },
-      },
-    );
+    if (verificationMedia.verificationMediaFiles.length !== 0) {
+      const public_ids = verificationMedia.verificationMediaFiles.map(
+        ({ public_id }: TVerificationMediaFile) => public_id,
+      );
+
+      await this.cloudinaryService.removeMultiple(public_ids);
+    }
+
+    const verificationMediaDelete = await this.prisma.verificationMedia.delete({
+      where: { id },
+      relationLoadStrategy: 'join',
+      include: { verificationMediaFiles: true },
+    });
 
     return verificationMediaDelete;
   }
 
-  // VerificationMedia => File
+  // VerificationMedia => File => Cloudinary
   async removeFilePersonal(
     currentUserId: string,
-    id: string,
+    fileId: string,
   ): Promise<TVerificationMediaFile> {
     const verificationMediaFile =
       await this.prisma.verificationMediaFile.findFirst({
         where: {
-          id,
+          id: fileId,
+          // Para asegurarse de que se se esta eliminando el del usuario autenticado
           verificationMedia: {
             complementaryActivity: {
               assignmentReport: {
@@ -281,12 +300,16 @@ export class VerificationMediasService {
 
     if (!verificationMediaFile)
       throw new NotFoundException(
-        `El medio de verificación no fue encontrado.`,
+        `El archivo del medio de verificación no fue encontrado.`,
       );
+
+    await this.cloudinaryService.remove(
+      (verificationMediaFile as TVerificationMediaFile).public_id,
+    );
 
     const verificationMediaDelete =
       await this.prisma.verificationMediaFile.delete({
-        where: { id },
+        where: { id: fileId },
       });
 
     return verificationMediaDelete;
@@ -296,11 +319,14 @@ export class VerificationMediasService {
     activityId: string,
     files: Express.Multer.File[],
   ): Promise<
-    TCustomPick<TVerificationMediaFile, 'url' | 'multimediaTypeId'>[]
+    TCustomPick<
+      TVerificationMediaFile,
+      'url' | 'multimediaTypeId' | 'public_id'
+    >[]
   > {
     const results: TCustomPick<
       TVerificationMediaFile,
-      'url' | 'multimediaTypeId'
+      'url' | 'multimediaTypeId' | 'public_id'
     >[] = [];
 
     const [code, activity, multipediaTypes] = await Promise.all([
@@ -338,6 +364,7 @@ export class VerificationMediasService {
 
       results.push({
         url: uploadResult.url,
+        public_id: uploadResult.public_id,
         multimediaTypeId: multimediaTypeExists.id,
       });
     }

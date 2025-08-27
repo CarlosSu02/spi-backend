@@ -584,7 +584,7 @@ model VerificationMedia {
   activityId  String @unique @db.Uuid
 
   // Relations
-  complementaryActivity  ComplementaryActivity?  @relation(fields: [activityId], references: [id])
+  complementaryActivity  ComplementaryActivity   @relation(fields: [activityId], references: [id], onDelete: Cascade)
   verificationMediaFiles VerificationMediaFile[]
 
   @@map("verification_medias")
@@ -595,12 +595,13 @@ model VerificationMedia {
 model VerificationMediaFile {
   id                  String @id @default(uuid()) @db.Uuid
   url                 String
+  public_id           String // para eliminar imagenes de cloudinary
   multimediaTypeId    String @db.Uuid
   verificationMediaId String @db.Uuid
 
   // Relations
   multimediaType    MultimediaType    @relation(fields: [multimediaTypeId], references: [id])
-  verificationMedia VerificationMedia @relation(fields: [verificationMediaId], references: [id])
+  verificationMedia VerificationMedia @relation(fields: [verificationMediaId], references: [id], onDelete: Cascade)
 
   @@map("verification_media_files")
   @@schema("academic")
