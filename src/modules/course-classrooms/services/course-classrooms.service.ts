@@ -184,6 +184,88 @@ export class CourseClassroomsService {
     return courseClassrooms;
   }
 
+  async findAllByCoordinatorAndPeriodId(
+    userId: string,
+    periodId: string,
+  ): Promise<
+    (TCourseClassroom & {
+      teacher: { id: string; userId: string; name: string; code: string };
+    })[]
+  > {
+    const user =
+      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+
+    const courseClassrooms = await this.prisma.courseClassroom.findMany({
+      where: {
+        teachingSession: {
+          assignmentReport: {
+            periodId,
+            departmentId: user.departmentId,
+          },
+        },
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        course: {
+          select: {
+            name: true,
+            code: true,
+            uvs: true,
+            department: {
+              select: {
+                name: true,
+                center: true,
+              },
+            },
+          },
+        },
+        classroom: {
+          select: {
+            name: true,
+          },
+        },
+        teachingSession: {
+          select: {
+            assignmentReport: {
+              select: {
+                teacher: {
+                  select: {
+                    id: true,
+                    userId: true,
+                    user: {
+                      select: {
+                        code: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (courseClassrooms.length === 0)
+      throw new NotFoundException(
+        'No se encontraron asignaturas para el periodo seleccionado.',
+      );
+
+    const mapped: (TCourseClassroom & {
+      teacher: { id: string; userId: string; name: string; code: string };
+    })[] = courseClassrooms.map(({ teachingSession, ...cc }) => ({
+      ...cc,
+      teacher: {
+        id: teachingSession.assignmentReport.teacher.id,
+        userId: teachingSession.assignmentReport.teacher.userId,
+        ...teachingSession.assignmentReport.teacher.user,
+      },
+    }));
+
+    return mapped;
+  }
+
   async update(
     id: string,
     updateCourseClassroomDto: UpdateCourseClassroomDto,

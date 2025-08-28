@@ -341,6 +341,36 @@ export class AssignmentReportsController {
     );
   }
 
+  @Get('coordinator/periods')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Lista de periodos académicos con asignaciones académicas registradas.',
+  )
+  @ApiPagination({
+    summary:
+      'Obtener periodos académicos con asignaciones registradas para coordinadores de área',
+    description:
+      'Retorna un listado paginado de los periodos académicos en los que existen asignaciones académicas vinculadas al departamento del coordinador de área autenticado.',
+  })
+  @ApiCommonResponses({
+    summary: 'Consulta de periodos académicos con asignaciones',
+    okDescription: 'Listado de periodos obtenido correctamente.',
+    badRequestDescription: 'La solicitud contiene parámetros inválidos.',
+    internalErrorDescription: 'Error interno al procesar la solicitud.',
+    notFoundDescription:
+      'No se encontraron periodos con asignaciones registradas.',
+  })
+  findAllByCoordinatorOnlyPeriods(
+    @Query() query: QueryPaginationDto,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.academicAssignmentReportsService.findAllByCoordinatorOnlyPeriods(
+      query,
+      userId,
+    );
+  }
+
   @Get(':id')
   @Roles(
     EUserRole.ADMIN,
@@ -369,6 +399,35 @@ export class AssignmentReportsController {
   })
   findOne(@Param('id', ValidateIdPipe) id: string) {
     return this.academicAssignmentReportsService.findOne(id);
+  }
+
+  @Get('coordinator/periods/:periodId')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Detalle de asignaciones académicas para el periodo especificado.',
+  )
+  @ApiOperation({
+    summary: 'Obtener detalle de asignaciones académicas por periodo',
+    description:
+      'Permite a un coordinador de área autenticado consultar las asignaciones académicas correspondientes a un periodo académico específico.',
+  })
+  @ApiCommonResponses({
+    summary: 'Consulta de asignaciones académicas por periodo',
+    okDescription: 'Detalle de asignaciones obtenido correctamente.',
+    badRequestDescription: 'La solicitud contiene parámetros inválidos.',
+    internalErrorDescription: 'Error interno al procesar la solicitud.',
+    notFoundDescription:
+      'No se encontraron asignaciones para el periodo especificado.',
+  })
+  findOneByCoordinatorAndPeriodId(
+    @Param('periodId', ValidateIdPipe) periodId: string,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.academicAssignmentReportsService.findOneByCoordinatorAndPeriodId(
+      userId,
+      periodId,
+    );
   }
 
   @Patch(':id')

@@ -20,7 +20,7 @@ import {
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiParam } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { QueryPaginationDto } from 'src/common/dto';
@@ -118,6 +118,28 @@ export class CourseClassroomsController {
   findCurrentPeriod(@GetCurrentUserId() userId: string) {
     console.log('?');
     return this.courseClassroomsService.findCurrentPeriodAndUserId(userId);
+  }
+
+  @Get('coordinator/periods/:periodId')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Detalle de asignaturas para el periodo especificado.')
+  @ApiCommonResponses({
+    summary: 'Consulta de asignaturas por periodo',
+    okDescription: 'Detalle de asignaturas obtenido correctamente.',
+    badRequestDescription: 'La solicitud contiene parámetros inválidos.',
+    internalErrorDescription: 'Error interno al procesar la solicitud.',
+    notFoundDescription:
+      'No se encontraron asignaturas para el periodo especificado.',
+  })
+  findOneByCoordinatorAndPeriodId(
+    @Param('periodId', ValidateIdPipe) periodId: string,
+    @GetCurrentUserId() userId: string,
+  ) {
+    return this.courseClassroomsService.findAllByCoordinatorAndPeriodId(
+      userId,
+      periodId,
+    );
   }
 
   @Patch(':id')

@@ -15,6 +15,7 @@ import {
   TAcademicAssignmentReport,
   TUpdateAcademicAssignmentReport,
   TPacModality,
+  TAcademicPeriod,
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
@@ -317,6 +318,52 @@ export class AcademicAssignmentReportsService {
     return await this.findAllByDepartmentId(query, user.department.id);
   }
 
+  async findAllByCoordinatorOnlyPeriods(
+    query: QueryPaginationDto,
+    userId: string,
+  ): Promise<IPaginateOutput<TAcademicPeriod & { title: string }>> {
+    const user =
+      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+
+    // Periodos donde existen reportes y que sean del departamento del usuario.
+    const [periods, count] = await Promise.all([
+      this.prisma.academicAssignmentReport.findMany({
+        ...paginate(query),
+        distinct: ['periodId'],
+        where: {
+          departmentId: user.departmentId,
+        },
+        relationLoadStrategy: 'join',
+        select: {
+          period: true,
+        },
+      }),
+      this.prisma.academicAssignmentReport
+        .findMany({
+          distinct: ['periodId'],
+          where: {
+            departmentId: user.departmentId,
+          },
+          select: {
+            periodId: true,
+          },
+        })
+        .then((results) => results.length),
+    ]);
+
+    if (count === 0)
+      throw new BadRequestException(
+        `No se encontraron planificaciones académica para el departamento <${user.department.name}>.`,
+      );
+
+    const mapped = periods.map(({ period }) => ({
+      ...period,
+      title: `PAC No. ${period.pac}, ${period.pac_modality}, ${period.year}`,
+    }));
+
+    return paginateOutput(mapped, count, query);
+  }
+
   async findOne(id: string): Promise<TAcademicAssignmentReport> {
     const academicAssignmentReport =
       await this.prisma.academicAssignmentReport.findUnique({
@@ -423,6 +470,35 @@ export class AcademicAssignmentReportsService {
       );
 
     return academicAssignmentReport;
+  }
+
+  async findOneByCoordinatorAndPeriodId(
+    userId: string,
+    periodId: string,
+  ): Promise<TAcademicAssignmentReport[]> {
+    const user =
+      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+
+    const academicAssignmentReports =
+      await this.prisma.academicAssignmentReport.findMany({
+        where: {
+          periodId,
+          departmentId: user.departmentId,
+        },
+        relationLoadStrategy: 'join',
+        include: this.includeOptionsAAR,
+        omit: {
+          teacherId: true,
+          departmentId: true,
+        },
+      });
+
+    if (academicAssignmentReports.length === 0)
+      throw new NotFoundException(
+        'No se encontraron asignaciones académicas para el periodo seleccionado.',
+      );
+
+    return academicAssignmentReports;
   }
 
   async update(
