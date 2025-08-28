@@ -26,10 +26,14 @@ import { ExtractIdInterceptor } from 'src/common/interceptors';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ApiBody } from '@nestjs/swagger';
+import { TeacherDepartmentPositionService } from '../services/teacher-department-position.service';
 
 @Controller('teachers')
 export class TeachersController {
-  constructor(private readonly teachersService: TeachersService) {}
+  constructor(
+    private readonly teachersService: TeachersService,
+    private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
+  ) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
@@ -85,6 +89,46 @@ export class TeachersController {
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.teachersService.findAllWithPagination(query);
+  }
+
+  // para que un coordinador de area pueda ver los docentes de su area o departamento
+  // en este caso solo es para el rol COORDINADOR_AREA, y siempre y cuando este autenticado
+  // no necesita el departmentId en la url, ya que el coordinador de área solo puede ver los docentes de su departamento
+  // solo funcionara si el coordinador inicia sesión y tiene un departamento asignado
+  @Get('coordinator')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de docentes con su departamento y cargo en un departamento en específico para coordinadores de área.',
+  )
+  @ApiCommonResponses({
+    summary:
+      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área',
+    okDescription: 'Listado obtenido correctamente para coordinador.',
+    badRequestDescription:
+      'Solicitud inválida al obtener los docentes para coordinador.',
+    internalErrorDescription:
+      'Error interno al obtener los docentes para coordinador.',
+    notFoundDescription: 'No se encontraron docentes para el coordinador.',
+  })
+  @ApiPagination({
+    summary:
+      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
+    description:
+      'Obtiene un listado paginado de docentes con su departamento y cargo asociados a un departamento específico para coordinadores de área',
+  })
+  async findAllByCoordinator(
+    @Query() query: QueryPaginationDto,
+    @GetCurrentUserId() userId: string,
+  ) {
+    const user =
+      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+
+    return await this.teachersService.findAllByDepartmentIdWithPagination(
+      query,
+      user.department.id,
+      user.teacher.id,
+    );
   }
 
   @Get('teacher/:id')

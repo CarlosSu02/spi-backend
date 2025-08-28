@@ -17,6 +17,46 @@ import { TDepartmentJoin } from 'src/modules/centers/types';
 
 @Injectable()
 export class TeachersService {
+  private readonly selectOptionsTeacher = {
+    select: {
+      id: true,
+      categoryId: true,
+      contractTypeId: true,
+      shiftId: true,
+      user: {
+        select: {
+          id: true,
+          code: true,
+          name: true,
+        },
+      },
+      contractType: true,
+      category: true,
+      shift: true,
+      postgraduateDegrees: {
+        include: {
+          postgraduate: true,
+        },
+      },
+      undergradDegrees: {
+        include: {
+          undergraduate: true,
+        },
+      },
+      positionHeld: {
+        include: {
+          department: {
+            include: {
+              center: true,
+              faculty: true,
+            },
+          },
+          position: true,
+        },
+      },
+    },
+  };
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => UsersService))
@@ -119,43 +159,7 @@ export class TeachersService {
     const [teachers, count] = await Promise.all([
       this.prisma.teacher.findMany({
         ...paginate(query),
-        select: {
-          id: true,
-          categoryId: true,
-          contractTypeId: true,
-          shiftId: true,
-          user: {
-            select: {
-              id: true,
-              code: true,
-              name: true,
-            },
-          },
-          contractType: true,
-          category: true,
-          shift: true,
-          postgraduateDegrees: {
-            include: {
-              postgraduate: true,
-            },
-          },
-          undergradDegrees: {
-            include: {
-              undergraduate: true,
-            },
-          },
-          positionHeld: {
-            include: {
-              department: {
-                include: {
-                  center: true,
-                  faculty: true,
-                },
-              },
-              position: true,
-            },
-          },
-        },
+        ...this.selectOptionsTeacher,
       }),
       this.prisma.teacher.count(),
     ]);
@@ -163,6 +167,43 @@ export class TeachersService {
     // const mappedTeachers = teachers.map((teacher) => ({
     // id: teacher.id,
     // })
+
+    const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) =>
+      this.mapTeacher(teacher as TTeacherJoin),
+    );
+
+    return paginateOutput<TOutputTeacher>(mappedTeachers, count, query);
+  }
+
+  async findAllByDepartmentIdWithPagination(
+    query: QueryPaginationDto,
+    departmentId: string,
+    omitTeacherId?: string, // Opcional para omitir un docente específico, en este caso el que esta haciendo la consulta
+  ): Promise<IPaginateOutput<TOutputTeacher>> {
+    const where = {
+      positionHeld: {
+        some: {
+          departmentId,
+        },
+      },
+    };
+    const whereOmitId = {
+      ...where,
+      id: {
+        not: omitTeacherId,
+      },
+    };
+
+    const [teachers, count] = await Promise.all([
+      this.prisma.teacher.findMany({
+        where: omitTeacherId ? whereOmitId : where,
+        ...paginate(query),
+        ...this.selectOptionsTeacher,
+      }),
+      this.prisma.teacher.count({
+        where: omitTeacherId ? whereOmitId : where,
+      }),
+    ]);
 
     const mappedTeachers: TOutputTeacher[] = teachers.map((teacher) =>
       this.mapTeacher(teacher as TTeacherJoin),
@@ -192,44 +233,7 @@ export class TeachersService {
         userId,
       },
       relationLoadStrategy: 'join',
-      select: {
-        id: true,
-        categoryId: true,
-        contractTypeId: true,
-        shiftId: true,
-        user: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            email: true,
-          },
-        },
-        contractType: true,
-        category: true,
-        shift: true,
-        postgraduateDegrees: {
-          include: {
-            postgraduate: true,
-          },
-        },
-        undergradDegrees: {
-          include: {
-            undergraduate: true,
-          },
-        },
-        positionHeld: {
-          include: {
-            department: {
-              include: {
-                center: true,
-                faculty: true,
-              },
-            },
-            position: true,
-          },
-        },
-      },
+      ...this.selectOptionsTeacher,
     });
 
     if (!teacher)
@@ -364,7 +368,7 @@ export class TeachersService {
         name: u.postgraduate.name,
       })),
       positions: teacher.positionHeld.map((ph) => ({
-        ...ph,
+        // ...ph,
         department: ph.department,
         position: ph.position,
       })),
