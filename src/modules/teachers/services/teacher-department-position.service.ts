@@ -69,13 +69,33 @@ export class TeacherDepartmentPositionService {
 
     const teacher = await this.teachersService.findOneByUserId(userId);
 
+    return await this.createFn(teacher.id, departmentId, positionId, startDate);
+  }
+
+  // Para usos internos
+  async createWithTeacherId(
+    teacherId: string,
+    createTeacherDepartmentPositionDto: CreateTeacherDepartmentPositionDto,
+  ): Promise<TTeacherDeptPos> {
+    const { departmentId, positionId, startDate } =
+      createTeacherDepartmentPositionDto;
+
+    return await this.createFn(teacherId, departmentId, positionId, startDate);
+  }
+
+  private async createFn(
+    teacherId: string,
+    departmentId: string,
+    positionId: string,
+    startDate: string,
+  ) {
     // primero obtener el primer dato, ya que un docente solo puede tener un cargo en el mismo departamento
     const teacherDeptPosExists =
       await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
           AND: [
             {
-              teacherId: teacher.id,
+              teacherId,
             },
             { departmentId: departmentId },
           ],
@@ -93,7 +113,7 @@ export class TeacherDepartmentPositionService {
     const newTeacherDeptPos =
       await this.prisma.teacherDepartmentPosition.create({
         data: {
-          teacherId: teacher.id,
+          teacherId,
           departmentId,
           positionId,
           startDate: parseISO(startDate),
@@ -300,6 +320,32 @@ export class TeacherDepartmentPositionService {
               teacherId: teacher.id,
             },
             { departmentId: departmentId },
+          ],
+        },
+        select: {
+          id: true,
+          teacherId: true,
+          departmentId: true,
+          startDate: true,
+          endDate: true,
+        },
+      });
+
+    return teacherDeptPosExists;
+  }
+
+  async findOneByTeacherIdAndDepartmentId(
+    teacherId: string,
+    departmentId: string,
+  ): Promise<TTeacherDeptPos | null> {
+    const teacherDeptPosExists =
+      await this.prisma.teacherDepartmentPosition.findFirst({
+        where: {
+          AND: [
+            {
+              teacherId,
+            },
+            { departmentId },
           ],
         },
         select: {

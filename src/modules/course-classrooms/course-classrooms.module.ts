@@ -13,9 +13,15 @@ import {
   IsValidClassroomConfigConstraint,
 } from './validators';
 import { TeachingAssignmentModule } from '../teaching-assignment/teaching-assignment.module';
+import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
+import { TeachersModule } from '../teachers/teachers.module';
 
 @Module({
-  imports: [forwardRef(() => TeachingAssignmentModule)],
+  imports: [
+    forwardRef(() => TeachingAssignmentModule),
+    TeachersModule,
+    TeachersConfigModule,
+  ],
   controllers: [
     CourseClassroomsController,
     CoursesController,

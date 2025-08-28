@@ -227,7 +227,7 @@ model Course {
 
   // Relations
   department            Department              @relation(fields: [departmentId], references: [id])
-  Course_Classroom      CourseClassroom[]
+  courseClassroom       CourseClassroom[]
   teacherPreferredClass TeacherPreferredClass[]
 
   @@map("courses")

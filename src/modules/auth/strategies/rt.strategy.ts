@@ -26,7 +26,6 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   }
 
   private static extractJWT(req: IRequestWithRT): string | null {
-    console.log(req.signedCookies);
     if (
       (!req.signedCookies && !('refresh_token' in req.signedCookies)) ||
       (req.signedCookies.refresh_token &&
