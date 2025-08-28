@@ -316,16 +316,20 @@ export class UsersService {
         email,
         hash: password && (await argon.hash(password)),
         // roleId: role && (await this.roleService.findOneByName(role)).id,
-        userRoles: {
-          deleteMany: {},
-          create: roleEntities.map((role) => ({
-            role: {
-              connect: {
-                id: role.id,
+        ...(roleEntities.length !== 0
+          ? {
+              userRoles: {
+                deleteMany: {},
+                create: roleEntities.map((role) => ({
+                  role: {
+                    connect: {
+                      id: role.id,
+                    },
+                  },
+                })),
               },
-            },
-          })),
-        },
+            }
+          : {}),
         activeStatus,
       },
       select: this.selectPropsUser,
