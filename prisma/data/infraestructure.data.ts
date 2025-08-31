@@ -9,6 +9,20 @@ export const buildingsSeed = [
     centerId: centersSeed.copan.id,
   },
   {
+    id: '1db447b6-8767-4eb4-b7cb-1c727c130447',
+    name: 'B-Learning',
+    color: 'No definido',
+    floors: '1',
+    centerId: centersSeed.copan.id,
+  },
+  {
+    id: '3934f69c-1679-464d-b5c9-27949a7ee1d4',
+    name: 'Virtual',
+    color: 'No definido',
+    floors: '1',
+    centerId: centersSeed.copan.id,
+  },
+  {
     id: '388ffcc7-adac-44f7-8b42-4dad55024905',
     name: 'Edificio 1',
     color: 'Verde y blanco',

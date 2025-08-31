@@ -38,6 +38,7 @@ const prisma = new PrismaClient();
 async function main() {
   const rolesData = handleData(rolesSeed);
 
+  // Rangos
   const commonDatesAcademicPeriods: {
     pac: number;
     startDate: Date;
@@ -46,29 +47,29 @@ async function main() {
   }[] = [
     {
       pac: 1,
-      startDate: new Date(2025, 0, 13), // 22 de enero de 2025
-      endDate: new Date(2025, 3, 30),
+      startDate: new Date(2025, 0, 13), // 13 de enero
+      endDate: new Date(2025, 4, 11), // 11 de mayo
     },
     {
       pac: 2,
-      startDate: new Date(2025, 4, 12), // 22 de mayo de 2025
-      endDate: new Date(2025, 7, 30),
+      startDate: new Date(2025, 4, 12), // 12 de mayo
+      endDate: new Date(2025, 7, 31), // 31 de agosto
     },
     {
       pac: 3,
-      startDate: new Date(2025, 8, 1), // 11 de septiembre de 2025
-      endDate: new Date(2025, 11, 19),
+      startDate: new Date(2025, 8, 1), // 1 de septiembre
+      endDate: new Date(2025, 11, 20), // 20 de diciembre
     },
     {
       pac: 1,
-      startDate: new Date(2025, 0, 10), // 11 de septiembre de 2025
-      endDate: new Date(2025, 5, 20),
+      startDate: new Date(2025, 0, 10), // 11 de septiembre
+      endDate: new Date(2025, 5, 25), // 25 de junio
       pac_modality: 'Semestre',
     },
     {
       pac: 2,
-      startDate: new Date(2025, 6, 5), // 11 de septiembre de 2025
-      endDate: new Date(2025, 11, 20),
+      startDate: new Date(2025, 6, 1), // 1 de julio
+      endDate: new Date(2025, 11, 20), // 20 de diciembre
       pac_modality: 'Semestre',
     },
   ];

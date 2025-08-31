@@ -18,4 +18,7 @@ export const modalitiesSeed = [
   {
     name: 'A distancia',
   },
+  {
+    name: 'B-Learning',
+  },
 ];

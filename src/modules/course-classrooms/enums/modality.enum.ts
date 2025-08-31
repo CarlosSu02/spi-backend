@@ -5,4 +5,5 @@ export enum EClassModality {
   HIBRID = 'Híbrido',
   DISTANCE = 'Distancia',
   BLENDED = 'Semipresencial',
+  BLEARNING = 'B-Learning',
 }
