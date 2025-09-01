@@ -62,7 +62,7 @@ async function main() {
     },
     {
       pac: 1,
-      startDate: new Date(2025, 0, 10), // 11 de septiembre
+      startDate: new Date(2025, 0, 10), // 10 de enero
       endDate: new Date(2025, 5, 25), // 25 de junio
       pac_modality: 'Semestre',
     },

@@ -11,7 +11,7 @@ import {
   TUpdateAcademicPeriod,
   TPacModality,
 } from '../types';
-import { getYear, setYear } from 'date-fns';
+import { getYear, setYear, startOfDay } from 'date-fns';
 import { TCustomOmit } from 'src/common/types';
 
 type TCurrentAcademicPeriod = {
@@ -120,22 +120,24 @@ export class AcademicPeriodsService {
   ): Promise<TCurrentAcademicPeriod> => {
     const currentDate = new Date();
     const yearReplace = 2025;
-    const newDate = setYear(currentDate, yearReplace);
-    const utcDate = new Date(
-      Date.UTC(
-        newDate.getUTCFullYear(),
-        newDate.getUTCMonth(),
-        newDate.getUTCDate(),
-      ),
-    );
+
+    const localDate = startOfDay(setYear(currentDate, yearReplace));
+
+    // const utcDate = new Date(
+    //   Date.UTC(
+    //     localDate.getUTCFullYear(),
+    //     localDate.getUTCMonth(),
+    //     localDate.getUTCDate(),
+    //   ),
+    // );
 
     const period = await this.prisma.commonDatesAcademicPeriods.findFirst({
       where: {
         startDate: {
-          lte: utcDate,
+          lte: localDate,
         },
         endDate: {
-          gte: utcDate,
+          gte: localDate,
         },
         pac_modality,
       },
