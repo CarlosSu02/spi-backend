@@ -370,10 +370,25 @@ export class TeacherDepartmentPositionService {
           userId,
         },
       },
-      select: {
+      include: {
         position: {
           select: {
             name: true,
+          },
+        },
+        department: {
+          select: {
+            name: true,
+            faculty: {
+              select: {
+                name: true,
+              },
+            },
+            center: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
@@ -384,7 +399,12 @@ export class TeacherDepartmentPositionService {
         `No se encontro un cargo académico para el usuario <${userId}> en el departamento <${departmentId}>.`,
       );
 
-    return position.position.name;
+    return {
+      position: position.position.name,
+      department: position.department.name,
+      faculty: position.department.faculty.name,
+      center: position.department.center.name,
+    };
   }
 
   async update(
