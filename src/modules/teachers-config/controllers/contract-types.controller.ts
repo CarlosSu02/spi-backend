@@ -42,6 +42,13 @@ export class ContractTypesController {
   }
 
   @Get()
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de tipos de contrato obtenido correctamente.')
   @ApiCommonResponses({

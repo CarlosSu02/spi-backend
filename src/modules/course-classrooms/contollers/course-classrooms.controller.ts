@@ -116,7 +116,6 @@ export class CourseClassroomsController {
       'El usuario autenticado no cuenta con asignaturas asignadas.',
   })
   findCurrentPeriod(@GetCurrentUserId() userId: string) {
-    console.log('?');
     return this.courseClassroomsService.findCurrentPeriodAndUserId(userId);
   }
 

@@ -39,6 +39,13 @@ export class ShiftsController {
   }
 
   @Get()
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de turnos.')
   @ApiCommonResponses({

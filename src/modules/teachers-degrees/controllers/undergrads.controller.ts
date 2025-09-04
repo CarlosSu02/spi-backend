@@ -55,7 +55,6 @@ export class UndergradsController {
   }
 
   @Get()
-  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Listado de pregrados.')
   // @ApiPagination({
