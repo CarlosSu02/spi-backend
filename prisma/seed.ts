@@ -6,6 +6,7 @@ import {
   brandsSeed,
   careersSeed,
   categoriesSeed,
+  centerDepartmentesSeed,
   centersSeed,
   conditionsSeed,
   contractsSeed,
@@ -191,9 +192,15 @@ async function main() {
   ]);
 
   // "Segunda" tanda
-  const [departments, courses, buildings] = await Promise.all([
-    prisma.department.createMany({
-      data: Object.values(departmentsSeed),
+  const departments = await prisma.department.createMany({
+    data: Object.values(departmentsSeed),
+    skipDuplicates: true,
+  });
+
+  // "Tercera" tanda
+  const [centerDepartments, courses, buildings] = await Promise.all([
+    prisma.centerDepartment.createMany({
+      data: centerDepartmentesSeed,
       skipDuplicates: true,
     }),
     prisma.course.createMany({
@@ -266,6 +273,9 @@ async function main() {
 
   // Departamentos
   console.log({ departments });
+
+  // Centro => Departamentos
+  console.log({ centerDepartments });
 
   // Clases/Asignaturas
   console.log({ courses });

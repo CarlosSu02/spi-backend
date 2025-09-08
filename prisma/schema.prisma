@@ -180,8 +180,8 @@ model Center {
   name String @unique
 
   // Relations
-  departments Department[]
   buildings   Building[]
+  departments CenterDepartment[]
 
   @@map("centers")
   @@schema("academic")
@@ -203,15 +203,15 @@ model Department {
   name      String @unique
   // code   String?
   uvs       Int?
-  centerId  String @db.Uuid
+  // centerId  String @db.Uuid
   facultyId String @db.Uuid
 
   // Relations
-  center              Center                      @relation(fields: [centerId], references: [id])
-  faculty             Faculty                     @relation(fields: [facultyId], references: [id])
-  teacherAppointments TeacherDepartmentPosition[]
-  academicReports     AcademicAssignmentReport[]
-  courses             Course[]
+  // center              Center                      @relation(fields: [centerId], references: [id])
+  faculty Faculty            @relation(fields: [facultyId], references: [id])
+  // teacherAppointments TeacherDepartmentPosition[]
+  courses Course[]
+  centers CenterDepartment[]
 
   @@map("departments")
   @@schema("academic")
@@ -235,21 +235,39 @@ model Course {
 }
 
 model TeacherDepartmentPosition {
-  id           String    @id @default(uuid()) @db.Uuid
-  teacherId    String    @db.Uuid
-  departmentId String    @db.Uuid
-  positionId   String    @db.Uuid
-  startDate    DateTime  @default(now()) // por si no se agrega al momento de agregar el dato.
-  endDate      DateTime?
+  id                 String    @id @default(uuid()) @db.Uuid
+  teacherId          String    @db.Uuid
+  // departmentId String    @db.Uuid
+  centerDepartmentId String    @db.Uuid
+  positionId         String    @db.Uuid
+  startDate          DateTime  @default(now()) // por si no se agrega al momento de agregar el dato.
+  endDate            DateTime?
 
   // Relations
-  position   Position   @relation(fields: [positionId], references: [id])
-  teacher    Teacher    @relation(fields: [teacherId], references: [id])
-  department Department @relation(fields: [departmentId], references: [id])
+  position         Position         @relation(fields: [positionId], references: [id])
+  teacher          Teacher          @relation(fields: [teacherId], references: [id])
+  centerDepartment CenterDepartment @relation(fields: [centerDepartmentId], references: [id])
 
-  @@unique([teacherId, departmentId, positionId])
-  @@unique([teacherId, departmentId]) // Para que un docente solo pueda estar una vez en un departamento, esta quiza invalida la anterior.
+  // @@unique([teacherId, centerDepartmentId, positionId])
+  @@unique([teacherId, centerDepartmentId]) // Para que un docente solo pueda estar una vez en un departamento, esta quiza invalida la anterior.
   @@map("teacher_department_position")
+  @@schema("academic")
+}
+
+// Relación entre un docente, un centro-departamento y un cargo académico
+model CenterDepartment {
+  id           String @id @default(uuid()) @db.Uuid
+  centerId     String @db.Uuid
+  departmentId String @db.Uuid
+
+  // Relations
+  center              Center                      @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  department          Department                  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  teacherAppointments TeacherDepartmentPosition[]
+  academicReports     AcademicAssignmentReport[]
+
+  @@unique([centerId, departmentId])
+  @@map("center_departments")
   @@schema("academic")
 }
 
@@ -307,7 +325,7 @@ model Classroom {
   condition        Condition?        @relation(fields: [conditionId], references: [id])
   airConditioners  AirConditioner[]
   courseClassrooms CourseClassroom[]
-  PC_Equipment     PcEquipment[]
+  pcEquipments     PcEquipment[]
 
   @@map("classrooms")
   @@schema("infraestructure")
@@ -502,19 +520,19 @@ model AcademicPeriod {
 
 // # Academic Assignment
 model AcademicAssignmentReport {
-  id           String @id @default(uuid()) @db.Uuid
-  teacherId    String @db.Uuid
-  departmentId String @db.Uuid
-  periodId     String @db.Uuid
+  id                 String @id @default(uuid()) @db.Uuid
+  teacherId          String @db.Uuid
+  centerDepartmentId String @db.Uuid
+  periodId           String @db.Uuid
 
   // Relations
-  department              Department              @relation(fields: [departmentId], references: [id])
+  centerDepartment        CenterDepartment        @relation(fields: [centerDepartmentId], references: [id])
   teacher                 Teacher                 @relation(fields: [teacherId], references: [id])
   period                  AcademicPeriod          @relation(fields: [periodId], references: [id])
   complementaryActivities ComplementaryActivity[]
   teachingSession         TeachingSession?
 
-  @@unique([teacherId, departmentId, periodId])
+  @@unique([teacherId, centerDepartmentId, periodId])
   @@map("academic_assignment_reports")
   @@schema("academic")
 }

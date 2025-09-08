@@ -8,6 +8,10 @@ export const centersSeed = {
     id: 'fdc02f02-12b8-46bc-8fc5-9866364f1b15',
     name: 'UNAH Campus Copán',
   },
+  craedCopan: {
+    id: '16162d8d-c5e1-43e7-a6fb-e11824564e82',
+    name: 'UNAH CRAED Copán',
+  },
 };
 
 // export const facultiesSeed = [
