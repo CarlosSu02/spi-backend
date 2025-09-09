@@ -8,7 +8,12 @@ import {
   IsUUID,
 } from 'class-validator';
 import { formatISO } from 'date-fns';
-import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
+import { ValidatorConstraintDecorator } from 'src/common/decorators';
+import { ECenterConfig } from 'src/modules/centers/enums';
+import {
+  IsValidCenterConfigConstraint,
+  IsValidDepartmentIdConstraint,
+} from 'src/modules/centers/validators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 
@@ -27,17 +32,49 @@ export class CreateTeacherDepartmentPositionDto {
   userId: string;
 
   @ApiProperty({
-    example: '484b0088-09ac-467b-981a-a0885deb69cb',
+    example: '65039ef6-1fc5-474c-b4e3-27239c200138',
+    description: 'ID de la relación centro-departamento.',
     required: true,
-    description: 'ID del departamento.',
   })
   @IsUUID('all', {
-    each: true,
-    message: 'La propiedad <departmentId> debe ser un UUID válido.',
+    message: 'La propiedad <centerDepartmentId> debe ser un UUID válido.',
   })
-  @IsNotEmpty({ message: 'La propiedad <departmentId> no debe estar vacía.' })
-  @Validate(IsValidDepartmentIdConstraint)
-  departmentId: string;
+  @IsNotEmpty({
+    message: 'La propiedad <centerDepartmentId> no debe estar vacía.',
+  })
+  @ValidatorConstraintDecorator(
+    ECenterConfig.CENTER_DEPARTMENT,
+    IsValidCenterConfigConstraint,
+  )
+  centerDepartmentId: string;
+
+  // @ApiProperty({
+  //   example: '484b0088-09ac-467b-981a-a0885deb69cb',
+  //   required: true,
+  //   description: 'ID del centro.',
+  // })
+  // @IsUUID('all', {
+  //   message: 'La propiedad <centerId> debe ser un UUID válido.',
+  // })
+  // @IsNotEmpty({ message: 'La propiedad <centerId> no debe estar vacía.' })
+  // @ValidatorConstraintDecorator(
+  //   ECenterConfig.CENTER,
+  //   IsValidCenterConfigConstraint,
+  // )
+  // centerId: string;
+
+  // @ApiProperty({
+  //   example: '484b0088-09ac-467b-981a-a0885deb69cb',
+  //   required: true,
+  //   description: 'ID del departamento.',
+  // })
+  // @IsUUID('all', {
+  //   each: true,
+  //   message: 'La propiedad <departmentId> debe ser un UUID válido.',
+  // })
+  // @IsNotEmpty({ message: 'La propiedad <departmentId> no debe estar vacía.' })
+  // @Validate(IsValidDepartmentIdConstraint)
+  // departmentId: string;
 
   @ApiProperty({
     example: 'uuid-position',

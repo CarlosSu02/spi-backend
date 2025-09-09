@@ -40,19 +40,22 @@ export class TeacherDepartmentPositionController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('Se ha creado la relación docente-departamento-cargo.')
+  @ResponseMessage(
+    'Se ha creado la relación docente–centro-departamento–cargo.',
+  )
   @ApiBody({
     type: CreateTeacherDepartmentPositionDto,
-    description: 'Datos para crear la relación docente-departamento-cargo.',
+    description:
+      'Datos para crear la relación docente–centro-departamento–cargo.',
   })
   @ApiCommonResponses({
-    summary: 'Crear relación docente-departamento-cargo',
+    summary: 'Crear relación docente–centro-departamento–cargo',
     createdDescription:
-      'Relación docente-departamento-cargo creada exitosamente.',
+      'Relación docente–centro-departamento–cargo creada exitosamente.',
     badRequestDescription:
-      'Datos inválidos para crear la relación docente-departamento-cargo.',
+      'Datos inválidos para crear la relación docente–centro-departamento–cargo.',
     internalErrorDescription:
-      'Error interno al crear la relación docente-departamento-cargo.',
+      'Error interno al crear la relación docente–centro-departamento–cargo.',
   })
   create(
     @Body()
@@ -65,108 +68,114 @@ export class TeacherDepartmentPositionController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Listado de docentes con su departamento y cargo.')
+  @ResponseMessage('Listado de docentes con su centro-departamento y cargo.')
   @ApiCommonResponses({
-    summary: 'Listar docentes con su departamento y cargo',
+    summary: 'Listar docentes con su centro-departamento y cargo',
     okDescription:
-      'Listado de docentes con departamento y cargo obtenido correctamente.',
+      'Listado de docentes con centro-departamento y cargo obtenido correctamente.',
     badRequestDescription:
-      'Solicitud inválida al obtener los docentes con departamento y cargo.',
+      'Solicitud inválida al obtener los docentes con centro-departamento y cargo.',
     internalErrorDescription:
-      'Error interno al obtener los docentes con departamento y cargo.',
-    notFoundDescription: 'No se encontraron docentes con departamento y cargo.',
+      'Error interno al obtener los docentes con centro-departamento y cargo.',
+    notFoundDescription:
+      'No se encontraron docentes con centro-departamento y cargo.',
   })
   @ApiPagination({
-    summary: 'Listar docentes con su departamento y cargo',
+    summary: 'Listar docentes con su centro-departamento y cargo',
     description:
-      'Obtiene un listado paginado de docentes con su departamento y cargo',
+      'Obtiene un listado paginado de docentes con su centro-departamento y cargo',
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.teacherDepartmentPositionService.findAllWithPagination(query);
   }
 
-  @Get('department/:departmentId')
+  @Get('center-department/:centerDepartmentId')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de docentes con su departamento y cargo en un departamento en específico.',
+    'Listado de docentes con su centro-departamento y cargo en un centro-departamento específico.',
   )
   @ApiCommonResponses({
     summary:
-      'Listar docentes con su departamento y cargo por departamento en específico',
+      'Listar docentes con su centro-departamento y cargo por centro-departamento específico',
     okDescription: 'Listado obtenido correctamente.',
     badRequestDescription:
-      'Solicitud inválida al obtener los docentes por departamento.',
+      'Solicitud inválida al obtener los docentes por centro-departamento.',
     internalErrorDescription:
-      'Error interno al obtener los docentes por departamento.',
-    notFoundDescription: 'No se encontraron docentes para el departamento.',
+      'Error interno al obtener los docentes por centro-departamento.',
+    notFoundDescription:
+      'No se encontraron docentes para el centro-departamento.',
   })
   @ApiParam({
-    name: 'departmentId',
-    description: 'ID del departamento para filtrar los docentes',
+    name: 'centerDepartmentId',
+    description:
+      'ID de la relación centro-departamento para filtrar los docentes',
     type: String,
     format: 'uuid',
   })
   @ApiPagination({
     summary:
-      'Listar docentes con su departamento y cargo por departamento en específico',
+      'Listar docentes con su centro-departamento y cargo por centro-departamento en específico',
     description:
-      'Obtiene un listado paginado de docentes con su departamento y cargo asociados a un departamento específico',
+      'Obtiene un listado paginado de docentes con su centro-departamento y cargo asociados a un centro-departamento específico',
   })
-  findAllByDepartmentId(
+  findAllByCenterDepartmentId(
     @Query() query: QueryPaginationDto,
-    @Param('departmentId', ValidateIdPipe) departmentId: string,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
   ) {
-    return this.teacherDepartmentPositionService.findAllByDepartmentId(
+    return this.teacherDepartmentPositionService.findAllByCenterDepartmentId(
       query,
-      departmentId,
+      centerDepartmentId,
     );
   }
 
-  // para que un coordinador de area pueda ver los docentes de su area o departamento
+  // para que un coordinador de area pueda ver los docentes de su area o centro-departamento
   // en este caso solo es para el rol COORDINADOR_AREA, y siempre y cuando este autenticado
-  // no necesita el departmentId en la url, ya que el coordinador de área solo puede ver los docentes de su departamento
-  // solo funcionara si el coordinador inicia sesión y tiene un departamento asignado
-  @Get('coordinator')
+  // no necesita el centerDepartmentId en la url si frontend lo provee de otra forma,
+  // pero esta ruta exige centerDepartmentId para evitar ambigüedad si el usuario tiene múltiples coordinaciones
+  @Get('coordinator/:centerDepartmentId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de docentes con su departamento y cargo en un departamento en específico para coordinadores de área.',
+    'Listado de docentes con su centro-departamento y cargo en el center-departamento especificado para coordinadores de área.',
   )
-  @ApiCommonResponses({
-    summary:
-      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área',
-    okDescription: 'Listado obtenido correctamente para coordinador.',
-    badRequestDescription:
-      'Solicitud inválida al obtener los docentes para coordinador.',
-    internalErrorDescription:
-      'Error interno al obtener los docentes para coordinador.',
-    notFoundDescription: 'No se encontraron docentes para el coordinador.',
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description: 'ID de la relación centro-departamento.',
+    type: String,
+    format: 'uuid',
   })
   @ApiPagination({
-    summary:
-      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
+    summary: 'Listar docentes por center-department para coordinadores de área',
     description:
-      'Obtiene un listado paginado de docentes con su departamento y cargo asociados a un departamento específico para coordinadores de área',
+      'Obtiene un listado paginado de docentes asociados al center-department específico (se requiere que el usuario sea coordinador de ese center-department).',
   })
   async findAllByCoordinator(
     @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @GetCurrentUserId() userId: string,
   ) {
-    const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+    // valida que el usuario sea jefe/coordinador en ese centerDepartment
+    const userPosition =
+      await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+        userId,
+        centerDepartmentId,
+      );
 
-    return await this.teacherDepartmentPositionService.findAllByDepartmentId(
+    // userPosition.teacher.id es el id del teacher (puede usarse como omitId o para permisos)
+    return await this.teacherDepartmentPositionService.findAllByCenterDepartmentId(
       query,
-      user.department.id,
-      user.teacher.id,
+      centerDepartmentId,
+      userPosition.teacher.id, // opcional: omitTeacherId para excluir al propio coordinador si así lo deseas
     );
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Información de la relación docente-departamento-cargo.')
+  @ResponseMessage(
+    'Información de la relación docente–centro-departamento–cargo.',
+  )
   @ApiCommonResponses({
-    summary: 'Obtener una relación docente-departamento-cargo por ID',
+    summary: 'Obtener una relación docente–centro-departamento–cargo por ID',
     okDescription: 'Relación obtenida correctamente.',
     badRequestDescription: 'ID inválido para obtener la relación.',
     internalErrorDescription: 'Error interno al obtener la relación.',
@@ -176,38 +185,57 @@ export class TeacherDepartmentPositionController {
     return this.teacherDepartmentPositionService.findOne(id);
   }
 
-  @Get('my/department/:departmentId')
+  @Get('my/coordinations')
   @Roles(EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Información de la relación personal-departamento por ID.')
+  @ResponseMessage('Listado de coordinaciones activas del usuario autenticado.')
+  @ApiCommonResponses({
+    summary: 'Obtener coordinaciones activas del usuario',
+    okDescription: 'Coordinaciones obtenidas correctamente.',
+    badRequestDescription: 'Solicitud inválida al obtener las coordinaciones.',
+    internalErrorDescription: 'Error interno al obtener las coordinaciones.',
+    notFoundDescription: 'No se encontraron coordinaciones para el usuario.',
+  })
+  findMyCoordinations(@GetCurrentUserId() userId: string) {
+    return this.teacherDepartmentPositionService.findDepartmentHeadPositionsByUserId(
+      userId,
+    );
+  }
+
+  @Get('my/center-department/:centerDepartmentId')
+  @Roles(EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Información de las relaciones docente–centro-departamento para el usuario autenticado en el center-departamento especificado.',
+  )
   @ApiCommonResponses({
     summary:
-      'Obtener una relación personal-departamento por ID de usuario y departamento',
-    okDescription: 'Relación personal-departamento obtenida correctamente.',
+      'Obtener las relaciones docente–centro-departamento para el usuario autenticado y un center-departamento específico.',
+    okDescription: 'Relaciones obtenidas correctamente.',
     badRequestDescription:
-      'Parámetros inválidos para obtener la relación personal-departamento.',
+      'Parámetros inválidos para obtener las relaciones docente–centro-departamento.',
     internalErrorDescription:
-      'Error interno al obtener la relación personal-departamento.',
+      'Error interno al obtener las relaciones docente–centro-departamento.',
     notFoundDescription:
-      'No se encontró la relación personal-departamento solicitada.',
+      'No se encontraron relaciones docente–centro-departamento para el usuario en el center-departamento indicado.',
   })
-  findOnePersonalAndDepartmentId(
+  findRelationsByUserAndCenterDepartment(
     @GetCurrentUserId() userId: string,
-    @Param('departmentId', ValidateIdPipe) departmentId: string,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
   ) {
-    return this.teacherDepartmentPositionService.findPositionByUserIdAndDepId(
+    return this.teacherDepartmentPositionService.findPositionsByUserAndCenterDepartment(
       userId,
-      departmentId,
+      centerDepartmentId,
     );
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Relación docente-departamento-cargo actualizada correctamente.',
+    'Relación docente–centro-departamento–cargo actualizada correctamente.',
   )
   @ApiCommonResponses({
-    summary: 'Actualizar una relación docente-departamento-cargo por ID',
+    summary: 'Actualizar una relación docente–centro-departamento–cargo por ID',
     okDescription: 'Relación actualizada correctamente.',
     badRequestDescription: 'Datos inválidos para actualizar la relación.',
     internalErrorDescription: 'Error interno al actualizar la relación.',
@@ -227,10 +255,10 @@ export class TeacherDepartmentPositionController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Relación docente-departamento-cargo eliminada correctamente.',
+    'Relación docente–centro-departamento–cargo eliminada correctamente.',
   )
   @ApiCommonResponses({
-    summary: 'Eliminar una relación docente-departamento-cargo por ID',
+    summary: 'Eliminar una relación docente–centro-departamento–cargo por ID',
     okDescription: 'Relación eliminada correctamente.',
     badRequestDescription: 'ID inválido para eliminar la relación.',
     internalErrorDescription: 'Error interno al eliminar la relación.',

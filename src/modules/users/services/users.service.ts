@@ -67,26 +67,20 @@ export class UsersService {
         'Los docentes no pueden asignar un departamento.',
       );
 
-    if (
-      roles.includes(EUserRole.COORDINADOR_AREA) &&
-      !roles.includes(EUserRole.ADMIN)
-    ) {
-      const currentUserDepartment =
-        await this.teacherDepartmentPositionService.findOneByUserId(userId);
-      createUserDto.departmentId = currentUserDepartment.departmentId;
-    }
-
-    // Si no es coordinador exclusivo ni tiene rol ajeno a docente y coordinador
+    // TODO: Revisar esto
     // if (
-    //   !roles.some((role) =>
-    //     [EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION].includes(
-    //       role as EUserRole,
-    //     ),
-    //   )
-    // )
-    //   throw new ForbiddenException(
-    //     'No tiene permisos para asignar un departamento.',
-    //   );
+    //   roles.includes(EUserRole.COORDINADOR_AREA) &&
+    //   !roles.includes(EUserRole.ADMIN)
+    // ) {
+    //   const currentUserDepartment =
+    //     await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserId(
+    //       userId,
+    //     );
+    //
+    //   createUserDto.departmentId =
+    //     currentUserDepartment.centerDepartment.departmentId;
+    //   createUserDto.centerId = currentUserDepartment.centerDepartment.centerId;
+    // }
 
     if (!createUserDto.departmentId)
       throw new BadRequestException(
@@ -148,6 +142,7 @@ export class UsersService {
       undergradId,
       postgradId,
       positionId,
+      centerId,
       departmentId,
     } = createUserDto;
 
@@ -219,7 +214,12 @@ export class UsersService {
                       create: [
                         {
                           position: { connect: { id: positionId } },
-                          department: { connect: { id: departmentId } },
+                          centerDepartment: {
+                            create: {
+                              center: { connect: { id: centerId } },
+                              department: { connect: { id: departmentId } },
+                            },
+                          },
                         },
                       ],
                     },

@@ -1,5 +1,5 @@
 import { TCustomOmit, TCustomPick } from 'src/common/types';
-import { TDepartmentJoin } from 'src/modules/centers/types';
+import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
 import {
   TContractType,
   TPosition,
@@ -42,7 +42,11 @@ export type TTeacherJoin = TCustomOmit<
     postgraduate: TUndergraduateDegree;
   }[];
   positionHeld: {
-    department: TDepartmentJoin;
     position: TPosition;
+    centerDepartment: {
+      id: string;
+      department: TDepartmentJoin;
+      center: TCenter;
+    };
   }[];
 };

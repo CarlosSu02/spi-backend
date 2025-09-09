@@ -119,24 +119,40 @@ export class CourseClassroomsController {
     return this.courseClassroomsService.findCurrentPeriodAndUserId(userId);
   }
 
-  @Get('coordinator/periods/:periodId')
+  @Get('coordinator/center-department/:centerDepartmentId/periods/:periodId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Detalle de asignaturas para el periodo especificado.')
+  @ResponseMessage(
+    'Detalle de asignaturas para el periodo especificado en un center-department.',
+  )
   @ApiCommonResponses({
-    summary: 'Consulta de asignaturas por periodo',
+    summary: 'Consulta de asignaturas por periodo y center-department',
     okDescription: 'Detalle de asignaturas obtenido correctamente.',
     badRequestDescription: 'La solicitud contiene parámetros inválidos.',
     internalErrorDescription: 'Error interno al procesar la solicitud.',
     notFoundDescription:
-      'No se encontraron asignaturas para el periodo especificado.',
+      'No se encontraron asignaturas para el periodo y center-department especificados.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description: 'ID de la relación centro-departamento.',
+    type: String,
+    format: 'uuid',
+  })
+  @ApiParam({
+    name: 'periodId',
+    description: 'ID del periodo académico.',
+    type: String,
+    format: 'uuid',
   })
   findOneByCoordinatorAndPeriodId(
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @Param('periodId', ValidateIdPipe) periodId: string,
     @GetCurrentUserId() userId: string,
   ) {
     return this.courseClassroomsService.findAllByCoordinatorAndPeriodId(
       userId,
+      centerDepartmentId,
       periodId,
     );
   }

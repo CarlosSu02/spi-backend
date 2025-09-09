@@ -45,8 +45,9 @@ import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { CreateTeacherDepartmentPositionDto } from 'src/modules/teachers/dto/create-teacher-department-position.dto';
 import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
-import { DepartmentsService } from 'src/modules/centers/services/departments.service';
-import { TDepartment } from 'src/modules/centers/types';
+import { TCenterJoin, TDepartment } from 'src/modules/centers/types';
+import { CenterDepartmentsService } from 'src/modules/centers/services/center-departments.service';
+import { CentersService } from 'src/modules/centers/services/centers.service';
 
 interface ParsedTitle {
   year: number;
@@ -71,10 +72,21 @@ export class AcademicAssignmentReportsService {
         },
       },
     },
-    department: {
+    centerDepartment: {
       select: {
         id: true,
-        name: true,
+        centerId: true,
+        departmentId: true,
+        center: {
+          select: {
+            name: true,
+          },
+        },
+        department: {
+          select: {
+            name: true,
+          },
+        },
       },
     },
     teachingSession: {
@@ -112,18 +124,19 @@ export class AcademicAssignmentReportsService {
     private readonly teachersService: TeachersService,
     private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
     private readonly positionsService: PositionsService,
-    private readonly departmentsService: DepartmentsService,
+    private readonly centersService: CentersService,
     private readonly coursesService: CoursesService,
     private readonly modalitiesService: ModalitiesService,
     private readonly classroomService: ClassroomService,
     private readonly teachingSessionsService: TeachingSessionsService,
     private readonly courseClassroomsService: CourseClassroomsService,
+    private readonly centerDepartmentsService: CenterDepartmentsService,
   ) {}
 
   async create(
     createAcademicAssignmentReportDto: CreateAcademicAssignmentReportDto,
   ): Promise<TCreateAcademicAssignmentReport> {
-    const { userId, departmentId, periodId } =
+    const { userId, centerDepartmentId, periodId } =
       createAcademicAssignmentReportDto;
 
     const currentDate = formatISO(new Date().toISOString());
@@ -134,9 +147,9 @@ export class AcademicAssignmentReportsService {
     // si no lo esta, lo creamos con cargo academico "ninguno" y fecha de inicio
     // el mismo dia de la creacion del informe
     const existingTeacherDeptPos =
-      await this.teacherDepartmentPositionService.findOneByTeacherCodeAndDepartmentId(
+      await this.teacherDepartmentPositionService.findOneByTeacherCodeAndCenterDepartmentId(
         teacher.code,
-        departmentId,
+        centerDepartmentId,
       );
 
     // no existe el docente en el departamento, por lo que se crea un nuevo informe
@@ -147,7 +160,7 @@ export class AcademicAssignmentReportsService {
 
       const dto = {
         userId,
-        departmentId,
+        centerDepartmentId,
         positionId,
         startDate: currentDate,
       } as CreateTeacherDepartmentPositionDto;
@@ -159,7 +172,7 @@ export class AcademicAssignmentReportsService {
       await this.prisma.academicAssignmentReport.create({
         data: {
           teacherId: teacher.id,
-          departmentId,
+          centerDepartmentId,
           periodId,
           teachingSession: {
             create: {
@@ -174,7 +187,7 @@ export class AcademicAssignmentReportsService {
         select: {
           id: true,
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
           periodId: true,
           teachingSession: true,
         },
@@ -209,7 +222,7 @@ export class AcademicAssignmentReportsService {
         include: this.includeOptionsAAR,
         omit: {
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
         },
       }),
       this.prisma.academicAssignmentReport.count(),
@@ -253,7 +266,7 @@ export class AcademicAssignmentReportsService {
         include: this.includeOptionsAAR,
         omit: {
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
         },
       }),
       this.prisma.academicAssignmentReport.count({
@@ -277,14 +290,14 @@ export class AcademicAssignmentReportsService {
     );
   }
 
-  async findAllByDepartmentId(
+  async findAllByCenterDepartmentId(
     query: QueryPaginationDto,
-    departmentId: string,
+    centerDepartmentId: string,
   ): Promise<IPaginateOutput<TAcademicAssignmentReport>> {
-    await this.departmentsService.findOne(departmentId);
+    await this.centerDepartmentsService.findOne(centerDepartmentId);
 
     const where = {
-      departmentId,
+      centerDepartmentId,
     };
 
     const [academicAssignmentReports, count] = await Promise.all([
@@ -295,7 +308,6 @@ export class AcademicAssignmentReportsService {
         include: this.includeOptionsAAR,
         omit: {
           teacherId: true,
-          departmentId: true,
         },
       }),
       this.prisma.academicAssignmentReport.count({
@@ -311,19 +323,34 @@ export class AcademicAssignmentReportsService {
   }
 
   // Para no inicializar el teacherDepartmentPositionService en el controller
-  async findAllByCoordinator(query: QueryPaginationDto, userId: string) {
-    const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+  async findAllByCoordinator(
+    query: QueryPaginationDto,
+    userId: string,
+    centerDepartmentId: string,
+  ) {
+    // Validacion
+    await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+      userId,
+      centerDepartmentId,
+    );
 
-    return await this.findAllByDepartmentId(query, user.department.id);
+    return await this.findAllByCenterDepartmentId(query, centerDepartmentId);
   }
 
   async findAllByCoordinatorOnlyPeriods(
     query: QueryPaginationDto,
     userId: string,
-  ): Promise<IPaginateOutput<TAcademicPeriod & { title: string }>> {
+    centerDepartmentId: string,
+  ): Promise<
+    IPaginateOutput<
+      TAcademicPeriod & { title: string; centerDepartmentId: string }
+    >
+  > {
     const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+      await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+        userId,
+        centerDepartmentId,
+      );
 
     // Periodos donde existen reportes y que sean del departamento del usuario.
     const [periods, count] = await Promise.all([
@@ -331,18 +358,19 @@ export class AcademicAssignmentReportsService {
         ...paginate(query),
         distinct: ['periodId'],
         where: {
-          departmentId: user.departmentId,
+          centerDepartmentId,
         },
         relationLoadStrategy: 'join',
         select: {
           period: true,
+          centerDepartmentId: true,
         },
       }),
       this.prisma.academicAssignmentReport
         .findMany({
           distinct: ['periodId'],
           where: {
-            departmentId: user.departmentId,
+            centerDepartmentId: user.centerDepartmentId,
           },
           select: {
             periodId: true,
@@ -353,12 +381,13 @@ export class AcademicAssignmentReportsService {
 
     if (count === 0)
       throw new BadRequestException(
-        `No se encontraron planificaciones académica para el departamento <${user.department.name}>.`,
+        `No se encontraron planificaciones académica para el departamento <${user.centerDepartment.department.name}>.`,
       );
 
-    const mapped = periods.map(({ period }) => ({
+    const mapped = periods.map(({ period, centerDepartmentId }) => ({
       ...period,
       title: `PAC No. ${period.pac}, ${period.pac_modality}, ${period.year}`,
+      centerDepartmentId,
     }));
 
     return paginateOutput(mapped, count, query);
@@ -390,6 +419,23 @@ export class AcademicAssignmentReportsService {
         },
         select: {
           period: true,
+          centerDepartment: {
+            select: {
+              id: true,
+              centerId: true,
+              departmentId: true,
+              center: {
+                select: {
+                  name: true,
+                },
+              },
+              department: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -398,15 +444,21 @@ export class AcademicAssignmentReportsService {
         `No se encontraron informes de asignación académica para el usuario con id <${userId}>`,
       );
 
-    return academicAssignmentReports.map((p) => p.period);
+    return academicAssignmentReports.map((p) => ({
+      ...p.period,
+      centerDepartmentId: p.centerDepartment.id,
+      center: p.centerDepartment.center.name,
+      department: p.centerDepartment.department.name,
+    }));
   }
 
-  async findOneByUserIdAndPeriodId(
+  async findOneByUserIdAndPeriodIdAndCenterDepartmentId(
     user: {
       userId?: string;
       code?: string;
     },
     periodId: string,
+    centerDepartmentId: string,
   ): Promise<
     TAcademicAssignmentReport & {
       complementaryActivities: TComplementaryActivity[];
@@ -433,6 +485,7 @@ export class AcademicAssignmentReportsService {
             ],
           },
           periodId,
+          centerDepartmentId,
         },
         relationLoadStrategy: 'join',
         include: {
@@ -460,7 +513,7 @@ export class AcademicAssignmentReportsService {
         },
         omit: {
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
         },
       });
 
@@ -474,22 +527,26 @@ export class AcademicAssignmentReportsService {
 
   async findOneByCoordinatorAndPeriodId(
     userId: string,
+    centerDepartmentId: string,
     periodId: string,
   ): Promise<TAcademicAssignmentReport[]> {
-    const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+    // Validacion
+    await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+      userId,
+      centerDepartmentId,
+    );
 
     const academicAssignmentReports =
       await this.prisma.academicAssignmentReport.findMany({
         where: {
           periodId,
-          departmentId: user.departmentId,
+          centerDepartmentId,
         },
         relationLoadStrategy: 'join',
         include: this.includeOptionsAAR,
         omit: {
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
         },
       });
 
@@ -565,14 +622,14 @@ export class AcademicAssignmentReportsService {
     // Aca se evita realizar hasta quiza +100 consultas a la base de datos
     const [
       teachers,
-      departments,
+      centerDepartments,
       allCourses,
       modalities,
       existingCourseClassrooms,
       classrooms,
     ] = await Promise.all([
       this.teachersService.findAll(),
-      this.departmentsService.findAll(),
+      this.centersService.findAllWithIncludeDepartments(),
       this.coursesService.findAllWithSelect(),
       this.modalitiesService.findAll(),
       this.courseClassroomsService.findAllWithSelectAndPeriodId(
@@ -582,8 +639,8 @@ export class AcademicAssignmentReportsService {
     ]);
 
     const teachersMap = new Map(teachers.map((t) => [t.code, t]));
-    const departmentsMap = new Map(
-      departments.map((d) => [normalizeText(d.name), d]),
+    const centerDepartmentsMap = new Map(
+      centerDepartments.map((d) => [normalizeText(d.name), d]),
     );
     const allCoursesMap = new Map(allCourses.map((c) => [c.code, c]));
     const classroomsMap = new Map(
@@ -616,13 +673,21 @@ export class AcademicAssignmentReportsService {
         studentCount,
         classroomName,
         departmentName,
+        center: centerName,
         observation,
       } = item;
 
       this.validateUniqueClass(allData, item);
 
       const teacher = this.findTeacher(teachersMap, teacherCode);
-      const department = this.findDepartment(departmentsMap, departmentName);
+      const center = this.findCenterDepartment(
+        centerDepartmentsMap,
+        centerName,
+      );
+      const department = this.findDepartment(
+        new Map(center.departments.map((d) => [normalizeText(d.name), d])),
+        departmentName,
+      );
       const course = this.findCourse(allCoursesMap, courseCode, department);
 
       // existingClass - todos los de existingCourseClassrooms son del periodo académico actual
@@ -650,7 +715,7 @@ export class AcademicAssignmentReportsService {
         coursesGroupByTeacherCodeEntries[teacherCode] = {
           teacherId: teacher.id,
           userId: teacher.userId,
-          departmentId: department.id,
+          centerDepartmentId: department.centerDepartmentId,
           periodId: academicPeriod.id,
           courses: [],
         };
@@ -680,19 +745,19 @@ export class AcademicAssignmentReportsService {
     for (const [, academicInfo] of Object.entries(
       coursesGroupByTeacherCodeEntries,
     )) {
-      const { teacherId, userId, departmentId, periodId, courses } =
+      const { teacherId, userId, centerDepartmentId, periodId, courses } =
         academicInfo;
 
       const academicAssignmentReport =
         allAcademicAssignmentReports.find(
           (aar: TAcademicAssignmentReport) =>
             aar.teacherId === teacherId &&
-            aar.departmentId === departmentId &&
+            aar.centerDepartmentId === centerDepartmentId &&
             aar.periodId === periodId,
         ) ??
         (await this.create({
           userId,
-          departmentId,
+          centerDepartmentId,
           periodId,
         } as CreateAcademicAssignmentReportDto));
 
@@ -849,15 +914,29 @@ export class AcademicAssignmentReportsService {
     return teacher;
   }
 
+  private findCenterDepartment(
+    centerDepartmentsMap: Map<string, TCenterJoin>,
+    center: string,
+  ): TCenterJoin {
+    const centerDepartment = centerDepartmentsMap.get(normalizeText(center));
+
+    if (!centerDepartment)
+      throw new NotFoundException(
+        `No se encontró el centro con nombre <${center}>.`,
+      );
+
+    return centerDepartment;
+  }
+
   private findDepartment(
-    departmentsMap: Map<string, TDepartment>,
+    departments: Map<string, TDepartment & { centerDepartmentId: string }>,
     departmentName: string,
-  ): TDepartment {
-    const department = departmentsMap.get(normalizeText(departmentName));
+  ): TDepartment & { centerDepartmentId: string } {
+    const department = departments.get(normalizeText(departmentName));
 
     if (!department)
       throw new NotFoundException(
-        `No se encontró el departamento con nombre <${departmentName}>.`,
+        `No se encontró el departamento con nombre <${departmentName}> en el centro seleccionado.`,
       );
 
     return department;
@@ -866,7 +945,7 @@ export class AcademicAssignmentReportsService {
   private findCourse(
     allCoursesMap: Map<string, TOutputCourseWithSelect>,
     courseCode: string,
-    department: TDepartment,
+    department: TDepartment & { centerDepartmentId: string },
   ): TOutputCourseWithSelect {
     const course = allCoursesMap.get(courseCode);
 

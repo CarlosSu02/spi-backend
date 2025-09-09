@@ -15,12 +15,14 @@ import {
 import { TeachingAssignmentModule } from '../teaching-assignment/teaching-assignment.module';
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 import { TeachersModule } from '../teachers/teachers.module';
+import { CentersModule } from '../centers/centers.module';
 
 @Module({
   imports: [
     forwardRef(() => TeachingAssignmentModule),
     TeachersModule,
     TeachersConfigModule,
+    CentersModule,
   ],
   controllers: [
     CourseClassroomsController,

@@ -5,11 +5,21 @@ export type TDepartment = {
   id: string;
   name: string;
   uvs: number | null;
-  centerId: string;
   facultyId: string;
 };
 
 export type TDepartmentJoin = TDepartment & {
-  center: TCenter;
+  // center: TCenter;
   faculty: TFaculty;
+};
+
+export type TCenterDepartment = {
+  id: string;
+  departmentId: string;
+  centerId: string;
+};
+
+export type TCenterDepartmentJoin = TCenterDepartment & {
+  center: TCenter;
+  department: TDepartment;
 };

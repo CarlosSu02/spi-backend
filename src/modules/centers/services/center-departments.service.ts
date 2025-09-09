@@ -1,35 +1,60 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateDepartmentDto } from '../dto/create-department.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UpdateDepartmentDto } from '../dto/update-department.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TCenter, TCenterDepartmentJoin, TDepartment } from '../types';
+import {
+  TCenter,
+  TCenterDepartment,
+  TCenterDepartmentJoin,
+  TDepartment,
+} from '../types';
 import { TUser } from 'src/modules/users/types';
 import { TCustomPick } from 'src/common/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { TPosition } from 'src/modules/teachers-config/types';
+import { CreateCenterDepartmentDto } from '../dto/create-center-department.dto';
 
 @Injectable()
-export class DepartmentsService {
+export class CenterDepartmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createDepartmentDto: CreateDepartmentDto): Promise<TDepartment> {
-    // Pueden crear pero no necesariamente agregar de primeras a un departamento
-    const newDepartment = await this.prisma.department.create({
+  async create(
+    createDepartmentDto: CreateCenterDepartmentDto,
+  ): Promise<TCenterDepartment> {
+    const newCenterDepartment = await this.prisma.centerDepartment.create({
       data: {
         ...createDepartmentDto,
       },
     });
 
-    return newDepartment;
+    return newCenterDepartment;
   }
 
-  async findAll(): Promise<TDepartment[]> {
-    const departments = await this.prisma.department.findMany();
+  async findAllWithSelect(): Promise<TCenterDepartmentJoin[]> {
+    const centerDepartments = await this.prisma.centerDepartment.findMany({
+      relationLoadStrategy: 'join',
+      include: {
+        center: true,
+        department: true,
+      },
+    });
 
     // if (departments.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
 
-    return departments;
+    return centerDepartments;
+  }
+
+  async findAll(): Promise<TCenterDepartment[]> {
+    const centerDepartments = await this.prisma.centerDepartment.findMany();
+
+    // if (departments.length === 0)
+    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    return centerDepartments;
   }
 
   async findAllWithCoordinators(): Promise<TDepartment[]> {
@@ -46,7 +71,10 @@ export class DepartmentsService {
           },
         },
       },
+      relationLoadStrategy: 'join',
       include: {
+        center: true,
+        department: true,
         teacherAppointments: {
           where: {
             position: {
@@ -114,8 +142,8 @@ export class DepartmentsService {
     return mapped;
   }
 
-  async findOne(id: string): Promise<TDepartment> {
-    const department = await this.prisma.department.findUnique({
+  async findOne(id: string): Promise<TCenterDepartment> {
+    const department = await this.prisma.centerDepartment.findUnique({
       where: {
         id,
       },
@@ -123,7 +151,7 @@ export class DepartmentsService {
 
     if (!department)
       throw new NotFoundException(
-        `El departamento con id <${id}> no fue encontrado.`,
+        `El centro-departamento con id <${id}> no fue encontrado.`,
       );
 
     // throw new HttpException(
@@ -152,6 +180,28 @@ export class DepartmentsService {
     // );
 
     return department;
+  }
+
+  async findByCenterAndDepartmentOrFail(
+    centerId: string,
+    departmentId: string,
+  ): Promise<TCenterDepartment> {
+    const centerDepartment = await this.prisma.centerDepartment.findUnique({
+      where: {
+        centerId_departmentId: {
+          centerId,
+          departmentId,
+        },
+      },
+    });
+
+    if (!centerDepartment) {
+      throw new BadRequestException(
+        `No existe relación entre el centro <${centerId}> y el departamento <${departmentId}>.`,
+      );
+    }
+
+    return centerDepartment;
   }
 
   async update(

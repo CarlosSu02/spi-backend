@@ -22,6 +22,8 @@ import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { CreateTeacherDepartmentPositionDto } from 'src/modules/teachers/dto/create-teacher-department-position.dto';
+import { CenterDepartmentsService } from 'src/modules/centers/services/center-departments.service';
+import { TCenter, TCenterDepartment } from 'src/modules/centers/types';
 
 @Injectable()
 export class CourseClassroomsService {
@@ -30,6 +32,7 @@ export class CourseClassroomsService {
     private readonly academicPeriodsService: AcademicPeriodsService,
     private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
     private readonly positionsService: PositionsService,
+    private readonly centerDepartmentsService: CenterDepartmentsService,
   ) {}
 
   async create(
@@ -105,8 +108,13 @@ export class CourseClassroomsService {
   async findOne(id: string): Promise<
     TCourseClassroom & {
       course: TCourse;
+      classroom: {
+        building: {
+          centerId: string;
+        };
+      };
       teachingSession: TTeachingSession & {
-        assignmentReport: { periodId: string };
+        assignmentReport: { periodId: string; centerDepartmentId: string };
       };
     }
   > {
@@ -116,11 +124,21 @@ export class CourseClassroomsService {
       },
       include: {
         course: true,
+        classroom: {
+          select: {
+            building: {
+              select: {
+                centerId: true,
+              },
+            },
+          },
+        },
         teachingSession: {
           include: {
             assignmentReport: {
               select: {
                 periodId: true,
+                centerDepartmentId: true,
               },
             },
           },
@@ -136,11 +154,23 @@ export class CourseClassroomsService {
     return courseClassroom;
   }
 
-  async findCurrentPeriodAndUserId(
-    userId: string,
-  ): Promise<TCourseClassroom[]> {
+  async findCurrentPeriodAndUserId(userId: string): Promise<
+    (TCourseClassroom & {
+      classroom: {
+        name: string;
+        center: TCenter;
+      };
+      coordinator: {
+        name: string;
+      };
+    })[]
+  > {
     const currentPeriodData =
       await this.academicPeriodsService.currentAcademicPeriod();
+
+    const postionDepartmentHead = await this.positionsService.findOneByName(
+      EPosition.DEPARTMENT_HEAD,
+    );
 
     const courseClassrooms = await this.prisma.courseClassroom.findMany({
       where: {
@@ -163,7 +193,7 @@ export class CourseClassroomsService {
             department: {
               select: {
                 name: true,
-                center: true,
+                // center: true,
               },
             },
           },
@@ -171,6 +201,39 @@ export class CourseClassroomsService {
         classroom: {
           select: {
             name: true,
+            building: {
+              select: {
+                center: true,
+              },
+            },
+          },
+        },
+        teachingSession: {
+          select: {
+            assignmentReport: {
+              select: {
+                centerDepartment: {
+                  select: {
+                    teacherAppointments: {
+                      where: {
+                        positionId: postionDepartmentHead.id,
+                      },
+                      select: {
+                        teacher: {
+                          select: {
+                            user: {
+                              select: {
+                                name: true,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -181,26 +244,46 @@ export class CourseClassroomsService {
         `No se encontraron clases para el docente con id <${userId}>.`,
       );
 
-    return courseClassrooms;
+    return courseClassrooms.map(({ classroom, teachingSession, ...cc }) => ({
+      ...cc,
+      classroom: {
+        name: classroom.name,
+        center: classroom.building.center,
+      },
+      coordinator: {
+        name: teachingSession.assignmentReport.centerDepartment
+          .teacherAppointments[0].teacher.user.name,
+      },
+    }));
   }
 
   async findAllByCoordinatorAndPeriodId(
     userId: string,
+    centerDepartmentId: string,
     periodId: string,
   ): Promise<
     (TCourseClassroom & {
       teacher: { id: string; userId: string; name: string; code: string };
+      centerDepartment: TCenterDepartment & {
+        department: { name: string };
+        center: { name: string };
+        coordinator: { name: string };
+      };
     })[]
   > {
-    const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+    // Validacion
+    const coordinator =
+      await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+        userId,
+        centerDepartmentId,
+      );
 
     const courseClassrooms = await this.prisma.courseClassroom.findMany({
       where: {
         teachingSession: {
           assignmentReport: {
             periodId,
-            departmentId: user.departmentId,
+            centerDepartmentId,
           },
         },
       },
@@ -214,7 +297,7 @@ export class CourseClassroomsService {
             department: {
               select: {
                 name: true,
-                center: true,
+                // center: true,
               },
             },
           },
@@ -254,12 +337,24 @@ export class CourseClassroomsService {
 
     const mapped: (TCourseClassroom & {
       teacher: { id: string; userId: string; name: string; code: string };
+      centerDepartment: TCenterDepartment & {
+        department: { name: string };
+        center: { name: string };
+        coordinator: { name: string };
+      };
     })[] = courseClassrooms.map(({ teachingSession, ...cc }) => ({
-      ...cc,
+      ...cc, // Se mantiene el resto de las propiedades de `courseClassroom`
       teacher: {
         id: teachingSession.assignmentReport.teacher.id,
         userId: teachingSession.assignmentReport.teacher.userId,
-        ...teachingSession.assignmentReport.teacher.user,
+        name: teachingSession.assignmentReport.teacher.user.name,
+        code: teachingSession.assignmentReport.teacher.user.code,
+      },
+      centerDepartment: {
+        ...coordinator.centerDepartment,
+        coordinator: {
+          name: coordinator.teacher.user.name,
+        },
       },
     }));
 
@@ -302,8 +397,9 @@ export class CourseClassroomsService {
 
     const assignmentReport = await this.prisma.academicAssignmentReport.upsert({
       where: {
-        teacherId_departmentId_periodId: {
-          departmentId: course.departmentId,
+        teacherId_centerDepartmentId_periodId: {
+          centerDepartmentId:
+            teachingSession.assignmentReport.centerDepartmentId,
           teacherId,
           periodId: currentPeriod.id,
         },
@@ -327,7 +423,7 @@ export class CourseClassroomsService {
       // },
       create: {
         teacherId,
-        departmentId: course.departmentId,
+        centerDepartmentId: teachingSession.assignmentReport.centerDepartmentId,
         periodId: teachingSession.assignmentReport.periodId,
         teachingSession: {
           create: {
@@ -349,10 +445,16 @@ export class CourseClassroomsService {
       },
     });
 
-    const existingTeacherDeptPos =
-      await this.teacherDepartmentPositionService.findOneByTeacherIdAndDepartmentId(
-        teacherId,
+    const existingCenterDepartment =
+      await this.centerDepartmentsService.findByCenterAndDepartmentOrFail(
+        courseClassroomData.classroom.building.centerId,
         course.departmentId,
+      );
+
+    const existingTeacherDeptPos =
+      await this.teacherDepartmentPositionService.findOneByTeacherIdAndCenterDepartmentId(
+        teacherId,
+        existingCenterDepartment.id,
       );
 
     // no existe el docente en el departamento, por lo que se crea un nuevo cargo
@@ -362,7 +464,7 @@ export class CourseClassroomsService {
       ).id;
 
       const dto = {
-        departmentId: course.departmentId,
+        centerDepartmentId: existingCenterDepartment.id,
         positionId,
         startDate: currentDate,
       } as CreateTeacherDepartmentPositionDto;

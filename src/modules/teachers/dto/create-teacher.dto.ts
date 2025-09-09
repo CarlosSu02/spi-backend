@@ -14,7 +14,11 @@ import {
 } from '../validators';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
-import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
+import {
+  IsValidCenterConfigConstraint,
+  IsValidDepartmentIdConstraint,
+} from 'src/modules/centers/validators';
+import { ECenterConfig } from 'src/modules/centers/enums';
 
 export class CreateTeacherDto {
   @ApiProperty({
@@ -125,6 +129,14 @@ export class CreateTeacherDto {
   })
   @Validate(IsValidUserIdConstraint)
   currentUserId?: string;
+
+  @IsOptional()
+  @IsUUID()
+  @ValidatorConstraintDecorator(
+    ECenterConfig.CENTER,
+    IsValidCenterConfigConstraint,
+  )
+  centerId: string;
 
   @IsOptional()
   @IsUUID()

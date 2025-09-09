@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  registerDecorator,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -8,6 +7,7 @@ import {
 import { ECenterConfig } from '../enums';
 import { CentersService } from 'src/modules/centers/services/centers.service';
 import { FacultiesService } from '../services/faculties.service';
+import { CenterDepartmentsService } from '../services/center-departments.service';
 
 //  FIXME: se debe arreglar esto
 @ValidatorConstraint({ async: true })
@@ -19,6 +19,7 @@ export class IsValidCenterConfigConstraint
 
   constructor(
     private readonly centersService: CentersService,
+    private readonly centerDepartmentService: CenterDepartmentsService,
     private readonly facultiesService: FacultiesService,
   ) {}
 
@@ -37,6 +38,10 @@ export class IsValidCenterConfigConstraint
       validIds = await this.getCentersIds();
     }
 
+    if (configType === ECenterConfig.CENTER_DEPARTMENT) {
+      validIds = await this.getCenterDepartmentsIds();
+    }
+
     if (configType === ECenterConfig.FACULTY) {
       validIds = await this.getFacultiesIds();
     }
@@ -46,6 +51,11 @@ export class IsValidCenterConfigConstraint
     this.cache.set(configType, validIds);
 
     return validIds.includes(configId);
+  }
+
+  async getCenterDepartmentsIds(): Promise<string[]> {
+    const centers = await this.centerDepartmentService.findAll();
+    return centers.map((el) => el.id);
   }
 
   async getCentersIds(): Promise<string[]> {
@@ -62,6 +72,10 @@ export class IsValidCenterConfigConstraint
     const [configType] = args.constraints as ECenterConfig[];
     const configs: { [key: string]: { name: string; endpoint: string } } = {
       [ECenterConfig.CENTER]: { name: 'centros', endpoint: '/centers' },
+      [ECenterConfig.CENTER_DEPARTMENT]: {
+        name: 'centros-departamentos',
+        endpoint: '/center-departments',
+      },
       [ECenterConfig.FACULTY]: {
         name: 'facultades',
         endpoint: '/faculties',

@@ -13,7 +13,7 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { TPosition } from 'src/modules/teachers-config/types';
-import { TDepartmentJoin } from 'src/modules/centers/types';
+import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
 
 @Injectable()
 export class TeachersService {
@@ -28,6 +28,7 @@ export class TeachersService {
           id: true,
           code: true,
           name: true,
+          email: true,
         },
       },
       contractType: true,
@@ -45,10 +46,14 @@ export class TeachersService {
       },
       positionHeld: {
         include: {
-          department: {
+          centerDepartment: {
             include: {
               center: true,
-              faculty: true,
+              department: {
+                include: {
+                  faculty: true,
+                },
+              },
             },
           },
           position: true,
@@ -73,6 +78,7 @@ export class TeachersService {
       userId,
       undergradId,
       postgradId,
+      centerId,
       departmentId,
       positionId,
     } = createTeacherDto;
@@ -101,13 +107,18 @@ export class TeachersService {
               },
             }
           : {}),
-        ...(positionId && departmentId
+        ...(positionId && centerId && departmentId
           ? {
               positionHeld: {
                 create: [
                   {
                     position: { connect: { id: positionId } },
-                    department: { connect: { id: departmentId } },
+                    centerDepartment: {
+                      create: {
+                        center: { connect: { id: centerId } },
+                        department: { connect: { id: departmentId } },
+                      },
+                    },
                   },
                 ],
               },
@@ -183,7 +194,9 @@ export class TeachersService {
     const where = {
       positionHeld: {
         some: {
-          departmentId,
+          centerDepartment: {
+            departmentId,
+          },
         },
       },
     };
@@ -345,7 +358,11 @@ export class TeachersService {
   private mapTeacher(teacher: TTeacherJoin):
     | TOutputTeacher
     | (TOutputTeacher & {
-        positions: { department: TDepartmentJoin; position: TPosition }[];
+        positions: {
+          department: TDepartmentJoin;
+          center: TCenter;
+          position: TPosition;
+        }[];
       }) {
     return {
       id: teacher.id,
@@ -369,7 +386,9 @@ export class TeachersService {
       })),
       positions: teacher.positionHeld.map((ph) => ({
         // ...ph,
-        department: ph.department,
+        centerDepartmentId: ph.centerDepartment.id,
+        center: ph.centerDepartment.center,
+        department: ph.centerDepartment.department,
         position: ph.position,
       })),
     };

@@ -39,21 +39,20 @@ export class CreateDepartmentDto {
   @IsInt({ message: 'La propiedad <uvs> debe ser un número.' })
   uvs: number | undefined;
 
-  @ApiProperty({
-    description: 'ID del centro al que pertenece el departamento.',
-    example: '65039ef6-1fc5-474c-b4e3-27239c200138',
-    required: true,
-  })
-  @IsUUID('all', {
-    each: true,
-    message: 'La propiedad <centerId> debe ser un UUID válido.',
-  })
-  // @IsValidCenterConfig(ECenterConfig.CENTER)
-  @ValidatorConstraintDecorator(
-    ECenterConfig.CENTER,
-    IsValidCenterConfigConstraint,
-  )
-  centerId: string;
+  // @ApiProperty({
+  //   example: '484b0088-09ac-467b-981a-a0885deb69cb',
+  //   required: true,
+  //   description: 'ID del centro.',
+  // })
+  // @IsUUID('all', {
+  //   message: 'La propiedad <centerId> debe ser un UUID válido.',
+  // })
+  // @IsNotEmpty({ message: 'La propiedad <centerId> no debe estar vacía.' })
+  // @ValidatorConstraintDecorator(
+  //   ECenterConfig.CENTER,
+  //   IsValidCenterConfigConstraint,
+  // )
+  // centerId: string;
 
   @ApiProperty({
     description: 'ID de la facultad a la que pertenece el departamento.',

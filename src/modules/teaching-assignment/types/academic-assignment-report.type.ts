@@ -2,14 +2,22 @@ import { TTeacher } from 'src/modules/teachers/types';
 import { TAcademicPeriod } from './academid-period.type';
 import { TTeachingSession } from './teaching-session.type';
 import { TUser } from 'src/modules/users/types';
-import { TDepartment } from 'src/modules/centers/types';
+import {
+  TCenter,
+  TCenterDepartment,
+  TDepartment,
+} from 'src/modules/centers/types';
+import { TCustomOmit, TCustomPick } from 'src/common/types';
 
 export type TAcademicAssignmentReport = {
   id: string;
   teacherId?: string;
-  departmentId?: string;
+  centerDepartmentId?: string;
   periodId: string;
-  department?: Pick<TDepartment, 'id' | 'name'>;
+  centerDepartment?: TCenterDepartment & {
+    department: TCustomPick<TDepartment, 'name'>;
+    center: TCustomPick<TCenter, 'name'>;
+  };
   teacher?: Pick<TTeacher, 'id'> & {
     user: Pick<TUser, 'id' | 'name' | 'code'>;
   };
@@ -19,10 +27,10 @@ export type TAcademicAssignmentReport = {
 };
 
 // Tipo para la creación
-export type TCreateAcademicAssignmentReport = Omit<
+export type TCreateAcademicAssignmentReport = TCustomOmit<
   TAcademicAssignmentReport,
   // 'id' |
-  'department' | 'teacher' | 'period' | 'complementaryActivities'
+  'centerDepartment' | 'teacher' | 'period'
   // | 'teachingSessions'
 >;
 

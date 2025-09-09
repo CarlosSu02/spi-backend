@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCenterDto } from '../dto/create-center.dto';
 import { UpdateCenterDto } from '../dto/update-center.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { TCenter } from '../types';
+import { TCenter, TCenterJoin } from '../types';
 
 @Injectable()
 export class CentersService {
@@ -27,10 +27,43 @@ export class CentersService {
     return centers;
   }
 
-  async findOne(id: string): Promise<TCenter> {
+  async findAllWithIncludeDepartments(): Promise<TCenterJoin[]> {
+    const centers = await this.prisma.center.findMany({
+      relationLoadStrategy: 'join',
+      include: {
+        departments: {
+          include: {
+            department: true,
+          },
+        },
+      },
+    });
+
+    // if (centers.length === 0)
+    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+
+    return centers.map((center) => ({
+      id: center.id,
+      name: center.name,
+      departments: center.departments.map((d) => ({
+        centerDepartmentId: d.id,
+        ...d.department,
+      })),
+    }));
+  }
+
+  async findOne(id: string): Promise<TCenterJoin> {
     const center = await this.prisma.center.findUnique({
       where: {
         id,
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        departments: {
+          include: {
+            department: true,
+          },
+        },
       },
     });
 
@@ -44,7 +77,14 @@ export class CentersService {
     //   HttpStatus.NOT_FOUND,
     // );
 
-    return center;
+    return {
+      id: center.id,
+      name: center.name,
+      departments: center.departments.map((d) => ({
+        centerDepartmentId: d.id,
+        ...d.department,
+      })),
+    };
   }
 
   async findOneByName(name: string): Promise<TCenter> {

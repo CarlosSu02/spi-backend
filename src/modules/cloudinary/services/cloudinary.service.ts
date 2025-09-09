@@ -295,7 +295,6 @@ export class CloudinaryService {
 
       return res;
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(
         `Error al eliminar los archivos: <${error as string}>`,
       );

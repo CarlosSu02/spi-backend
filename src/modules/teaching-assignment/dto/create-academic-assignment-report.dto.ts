@@ -4,7 +4,8 @@ import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 import { ETeachingAssignmentConfig } from '../enums';
 import { IsValidIdsTeachingAssignmentConfigConstraint } from '../validators';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsValidDepartmentIdConstraint } from 'src/modules/centers/validators';
+import { IsValidCenterConfigConstraint } from 'src/modules/centers/validators';
+import { ECenterConfig } from 'src/modules/centers/enums';
 
 export class CreateAcademicAssignmentReportDto {
   @ApiProperty({
@@ -24,16 +25,33 @@ export class CreateAcademicAssignmentReportDto {
 
   @ApiProperty({
     example: '65039ef6-1fc5-474c-b4e3-27239c200138',
-    description: 'ID del departamento.',
+    description: 'ID de la relación centro-departamento.',
     required: true,
   })
   @IsUUID('all', {
-    each: true,
-    message: 'La propiedad <departmentId> debe ser un UUID válido.',
+    message: 'La propiedad <centerDepartmentId> debe ser un UUID válido.',
   })
-  @IsNotEmpty({ message: 'La propiedad <departmentId> no debe estar vacía.' })
-  @Validate(IsValidDepartmentIdConstraint)
-  departmentId: string;
+  @IsNotEmpty({
+    message: 'La propiedad <centerDepartmentId> no debe estar vacía.',
+  })
+  @ValidatorConstraintDecorator(
+    ECenterConfig.CENTER_DEPARTMENT,
+    IsValidCenterConfigConstraint,
+  )
+  centerDepartmentId: string;
+
+  // @ApiProperty({
+  //   example: '65039ef6-1fc5-474c-b4e3-27239c200138',
+  //   description: 'ID del departamento.',
+  //   required: true,
+  // })
+  // @IsUUID('all', {
+  //   each: true,
+  //   message: 'La propiedad <departmentId> debe ser un UUID válido.',
+  // })
+  // @IsNotEmpty({ message: 'La propiedad <departmentId> no debe estar vacía.' })
+  // @Validate(IsValidDepartmentIdConstraint)
+  // departmentId: string;
 
   @ApiProperty({
     example: '65039ef6-1fc5-474c-b4e3-27239c200138',

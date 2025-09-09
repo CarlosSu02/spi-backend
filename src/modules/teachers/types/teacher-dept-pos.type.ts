@@ -1,16 +1,25 @@
-import { TDepartment } from 'src/modules/centers/types';
+import { TCustomPick } from 'src/common/types';
+import {
+  TCenter,
+  TCenterDepartment,
+  TDepartment,
+} from 'src/modules/centers/types';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TTeacher } from 'src/modules/teachers/types';
 
 export type TTeacherDeptPos = {
   id: string;
   teacherId?: string;
-  departmentId?: string;
+  centerDepartmentId?: string;
   positionId?: string;
   // createdAt: string;
   startDate: Date;
   endDate: Date | null;
-  department?: Omit<TDepartment, 'uvs' | 'centerId' | 'facultyId'>;
+  // department?: Omit<TDepartment, 'uvs' | 'centerId' | 'facultyId'>;
+  centerDepartment?: TCenterDepartment & {
+    department: TCustomPick<TDepartment, 'name'>;
+    center: TCustomPick<TCenter, 'name'>;
+  };
   teacher?: Pick<TTeacher, 'id'>;
 };
 
@@ -23,8 +32,13 @@ export type TCreateTeacherDeptPos = Omit<
 >;
 
 export type TTeacherInclude = TTeacherDeptPos & {
+  centerDepartmentId: string;
   position: TPosition;
-  department: Pick<TDepartment, 'id' | 'name'>;
+  // department: Pick<TDepartment, 'id' | 'name'>;
+  centerDepartment: TCenterDepartment & {
+    department: TCustomPick<TDepartment, 'name'>;
+    center: TCustomPick<TCenter, 'name'>;
+  };
   teacher: {
     id: string;
     user: {

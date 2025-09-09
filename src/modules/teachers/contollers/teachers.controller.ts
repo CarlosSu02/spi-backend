@@ -95,39 +95,45 @@ export class TeachersController {
   // en este caso solo es para el rol COORDINADOR_AREA, y siempre y cuando este autenticado
   // no necesita el departmentId en la url, ya que el coordinador de área solo puede ver los docentes de su departamento
   // solo funcionara si el coordinador inicia sesión y tiene un departamento asignado
-  @Get('coordinator')
+  @Get('coordinator/center-department/:centerDepartmentId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de docentes con su departamento y cargo en un departamento en específico para coordinadores de área.',
+    'Listado de docentes con su centro-departamento y cargo en el center-department especificado para coordinadores de área.',
   )
   @ApiCommonResponses({
     summary:
-      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área',
-    okDescription: 'Listado obtenido correctamente para coordinador.',
+      'Listar docentes con su centro-departamento y cargo por center-department en específico para coordinadores de área',
+    okDescription: 'Listado obtenido correctamente para el coordinador.',
     badRequestDescription:
       'Solicitud inválida al obtener los docentes para coordinador.',
     internalErrorDescription:
       'Error interno al obtener los docentes para coordinador.',
-    notFoundDescription: 'No se encontraron docentes para el coordinador.',
+    notFoundDescription:
+      'No se encontraron docentes para el coordinador en el center-department indicado.',
   })
   @ApiPagination({
     summary:
-      'Listar docentes con su departamento y cargo por departamento en específico para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
+      'Listar docentes con su centro-departamento y cargo por center-departamento en específico (rol COORDINADOR_AREA)',
     description:
-      'Obtiene un listado paginado de docentes con su departamento y cargo asociados a un departamento específico para coordinadores de área',
+      'Obtiene un listado paginado de docentes con su centro-departamento y cargo asociados al center-department especificado para coordinadores de área.',
   })
   async findAllByCoordinator(
     @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @GetCurrentUserId() userId: string,
   ) {
-    const user =
-      await this.teacherDepartmentPositionService.findOneByUserId(userId);
+    // validar que realmente sea coordinador de ese centerDepartment
+    const userPosition =
+      await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+        userId,
+        centerDepartmentId,
+      );
 
     return await this.teachersService.findAllByDepartmentIdWithPagination(
       query,
-      user.department.id,
-      user.teacher.id,
+      userPosition.centerDepartment.departmentId, // ⚡ mantiene consistencia con tus services actuales
+      userPosition.teacher.id, // opcional: para excluir al propio coordinador
     );
   }
 

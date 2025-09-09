@@ -246,7 +246,7 @@ export class AssignmentReportsController {
     });
   }
 
-  @Get('my/period/:id')
+  @Get('my/period/:id/center-department/:centerDepartmentId')
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -256,7 +256,7 @@ export class AssignmentReportsController {
   )
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Informe de asignación académica del usuario autenticado obtenido por ID de periodo.',
+    'Informe de asignación académica del usuario autenticado obtenido por ID de periodo e ID de la relación centro-departamento.',
   )
   @ApiCommonResponses({
     summary: 'Obtener informe del usuario autenticado',
@@ -264,110 +264,133 @@ export class AssignmentReportsController {
     badRequestDescription: 'Solicitud inválida.',
     internalErrorDescription: 'Error interno al obtener el informe.',
     notFoundDescription:
-      'No se encontró un informe para el usuario autenticado en el periodo indicado.',
+      'No se encontró un informe para el usuario autenticado en el periodo indicado y la relación centro-departamento.',
   })
   findOnePersonalAndPeriodId(
     @GetCurrentUserId() userId: string,
     @Param('id', ValidateIdPipe) periodId: string,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
   ) {
-    return this.academicAssignmentReportsService.findOneByUserIdAndPeriodId(
+    return this.academicAssignmentReportsService.findOneByUserIdAndPeriodIdAndCenterDepartmentId(
       {
         userId,
       },
       periodId,
+      centerDepartmentId,
     );
   }
 
-  @Get('department/:departmentId')
+  @Get('center-department/:centerDepartmentId')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de asignaciones académicas por el ID de un departamento.',
+    'Listado de asignaciones académicas por la relación centro-departamento.',
   )
   @ApiParam({
-    name: 'departmentId',
-    description: 'ID del departamento para filtrar las asignaciones académicas',
+    name: 'centerDepartmentId',
+    description:
+      'ID de la relación centro-departamento para filtrar las asignaciones académicas',
     type: String,
     format: 'uuid',
   })
   @ApiPagination({
     summary:
-      'Listar las asignaciones académicas por departamento en específico',
+      'Listar las asignaciones académicas por centro-departamento específico',
     description:
-      'Obtiene un listado paginado de asignaciones académicas asociadas a un departamento específico',
+      'Obtiene un listado paginado de asignaciones académicas asociadas a un centro-departamento específico',
   })
   @ApiCommonResponses({
-    summary: 'Obtener asignaciones por departamento',
+    summary: 'Obtener asignaciones por centro-departamento',
     okDescription: 'Listado de asignaciones obtenido correctamente.',
     badRequestDescription: 'ID inválido para obtener asignaciones.',
     internalErrorDescription: 'Error interno al obtener asignaciones.',
-    notFoundDescription: 'No se encontraron asignaciones para el departamento.',
+    notFoundDescription:
+      'No se encontraron asignaciones para el centro-departamento.',
   })
-  findAllByDepartmentId(
+  findAllByCenterDepartmentId(
     @Query() query: QueryPaginationDto,
-    @Param('departmentId', ValidateIdPipe) departmentId: string,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
   ) {
-    return this.academicAssignmentReportsService.findAllByDepartmentId(
+    return this.academicAssignmentReportsService.findAllByCenterDepartmentId(
       query,
-      departmentId,
+      centerDepartmentId,
     );
   }
 
-  @Get('coordinator')
+  @Get('coordinator/:centerDepartmentId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Listado de asignaciones académicas por departamento para coordinadores de área.',
+    'Listado de asignaciones académicas por center-department para coordinadores de área.',
   )
   @ApiPagination({
     summary:
-      'Listar asignaciones académicas por departamento para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
+      'Listar asignaciones académicas por center-department para coordinadores de área (usuarios autenticados con rol COORDINADOR_AREA)',
     description:
-      'Obtiene un listado paginado de asignaciones académicas por departamento para coordinadores de área.',
+      'Obtiene un listado paginado de asignaciones académicas asociadas a un center-department específico, siempre y cuando el usuario autenticado sea coordinador activo en ese center-department.',
   })
   @ApiCommonResponses({
-    summary: 'Obtener asignaciones para coordinadores de área',
+    summary:
+      'Obtener asignaciones para coordinadores de área por center-department',
     okDescription: 'Listado de asignaciones obtenido correctamente.',
     badRequestDescription: 'Solicitud inválida para coordinador.',
     internalErrorDescription: 'Error interno al obtener asignaciones.',
-    notFoundDescription: 'No se encontraron asignaciones para el coordinador.',
+    notFoundDescription:
+      'No se encontraron asignaciones para el coordinador en el center-department indicado.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description: 'ID de la relación centro-departamento.',
+    type: String,
+    format: 'uuid',
   })
   findAllByCoordinator(
     @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @GetCurrentUserId() userId: string,
   ) {
     return this.academicAssignmentReportsService.findAllByCoordinator(
       query,
       userId,
+      centerDepartmentId,
     );
   }
 
-  @Get('coordinator/periods')
+  @Get('coordinator/:centerDepartmentId/periods')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Lista de periodos académicos con asignaciones académicas registradas.',
+    'Lista de periodos académicos con asignaciones académicas registradas para el center-department especificado.',
   )
   @ApiPagination({
     summary:
-      'Obtener periodos académicos con asignaciones registradas para coordinadores de área',
+      'Obtener periodos académicos con asignaciones registradas para coordinadores de área y center-department',
     description:
-      'Retorna un listado paginado de los periodos académicos en los que existen asignaciones académicas vinculadas al departamento del coordinador de área autenticado.',
+      'Retorna un listado paginado de los periodos académicos en los que existen asignaciones académicas vinculadas al center-department especificado (se requiere que el usuario sea coordinador activo en ese center-department).',
   })
   @ApiCommonResponses({
-    summary: 'Consulta de periodos académicos con asignaciones',
+    summary:
+      'Consulta de periodos académicos con asignaciones por center-department',
     okDescription: 'Listado de periodos obtenido correctamente.',
     badRequestDescription: 'La solicitud contiene parámetros inválidos.',
     internalErrorDescription: 'Error interno al procesar la solicitud.',
     notFoundDescription:
-      'No se encontraron periodos con asignaciones registradas.',
+      'No se encontraron periodos con asignaciones registradas para el center-department indicado.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description: 'ID de la relación centro-departamento.',
+    type: String,
+    format: 'uuid',
   })
   findAllByCoordinatorOnlyPeriods(
     @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @GetCurrentUserId() userId: string,
   ) {
     return this.academicAssignmentReportsService.findAllByCoordinatorOnlyPeriods(
       query,
       userId,
+      centerDepartmentId,
     );
   }
 
@@ -401,31 +424,47 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.findOne(id);
   }
 
-  @Get('coordinator/periods/:periodId')
+  @Get('coordinator/:centerDepartmentId/periods/:periodId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
-    'Detalle de asignaciones académicas para el periodo especificado.',
+    'Detalle de asignaciones académicas para el periodo especificado en el centro-departamento indicado.',
   )
   @ApiOperation({
-    summary: 'Obtener detalle de asignaciones académicas por periodo',
+    summary:
+      'Obtener detalle de asignaciones académicas por periodo y centro-departamento',
     description:
-      'Permite a un coordinador de área autenticado consultar las asignaciones académicas correspondientes a un periodo académico específico.',
+      'Permite a un coordinador de área autenticado, que sea coordinador activo en el centro-departamento indicado, consultar las asignaciones académicas correspondientes a un periodo académico específico.',
   })
   @ApiCommonResponses({
-    summary: 'Consulta de asignaciones académicas por periodo',
+    summary:
+      'Consulta de asignaciones académicas por periodo y centro-departamento',
     okDescription: 'Detalle de asignaciones obtenido correctamente.',
     badRequestDescription: 'La solicitud contiene parámetros inválidos.',
     internalErrorDescription: 'Error interno al procesar la solicitud.',
     notFoundDescription:
-      'No se encontraron asignaciones para el periodo especificado.',
+      'No se encontraron asignaciones para el periodo o el centro-departamento especificado.',
   })
+  // @ApiParam({
+  //   name: 'centerDepartmentId',
+  //   description: 'ID de la relación centro-departamento.',
+  //   type: String,
+  //   format: 'uuid',
+  // })
+  // @ApiParam({
+  //   name: 'periodId',
+  //   description: 'ID del periodo académico.',
+  //   type: String,
+  //   format: 'uuid',
+  // })
   findOneByCoordinatorAndPeriodId(
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
     @Param('periodId', ValidateIdPipe) periodId: string,
     @GetCurrentUserId() userId: string,
   ) {
     return this.academicAssignmentReportsService.findOneByCoordinatorAndPeriodId(
       userId,
+      centerDepartmentId,
       periodId,
     );
   }

@@ -26,6 +26,7 @@ export class TeacherDepartmentPositionService {
   private readonly selectOptionsTDP = {
     // Se puede usar include tambien...
     id: true,
+    centerDepartmentId: true,
     startDate: true,
     endDate: true,
     teacher: {
@@ -46,10 +47,21 @@ export class TeacherDepartmentPositionService {
         name: true,
       },
     },
-    department: {
+    centerDepartment: {
       select: {
         id: true,
-        name: true,
+        centerId: true,
+        departmentId: true,
+        center: {
+          select: {
+            name: true,
+          },
+        },
+        department: {
+          select: {
+            name: true,
+          },
+        },
       },
     },
   };
@@ -64,12 +76,23 @@ export class TeacherDepartmentPositionService {
   async create(
     createTeacherDepartmentPositionDto: CreateTeacherDepartmentPositionDto,
   ): Promise<TTeacherDeptPos> {
-    const { userId, departmentId, positionId, startDate } =
+    const { userId, centerDepartmentId, positionId, startDate } =
       createTeacherDepartmentPositionDto;
 
     const teacher = await this.teachersService.findOneByUserId(userId);
 
-    return await this.createFn(teacher.id, departmentId, positionId, startDate);
+    // const centerDepartment =
+    //   await this.centerDepartmentsService.findByCenterAndDepartmentOrFail(
+    //     centerId,
+    //     departmentId,
+    //   );
+
+    return await this.createFn(
+      teacher.id,
+      centerDepartmentId,
+      positionId,
+      startDate,
+    );
   }
 
   // Para usos internos
@@ -77,44 +100,90 @@ export class TeacherDepartmentPositionService {
     teacherId: string,
     createTeacherDepartmentPositionDto: CreateTeacherDepartmentPositionDto,
   ): Promise<TTeacherDeptPos> {
-    const { departmentId, positionId, startDate } =
+    const { centerDepartmentId, positionId, startDate } =
       createTeacherDepartmentPositionDto;
 
-    return await this.createFn(teacherId, departmentId, positionId, startDate);
+    // const centerDepartment =
+    //   await this.centerDepartmentsService.findByCenterAndDepartmentOrFail(
+    //     centerId,
+    //     departmentId,
+    //   );
+
+    return await this.createFn(
+      teacherId,
+      centerDepartmentId,
+      positionId,
+      startDate,
+    );
   }
 
   private async createFn(
     teacherId: string,
-    departmentId: string,
+    centerDepartmentId: string,
     positionId: string,
     startDate: string,
   ) {
-    // primero obtener el primer dato, ya que un docente solo puede tener un cargo en el mismo departamento
+    // Si la posición es "DEPARTMENT_HEAD", evitamos que tenga otra activa en otro centerDepartment
+    // const coordinatorPosition = await this.positionsService.findOneByName(
+    //   EPosition.DEPARTMENT_HEAD,
+    // );
+    //
+    // if (positionId === coordinatorPosition.id) {
+    //   const existingCoordinator =
+    //     await this.prisma.teacherDepartmentPosition.findFirst({
+    //       where: {
+    //         teacherId,
+    //         positionId,
+    //         endDate: null, // activo
+    //       },
+    //       select: { id: true, centerDepartmentId: true },
+    //     });
+    //
+    //   if (existingCoordinator) {
+    //     throw new BadRequestException(
+    //       'El docente ya ostenta el cargo de Jefe/Coordinador en otro centro-departamento. Debe finalizarlo antes de asignar uno nuevo.',
+    //     );
+    //   }
+    // }
+
+    const coordinatorPosition = await this.positionsService.findOneByName(
+      EPosition.DEPARTMENT_HEAD,
+    );
+
+    if (positionId === coordinatorPosition.id) {
+      const existingCoordinator =
+        await this.prisma.teacherDepartmentPosition.findFirst({
+          where: {
+            positionId,
+            centerDepartmentId,
+            endDate: null, // activo
+          },
+          select: { id: true, centerDepartmentId: true },
+        });
+
+      if (existingCoordinator)
+        throw new BadRequestException(
+          'El departamento ya cuenta con un usuario activo con cargo de Jefe/Coordinador. Debe finalizarlo antes de asignar uno nuevo.',
+        );
+    }
+
+    // Validación por centerDepartmentId (para evitar duplicados exactos)
     const teacherDeptPosExists =
       await this.prisma.teacherDepartmentPosition.findFirst({
-        where: {
-          AND: [
-            {
-              teacherId,
-            },
-            { departmentId: departmentId },
-          ],
-        },
-        select: {
-          endDate: true,
-        },
+        where: { teacherId, centerDepartmentId },
+        select: { endDate: true },
       });
 
     if (teacherDeptPosExists && teacherDeptPosExists.endDate === null)
       throw new BadRequestException(
-        'El docente ya cuenta con un cargo académico en este departamento y se encuentra activo.',
+        'El docente ya cuenta con un cargo académico en este centro-departamento y se encuentra activo.',
       );
 
     const newTeacherDeptPos =
       await this.prisma.teacherDepartmentPosition.create({
         data: {
           teacherId,
-          departmentId,
+          centerDepartmentId,
           positionId,
           startDate: parseISO(startDate),
         },
@@ -164,15 +233,15 @@ export class TeacherDepartmentPositionService {
     );
   }
 
-  async findAllByDepartmentId(
+  async findAllByCenterDepartmentId(
     query: QueryPaginationDto,
-    departmentId: string,
+    centerDepartmentId: string,
     omitTeacherId?: string, // Opcional para omitir un docente específico, en este caso el que esta haciendo la consulta
   ): Promise<IPaginateOutput<TOutputTeacherDeptPos>> {
-    await this.departmentsService.findOne(departmentId);
+    await this.departmentsService.findOne(centerDepartmentId);
 
     const where = {
-      departmentId,
+      centerDepartmentId,
     };
     const whereOmitId = {
       ...where,
@@ -197,7 +266,7 @@ export class TeacherDepartmentPositionService {
 
     if (count === 0)
       throw new NotFoundException(
-        `No se encontraron datos para el departamento con id <${departmentId}>.`,
+        `No se encontraron datos para el departamento con id <${centerDepartmentId}>.`,
       );
 
     const mappedTeacherDeptPos: TOutputTeacherDeptPos[] = teacherDeptPos.map(
@@ -207,8 +276,7 @@ export class TeacherDepartmentPositionService {
         teacherId: tdp.teacher.id,
         code: tdp.teacher.user.code,
         name: tdp.teacher.user.name,
-        departmentId: tdp.department.id,
-        departmentName: tdp.department.name,
+        centerDepartment: tdp.centerDepartment,
         positionId: tdp.position.id,
         positionName: tdp.position.name,
         startDate: formatInTimeZone(
@@ -233,10 +301,17 @@ export class TeacherDepartmentPositionService {
     );
   }
 
-  async findAllByCoordinator(query: QueryPaginationDto, userId: string) {
-    const user = await this.findOneByUserId(userId);
+  async findAllByCoordinator(
+    query: QueryPaginationDto,
+    userId: string,
+    centerDepartmentId: string,
+  ) {
+    const user = await this.findOneDepartmentHeadByUserIdAndCenterDepartment(
+      userId,
+      centerDepartmentId,
+    );
 
-    if (!user.department)
+    if (!user.centerDepartment)
       throw new NotFoundException(
         `El usuario con id <${userId}> no tiene un departamento asignado.`,
       );
@@ -246,9 +321,9 @@ export class TeacherDepartmentPositionService {
         `El usuario con id <${userId}> no tiene un docente asociado.`,
       );
 
-    return await this.findAllByDepartmentId(
+    return await this.findAllByCenterDepartmentId(
       query,
-      user.department.id,
+      user.centerDepartment.id,
       user.teacher.id,
     );
   }
@@ -270,8 +345,65 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPos;
   }
 
-  // Solo devuelve el que tenga "jefe de departamento"
-  async findOneByUserId(id: string): Promise<TTeacherInclude> {
+  async findAllByCenterDepartmentIdsWithPagination(
+    query: QueryPaginationDto,
+    centerDepartmentIds: string[],
+    omitTeacherId?: string,
+  ): Promise<IPaginateOutput<TOutputTeacherDeptPos>> {
+    const whereBase = { centerDepartmentId: { in: centerDepartmentIds } };
+    const where = omitTeacherId
+      ? { ...whereBase, teacherId: { not: omitTeacherId } }
+      : whereBase;
+
+    const [items, count] = await Promise.all([
+      this.prisma.teacherDepartmentPosition.findMany({
+        where,
+        ...paginate(query),
+        select: this.selectOptionsTDP,
+      }),
+      this.prisma.teacherDepartmentPosition.count({ where }),
+    ]);
+
+    if (count === 0)
+      throw new NotFoundException(
+        'No se encontraron docentes para los centerDepartment indicados.',
+      );
+
+    const mapped: TOutputTeacherDeptPos[] = this.mappedTeacherDeptPos(items);
+
+    return paginateOutput(mapped, count, query);
+  }
+
+  async findDepartmentHeadPositionsByUserId(
+    id: string,
+  ): Promise<TTeacherInclude[]> {
+    const coordinatorPosition = await this.positionsService.findOneByName(
+      EPosition.DEPARTMENT_HEAD,
+    );
+
+    const teacherDeptPos = await this.prisma.teacherDepartmentPosition.findMany(
+      {
+        where: {
+          teacher: { userId: id },
+          positionId: coordinatorPosition.id,
+          endDate: null,
+        },
+        select: this.selectOptionsTDP,
+      },
+    );
+
+    if (teacherDeptPos.length === 0)
+      throw new NotFoundException(
+        `No se encontró al docente con userId <${id}> como jefe de departamento activo.`,
+      );
+
+    return teacherDeptPos;
+  }
+
+  async findOneDepartmentHeadByUserIdAndCenterDepartment(
+    userId: string,
+    centerDepartmentId: string,
+  ): Promise<TTeacherInclude> {
     const coordinatorPosition = await this.positionsService.findOneByName(
       EPosition.DEPARTMENT_HEAD,
     );
@@ -280,52 +412,41 @@ export class TeacherDepartmentPositionService {
       await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
           AND: [
-            {
-              teacher: {
-                userId: id,
-              },
-            },
-            {
-              positionId: coordinatorPosition.id,
-            },
+            { teacher: { userId } },
+            { centerDepartmentId },
+            { positionId: coordinatorPosition.id },
+            { endDate: null }, // activo
           ],
         },
         select: this.selectOptionsTDP,
+        relationLoadStrategy: 'join',
       });
 
-    if (!teacherDeptPos || teacherDeptPos === null)
+    if (!teacherDeptPos) {
       throw new NotFoundException(
-        `El <docente-departamento-cargo> con userId <${id}> no fue encontrado.`,
+        `El usuario con id <${userId}> no es coordinador activo del centerDepartment <${centerDepartmentId}>.`,
       );
-
-    if (teacherDeptPos.endDate)
-      throw new BadRequestException(
-        `El docente con userId <${id}> ya no se encuentra activo en el departamento <${teacherDeptPos.department.name}>.`,
-      );
+    }
 
     return teacherDeptPos;
   }
 
-  async findOneByTeacherCodeAndDepartmentId(
+  async findOneByTeacherCodeAndCenterDepartmentId(
     teacherCode: string,
-    departmentId: string,
+    centerDepartmentId: string,
   ): Promise<TTeacherDeptPos | null> {
     const teacher = await this.teachersService.findOneByCode(teacherCode);
 
     const teacherDeptPosExists =
       await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
-          AND: [
-            {
-              teacherId: teacher.id,
-            },
-            { departmentId: departmentId },
-          ],
+          teacherId: teacher.id,
+          centerDepartmentId,
         },
         select: {
           id: true,
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
           startDate: true,
           endDate: true,
         },
@@ -334,24 +455,20 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPosExists;
   }
 
-  async findOneByTeacherIdAndDepartmentId(
+  async findOneByTeacherIdAndCenterDepartmentId(
     teacherId: string,
-    departmentId: string,
+    centerDepartmentId: string,
   ): Promise<TTeacherDeptPos | null> {
     const teacherDeptPosExists =
       await this.prisma.teacherDepartmentPosition.findFirst({
         where: {
-          AND: [
-            {
-              teacherId,
-            },
-            { departmentId },
-          ],
+          teacherId,
+          centerDepartmentId,
         },
         select: {
           id: true,
           teacherId: true,
-          departmentId: true,
+          centerDepartmentId: true,
           startDate: true,
           endDate: true,
         },
@@ -360,33 +477,40 @@ export class TeacherDepartmentPositionService {
     return teacherDeptPosExists;
   }
 
-  async findPositionByUserIdAndDepId(userId: string, departmentId: string) {
-    await this.departmentsService.findOne(departmentId);
-
+  async findPositionsByUserAndCenterDepartment(
+    userId: string,
+    centerDepartmentId: string,
+  ) {
     const position = await this.prisma.teacherDepartmentPosition.findFirst({
       where: {
-        departmentId,
         teacher: {
           userId,
         },
+        centerDepartmentId,
       },
+      relationLoadStrategy: 'join',
       include: {
+        teacher: { select: { user: { select: { name: true } } } },
         position: {
           select: {
             name: true,
           },
         },
-        department: {
-          select: {
-            name: true,
-            faculty: {
+        centerDepartment: {
+          include: {
+            center: {
               select: {
                 name: true,
               },
             },
-            center: {
+            department: {
               select: {
                 name: true,
+                faculty: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -396,14 +520,15 @@ export class TeacherDepartmentPositionService {
 
     if (!position)
       throw new BadRequestException(
-        `No se encontro un cargo académico para el usuario <${userId}> en el departamento <${departmentId}>.`,
+        `No se encontro un cargo académico para el usuario <${userId}> en la relación centro-departamento <${centerDepartmentId}>.`,
       );
 
     return {
+      teacherName: position.teacher.user.name,
       position: position.position.name,
-      department: position.department.name,
-      faculty: position.department.faculty.name,
-      center: position.department.center.name,
+      department: position.centerDepartment.department.name,
+      faculty: position.centerDepartment.department.faculty.name,
+      center: position.centerDepartment.center.name,
     };
   }
 
@@ -457,8 +582,9 @@ export class TeacherDepartmentPositionService {
       teacherId: tdp.teacher.id,
       code: tdp.teacher.user.code,
       name: tdp.teacher.user.name,
-      departmentId: tdp.department.id,
-      departmentName: tdp.department.name,
+      // departmentId: tdp.centerDepartment.departmentId,
+      // departmentName: tdp.centerDepartment.department.name,
+      centerDepartment: tdp.centerDepartment,
       positionId: tdp.position.id,
       positionName: tdp.position.name,
       startDate: formatDateTimeZone(tdp.startDate).toString(),
