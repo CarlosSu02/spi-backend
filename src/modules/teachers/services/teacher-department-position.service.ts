@@ -7,6 +7,7 @@ import { CreateTeacherDepartmentPositionDto } from '../dto/create-teacher-depart
 import { UpdateTeacherDepartmentPositionDto } from '../dto/update-teacher-department-position.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  TCoordination,
   TOutputTeacherDeptPos,
   TTeacherDeptPos,
   TTeacherInclude,
@@ -20,6 +21,7 @@ import { formatDateTimeZone, paginate, paginateOutput } from 'src/common/utils';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { DepartmentsService } from 'src/modules/centers/services/departments.service';
+import { centerDepartmentesSeed } from 'prisma/data';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
@@ -123,29 +125,6 @@ export class TeacherDepartmentPositionService {
     positionId: string,
     startDate: string,
   ) {
-    // Si la posición es "DEPARTMENT_HEAD", evitamos que tenga otra activa en otro centerDepartment
-    // const coordinatorPosition = await this.positionsService.findOneByName(
-    //   EPosition.DEPARTMENT_HEAD,
-    // );
-    //
-    // if (positionId === coordinatorPosition.id) {
-    //   const existingCoordinator =
-    //     await this.prisma.teacherDepartmentPosition.findFirst({
-    //       where: {
-    //         teacherId,
-    //         positionId,
-    //         endDate: null, // activo
-    //       },
-    //       select: { id: true, centerDepartmentId: true },
-    //     });
-    //
-    //   if (existingCoordinator) {
-    //     throw new BadRequestException(
-    //       'El docente ya ostenta el cargo de Jefe/Coordinador en otro centro-departamento. Debe finalizarlo antes de asignar uno nuevo.',
-    //     );
-    //   }
-    // }
-
     const coordinatorPosition = await this.positionsService.findOneByName(
       EPosition.DEPARTMENT_HEAD,
     );
@@ -376,7 +355,7 @@ export class TeacherDepartmentPositionService {
 
   async findDepartmentHeadPositionsByUserId(
     id: string,
-  ): Promise<TTeacherInclude[]> {
+  ): Promise<TCoordination[]> {
     const coordinatorPosition = await this.positionsService.findOneByName(
       EPosition.DEPARTMENT_HEAD,
     );
@@ -388,7 +367,35 @@ export class TeacherDepartmentPositionService {
           positionId: coordinatorPosition.id,
           endDate: null,
         },
-        select: this.selectOptionsTDP,
+        relationLoadStrategy: 'join',
+        select: {
+          id: true,
+          centerDepartmentId: true,
+          startDate: true,
+          position: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          centerDepartment: {
+            select: {
+              id: true,
+              center: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              department: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
       },
     );
 
@@ -397,7 +404,12 @@ export class TeacherDepartmentPositionService {
         `No se encontró al docente con userId <${id}> como jefe de departamento activo.`,
       );
 
-    return teacherDeptPos;
+    return teacherDeptPos.map((tdp) => ({
+      centerDepartmentId: tdp.centerDepartmentId,
+      center: tdp.centerDepartment.center,
+      department: tdp.centerDepartment.department,
+      position: tdp.position,
+    }));
   }
 
   async findOneDepartmentHeadByUserIdAndCenterDepartment(

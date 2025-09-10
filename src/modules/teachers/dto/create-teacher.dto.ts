@@ -14,10 +14,7 @@ import {
 } from '../validators';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
-import {
-  IsValidCenterConfigConstraint,
-  IsValidDepartmentIdConstraint,
-} from 'src/modules/centers/validators';
+import { IsValidCenterConfigConstraint } from 'src/modules/centers/validators';
 import { ECenterConfig } from 'src/modules/centers/enums';
 
 export class CreateTeacherDto {
@@ -130,18 +127,35 @@ export class CreateTeacherDto {
   @Validate(IsValidUserIdConstraint)
   currentUserId?: string;
 
-  @IsOptional()
-  @IsUUID()
+  // @IsOptional()
+  // @IsUUID()
+  // @ValidatorConstraintDecorator(
+  //   ECenterConfig.CENTER,
+  //   IsValidCenterConfigConstraint,
+  // )
+  // centerId: string;
+  //
+  // @IsOptional()
+  // @IsUUID()
+  // @Validate(IsValidDepartmentIdConstraint)
+  // departmentId: string;
+
+  @ApiProperty({
+    example: '65039ef6-1fc5-474c-b4e3-27239c200138',
+    description: 'ID de la relación centro-departamento.',
+    required: true,
+  })
+  @IsUUID('all', {
+    message: 'La propiedad <centerDepartmentId> debe ser un UUID válido.',
+  })
+  @IsNotEmpty({
+    message: 'La propiedad <centerDepartmentId> no debe estar vacía.',
+  })
   @ValidatorConstraintDecorator(
-    ECenterConfig.CENTER,
+    ECenterConfig.CENTER_DEPARTMENT,
     IsValidCenterConfigConstraint,
   )
-  centerId: string;
-
-  @IsOptional()
-  @IsUUID()
-  @Validate(IsValidDepartmentIdConstraint)
-  departmentId: string;
+  centerDepartmentId: string;
 
   @IsOptional()
   @IsUUID()

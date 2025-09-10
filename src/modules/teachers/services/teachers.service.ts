@@ -78,8 +78,9 @@ export class TeachersService {
       userId,
       undergradId,
       postgradId,
-      centerId,
-      departmentId,
+      // centerId,
+      // departmentId,
+      centerDepartmentId,
       positionId,
     } = createTeacherDto;
 
@@ -107,16 +108,15 @@ export class TeachersService {
               },
             }
           : {}),
-        ...(positionId && centerId && departmentId
+        ...(positionId && centerDepartmentId
           ? {
               positionHeld: {
                 create: [
                   {
                     position: { connect: { id: positionId } },
                     centerDepartment: {
-                      create: {
-                        center: { connect: { id: centerId } },
-                        department: { connect: { id: departmentId } },
+                      connect: {
+                        id: centerDepartmentId,
                       },
                     },
                   },

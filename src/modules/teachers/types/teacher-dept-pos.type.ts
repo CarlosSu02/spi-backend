@@ -1,8 +1,9 @@
-import { TCustomPick } from 'src/common/types';
+import { TCustomOmit, TCustomPick } from 'src/common/types';
 import {
   TCenter,
   TCenterDepartment,
   TDepartment,
+  TDepartmentJoin,
 } from 'src/modules/centers/types';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TTeacher } from 'src/modules/teachers/types';
@@ -47,4 +48,11 @@ export type TTeacherInclude = TTeacherDeptPos & {
       code: string;
     };
   };
+};
+
+export type TCoordination = {
+  centerDepartmentId: string;
+  department: TCustomPick<TDepartment, 'id' | 'name'>;
+  center: TCenter;
+  position: TPosition;
 };

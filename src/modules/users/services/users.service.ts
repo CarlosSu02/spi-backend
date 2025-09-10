@@ -55,6 +55,7 @@ export class UsersService {
 
     // Verifica si el usuario no tiene ninguno de los roles DOCENTE o COORDINADOR_AREA, y en ese caso crea el usuario.
     if (
+      createUserDto.roles.length !== 0 &&
       !createUserDto.roles.some((role) =>
         [EUserRole.DOCENTE, EUserRole.COORDINADOR_AREA].includes(role),
       )
@@ -82,7 +83,7 @@ export class UsersService {
     //   createUserDto.centerId = currentUserDepartment.centerDepartment.centerId;
     // }
 
-    if (!createUserDto.departmentId)
+    if (!createUserDto.centerDepartmentId)
       throw new BadRequestException(
         `Debe ingresar el departamento al que pertenerá el docente.`,
       );
@@ -97,16 +98,37 @@ export class UsersService {
 
     if (
       roles.includes(EUserRole.COORDINADOR_AREA) &&
-      createUserDto.positionId &&
+      !roles.includes(EUserRole.ADMIN) &&
       createUserDto.positionId !== postionNone.id
     ) {
-      createUserDto.positionId = postionNone.id; // por defecto
+      createUserDto.positionId = postionNone.id;
     }
 
     if (!createUserDto.positionId)
       throw new BadRequestException(
         `Debe ingresar el cargo académico <positionId> que tendrá el docente en el departamento.`,
       );
+
+    const coordinatorPosition = await this.positionsService.findOneByName(
+      EPosition.DEPARTMENT_HEAD,
+    );
+
+    if (createUserDto.positionId === coordinatorPosition.id) {
+      const existingCoordinator =
+        await this.prisma.teacherDepartmentPosition.findFirst({
+          where: {
+            positionId: createUserDto.positionId,
+            centerDepartmentId: createUserDto.centerDepartmentId,
+            endDate: null,
+          },
+          select: { id: true, centerDepartmentId: true },
+        });
+
+      if (existingCoordinator)
+        throw new BadRequestException(
+          'El departamento ya cuenta con un usuario activo con cargo de Jefe/Coordinador. Debe finalizarlo antes de asignar uno nuevo.',
+        );
+    }
 
     return await this.create(createUserDto);
   }
@@ -142,8 +164,7 @@ export class UsersService {
       undergradId,
       postgradId,
       positionId,
-      centerId,
-      departmentId,
+      centerDepartmentId,
     } = createUserDto;
 
     if (passwordConfirm !== password)
@@ -208,18 +229,13 @@ export class UsersService {
                     },
                   }
                 : {}),
-              ...(positionId && departmentId
+              ...(positionId && centerDepartmentId
                 ? {
                     positionHeld: {
                       create: [
                         {
-                          position: { connect: { id: positionId } },
-                          centerDepartment: {
-                            create: {
-                              center: { connect: { id: centerId } },
-                              department: { connect: { id: departmentId } },
-                            },
-                          },
+                          positionId,
+                          centerDepartmentId,
                         },
                       ],
                     },
