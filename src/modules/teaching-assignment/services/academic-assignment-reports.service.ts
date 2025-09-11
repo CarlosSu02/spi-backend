@@ -399,6 +399,24 @@ export class AcademicAssignmentReportsService {
         where: {
           id,
         },
+        relationLoadStrategy: 'join',
+        include: {
+          ...this.includeOptionsAAR,
+          complementaryActivities: {
+            include: {
+              verificationMedia: {
+                include: {
+                  verificationMediaFiles: true,
+                },
+              },
+              activityType: true,
+            },
+          },
+        },
+        omit: {
+          teacherId: true,
+          centerDepartmentId: true,
+        },
       });
 
     if (!academicAssignmentReport)
@@ -418,6 +436,7 @@ export class AcademicAssignmentReportsService {
           },
         },
         select: {
+          id: true,
           period: true,
           centerDepartment: {
             select: {
@@ -446,6 +465,7 @@ export class AcademicAssignmentReportsService {
 
     return academicAssignmentReports.map((p) => ({
       ...p.period,
+      reportId: p.id,
       centerDepartmentId: p.centerDepartment.id,
       center: p.centerDepartment.center.name,
       department: p.centerDepartment.department.name,

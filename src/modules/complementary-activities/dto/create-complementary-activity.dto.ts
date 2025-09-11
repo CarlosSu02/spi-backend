@@ -44,8 +44,8 @@ export class CreateComplementaryActivityDto extends PickType(
     message: 'La propiedad <name> debe ser una cadena de texto.',
   })
   @IsNotEmpty({ message: 'La propiedad <name> no debe estar vacía.' })
-  @Length(3, 100, {
-    message: 'La propiedad <name> debe tener entre 3 y 100 caracteres.',
+  @Length(3, 250, {
+    message: 'La propiedad <name> debe tener entre 3 y 250 caracteres.',
   })
   name: string;
 
@@ -164,6 +164,13 @@ export class CreateComplementaryActivityDto extends PickType(
     description: 'Descripción del medio de verificación.',
     example: 'Foto de la actividad...',
     type: 'string',
+  })
+  @IsString({
+    message: 'La propiedad <descripción> debe ser una cadena de texto.',
+  })
+  @IsNotEmpty({ message: 'La propiedad <descripción> no debe estar vacía.' })
+  @Length(3, 250, {
+    message: 'La propiedad <descripción> debe tener entre 3 y 250 caracteres.',
   })
   description: string;
 
