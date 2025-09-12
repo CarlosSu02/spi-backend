@@ -31,6 +31,7 @@ export class CentersService {
     const centers = await this.prisma.center.findMany({
       relationLoadStrategy: 'join',
       include: {
+        // _count: true,
         departments: {
           include: {
             department: true,
@@ -38,6 +39,10 @@ export class CentersService {
         },
       },
     });
+
+    // centers.map((c) => {
+    //   console.log(c._count.departments);
+    // });
 
     // if (centers.length === 0)
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []

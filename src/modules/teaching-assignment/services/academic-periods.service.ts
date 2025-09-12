@@ -11,8 +11,8 @@ import {
   TUpdateAcademicPeriod,
   TPacModality,
 } from '../types';
-import { getYear, setYear, startOfDay } from 'date-fns';
-import { TCustomOmit } from 'src/common/types';
+import { addWeeks, getYear, setYear, startOfDay } from 'date-fns';
+import { TCustomPick } from 'src/common/types';
 
 type TCurrentAcademicPeriod = {
   id: string;
@@ -20,6 +20,8 @@ type TCurrentAcademicPeriod = {
   pac_modality: TPacModality;
   pac: number;
   title: string;
+  startDate: Date;
+  endDate: Date;
 };
 
 @Injectable()
@@ -170,6 +172,8 @@ export class AcademicPeriodsService {
       pac_modality,
       year,
       title: `No. ${period.pac}, ${pac_modality}, ${year}`,
+      startDate: period.startDate,
+      endDate: period.endDate,
     };
   };
 
@@ -177,7 +181,16 @@ export class AcademicPeriodsService {
     pac,
     pac_modality,
     year,
+    startDate,
   }: TCurrentAcademicPeriod) => {
+    // Fecha actual y fecha límite (+4 semanas desde el inicio)
+    const now = new Date();
+    const fourWeeksAfterStart = addWeeks(startDate, 4);
+
+    // Si aún estamos dentro de las primeras 4 semanas → devolvemos el actual
+    if (now <= fourWeeksAfterStart)
+      return await this.findOneByYearPacModality(year, pac, pac_modality);
+
     const periodSearch = this.handlePeriod({ pac, pac_modality, year });
 
     return await this.findOneByYearPacModality(
@@ -191,7 +204,7 @@ export class AcademicPeriodsService {
     pac,
     pac_modality,
     year,
-  }: TCustomOmit<TCurrentAcademicPeriod, 'id' | 'title'>): {
+  }: TCustomPick<TCurrentAcademicPeriod, 'pac' | 'pac_modality' | 'year'>): {
     updatedPac: number;
     updatedYear: number;
   } => {

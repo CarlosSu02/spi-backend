@@ -436,7 +436,7 @@ export class TeacherDepartmentPositionService {
 
     if (!teacherDeptPos) {
       throw new NotFoundException(
-        `El usuario con id <${userId}> no es coordinador activo del centerDepartment <${centerDepartmentId}>.`,
+        `El usuario con id <${userId}> no es coordinador activo del centro-departamento <${centerDepartmentId}>.`,
       );
     }
 

@@ -16,9 +16,9 @@ import {
   TUpdateAcademicAssignmentReport,
   TPacModality,
   TAcademicPeriod,
+  TAcademicAssignmentReportFileView,
 } from '../types';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
-import { ExcelResponseDto } from 'src/modules/excel-files/dto/excel-response.dto';
 import { AcademicPeriodsService } from './academic-periods.service';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
@@ -55,6 +55,14 @@ interface ParsedTitle {
   pac_modality: TPacModality;
   title: string;
 }
+
+type TGroupedCoursesByTeacher = Record<
+  string,
+  Omit<TAcademicAssignmentReport, 'id'> & {
+    userId: string;
+    courses: TCreateCourseClassroom[];
+  }
+>;
 
 @Injectable()
 export class AcademicAssignmentReportsService {
@@ -617,24 +625,31 @@ export class AcademicAssignmentReportsService {
     return academicAssignmentReportDelete;
   }
 
-  // Con el archivo de excel
-  async createFromExcel(data: ExcelResponseDto<AcademicAssignmentDto>) {
-    const { pac_modality } = this.parseAcademicTitle(data.subtitle);
+  parsedTitleFromExcel(subtitle: string) {
+    return this.parseAcademicTitle(subtitle);
+  }
 
-    // FIX: para no depender del titulo, esto se cambiara, del titulo solo se necesitara la modalidad
-    // const academicPeriod =
-    // await this.academicPeriodsService.findOneByYearPacModality(
-    //   year,
-    //   pac,
-    //   pac_modality,
-    // );
+  // parsedData
+  async parsedData(
+    allData: AcademicAssignmentDto[],
+    centerDepartmentId: string,
+    currentUserId: string,
+    parseAcademicTitle?: ParsedTitle,
+  ) {
+    const coordinator =
+      await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
+        currentUserId,
+        centerDepartmentId,
+      );
 
-    await this.academicPeriodsService.currentAcademicPeriod(pac_modality);
+    await this.academicPeriodsService.currentAcademicPeriod(
+      parseAcademicTitle && parseAcademicTitle.pac_modality,
+    );
     const academicPeriod =
       await this.academicPeriodsService.getNextAcademicPeriod(
-        await this.academicPeriodsService.currentAcademicPeriod(pac_modality),
+        await this.academicPeriodsService.currentAcademicPeriod(),
       );
-    const academicPeriodTitle = `Periodo Académico No. ${academicPeriod.pac}, ${pac_modality}, ${academicPeriod.year}`;
+    const academicPeriodTitle = `Periodo Académico No. ${academicPeriod.pac}, ${academicPeriod.pac_modality}, ${academicPeriod.year}`;
 
     // En cuestion de rendimiento, es mejor hacer las consultas
     // de todos los datos necesarios antes de iterar sobre el archivo
@@ -649,8 +664,8 @@ export class AcademicAssignmentReportsService {
       classrooms,
     ] = await Promise.all([
       this.teachersService.findAll(),
-      this.centersService.findAllWithIncludeDepartments(),
-      this.coursesService.findAllWithSelect(),
+      this.centersService.findOne(coordinator.centerDepartment.centerId),
+      this.coursesService.findAllByCenterDepartmentId(centerDepartmentId),
       this.modalitiesService.findAll(),
       this.courseClassroomsService.findAllWithSelectAndPeriodId(
         academicPeriod.id,
@@ -659,9 +674,9 @@ export class AcademicAssignmentReportsService {
     ]);
 
     const teachersMap = new Map(teachers.map((t) => [t.code, t]));
-    const centerDepartmentsMap = new Map(
-      centerDepartments.map((d) => [normalizeText(d.name), d]),
-    );
+    // const centerDepartmentsMap = new Map(
+    //   centerDepartments.map((d) => [normalizeText(d.name), d]),
+    // );
     const allCoursesMap = new Map(allCourses.map((c) => [c.code, c]));
     const classroomsMap = new Map(
       classrooms.map((c) => [normalizeText(c.name), c]),
@@ -675,7 +690,6 @@ export class AcademicAssignmentReportsService {
       existingCourseClassroomsMap.set(key, cc);
     });
 
-    const allData = data.data;
     const coursesGroupByTeacherCodeEntries: Record<
       string,
       Omit<TAcademicAssignmentReport, 'id'> & {
@@ -683,6 +697,7 @@ export class AcademicAssignmentReportsService {
         courses: TCreateCourseClassroom[];
       }
     > = {};
+    const coursesArray: TAcademicAssignmentReportFileView[] = [];
 
     for (const item of allData) {
       const {
@@ -697,15 +712,16 @@ export class AcademicAssignmentReportsService {
         observation,
       } = item;
 
+      // Validar días al inicio
+      this.validateDays(days);
+
       this.validateUniqueClass(allData, item);
 
       const teacher = this.findTeacher(teachersMap, teacherCode);
-      const center = this.findCenterDepartment(
-        centerDepartmentsMap,
-        centerName,
-      );
+      // const center = this.findCenterDepartment(centerDepartments, centerName);
       const department = this.findDepartment(
-        new Map(center.departments.map((d) => [normalizeText(d.name), d])),
+        // new Map(center.departments.map((d) => [normalizeText(d.name), d])),
+        centerDepartments.departments,
         departmentName,
       );
       const course = this.findCourse(allCoursesMap, courseCode, department);
@@ -741,7 +757,7 @@ export class AcademicAssignmentReportsService {
         };
       }
 
-      coursesGroupByTeacherCodeEntries[teacherCode].courses.push({
+      const courseElement = {
         courseId: course.id,
         section,
         days: days.toString(),
@@ -751,9 +767,47 @@ export class AcademicAssignmentReportsService {
         groupCode: `${teacherCode}-${section}-${days}`, // Generamos un código de grupo único
         nearGraduation: false, // Por defecto, ya que no se especifica en el archivo
         observation: observation || null, // Si no hay observación, se asigna
+      };
+
+      coursesGroupByTeacherCodeEntries[teacherCode].courses.push(courseElement);
+
+      coursesArray.push({
+        userId: teacher.userId,
+        teacherId: teacher.id,
+        teacherCode: teacher.code,
+        teacherName: teacher.name,
+        courseCode: course.code,
+        courseName: course.name,
+        uv: course.uvs,
+        section,
+        studentCount,
+        days,
+        center: centerDepartments.name,
+        classroomName: classroom.name,
+        departmentName: course.department.name,
+        centerDepartmentId: department.centerDepartmentId,
+        coordinator: coordinator.teacher.user.name,
+        observation: courseElement.observation,
       });
     }
 
+    return {
+      coursesView: {
+        pacId: academicPeriod.id,
+        pac: academicPeriod.pac,
+        year: academicPeriod.year,
+        pac_modality: academicPeriod.pac_modality,
+        title: academicPeriodTitle,
+        courses: coursesArray,
+      },
+      coursesGroupByTeacherCodeEntries,
+    };
+  }
+
+  // createFromArray
+  async createFromArray(
+    coursesGroupByTeacherCodeEntries: TGroupedCoursesByTeacher,
+  ) {
     const allAcademicAssignmentReports = await this.findAll();
     const results: TAcademicAssignmentReport[] &
       {
@@ -822,11 +876,6 @@ export class AcademicAssignmentReportsService {
             ...cc,
             classroom: {
               id: cc.classroomId,
-              name: classroomsMap.get(
-                normalizeText(
-                  classrooms.find((c) => c.id === cc.classroomId)!.name,
-                ),
-              )!.name,
             },
           })),
         },
@@ -836,7 +885,9 @@ export class AcademicAssignmentReportsService {
     return results;
   }
 
-  private parseAcademicTitle(title: string): ParsedTitle {
+  private parseAcademicTitle(title?: string): ParsedTitle | undefined {
+    if (!title) return;
+
     // Inicialmente permitimos numero o null
     let year: number | null = null;
     let pac: number | null = null;
@@ -868,7 +919,7 @@ export class AcademicAssignmentReportsService {
 
     // Valor por defecto si no se encontró
     if (year === null) {
-      throw new BadRequestException(`No se detectó año en “${title}”`);
+      throw new BadRequestException(`No se detectó año en “${title}”.`);
     }
 
     if (pac === null) {
@@ -898,7 +949,21 @@ export class AcademicAssignmentReportsService {
       )
     ) {
       throw new BadRequestException(
-        `Ya existe una clase con el docente <${item.teacherCode}> ...`,
+        `Ya existe una clase con el docente <${item.teacherCode}>...`,
+      );
+    }
+  }
+
+  private validateDays(days: string) {
+    const validDays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
+
+    const regex = /^(Lu|Ma|Mi|Ju|Vi|Sa|Do)+$/;
+
+    if (!regex.test(days)) {
+      throw new BadRequestException(
+        `El valor de 'days' (${days}) no es válido. Debe ser combinación de: ${validDays.join(
+          ', ',
+        )}.`,
       );
     }
   }
@@ -935,10 +1000,10 @@ export class AcademicAssignmentReportsService {
   }
 
   private findCenterDepartment(
-    centerDepartmentsMap: Map<string, TCenterJoin>,
+    centerDepartments: Map<string, TCenterJoin>,
     center: string,
   ): TCenterJoin {
-    const centerDepartment = centerDepartmentsMap.get(normalizeText(center));
+    const centerDepartment = centerDepartments.get(normalizeText(center));
 
     if (!centerDepartment)
       throw new NotFoundException(
@@ -949,10 +1014,10 @@ export class AcademicAssignmentReportsService {
   }
 
   private findDepartment(
-    departments: Map<string, TDepartment & { centerDepartmentId: string }>,
+    departments: (TDepartment & { centerDepartmentId: string })[],
     departmentName: string,
   ): TDepartment & { centerDepartmentId: string } {
-    const department = departments.get(normalizeText(departmentName));
+    const department = departments.find((d) => d.name === departmentName);
 
     if (!department)
       throw new NotFoundException(

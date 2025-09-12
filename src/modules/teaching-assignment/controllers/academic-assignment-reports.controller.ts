@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { AcademicAssignmentReportsService } from '../services/academic-assignment-reports.service';
 import {
+  AcademicAssignmentArrayDto,
   AcademicAssignmentDto,
+  CreateAcademicAssignmentDto,
   CreateAcademicAssignmentReportDto,
   propertiesAcademicAssignment,
   TAcademicAssignment,
@@ -33,6 +35,7 @@ import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
+import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 
 @Controller('academic-assignment-reports')
 export class AssignmentReportsController {
@@ -42,6 +45,7 @@ export class AssignmentReportsController {
       TAcademicAssignment,
       AcademicAssignmentDto
     >,
+    private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
   ) {}
 
   @Post()
@@ -567,7 +571,7 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.removeAll(id);
   }
 
-  @Post('file')
+  @Post('file/coordinator/view/:centerDepartmentId')
   @Roles(
     EUserRole.ADMIN,
     EUserRole.DIRECCION,
@@ -575,12 +579,128 @@ export class AssignmentReportsController {
     EUserRole.COORDINADOR_AREA,
   )
   @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Vista previa generada correctamente desde el archivo.')
+  @ApiOperation({
+    summary: 'Visualiza informes de asignación académica desde un archivo',
+    description:
+      'Procesa un archivo Excel y devuelve una vista previa de los informes de asignación académica, sin guardar ningún dato. Esta operación solo puede ser realizada por un usuario con el rol de Coordinador de Área, autenticado mediante token.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description:
+      'ID del centro-departamento académico para el cual se está generando la vista previa de los informes de asignación académica.',
+    type: String,
+    example: '12345',
+  })
+  @ApiBody({
+    required: true,
+    description: 'Archivo Excel con los datos de los informes de asignación.',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiCommonResponses({
+    summary: 'Vista previa de informes desde archivo',
+    createdDescription: 'Vista previa generada exitosamente.',
+    badRequestDescription: 'Archivo inválido o datos erróneos.',
+    internalErrorDescription: 'Error interno al procesar el archivo.',
+  })
+  async viewFileCoordination(
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
+    @GetCurrentUserId() currentUserId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const handledFile = this.excelFilesService.handleFileUpload(file);
+
+    const data = await this.excelFilesService.processFile(
+      propertiesAcademicAssignment,
+      handledFile.buffer,
+    );
+
+    const parsedAcademicTitle =
+      this.academicAssignmentReportsService.parsedTitleFromExcel(data.subtitle);
+
+    const parsedData = await this.academicAssignmentReportsService.parsedData(
+      data.data,
+      centerDepartmentId,
+      currentUserId,
+      parsedAcademicTitle,
+    );
+
+    // Devuelve los datos procesados, sin guardar
+    return parsedData.coursesView;
+  }
+
+  @Post('array/coordinator/:centerDepartmentId')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @HttpCode(HttpStatus.CREATED)
+  @ResponseMessage('Se han creado los informes de asignación académica.')
+  @ApiOperation({
+    summary:
+      'Crear múltiples informes de asignación académica desde un arreglo',
+    description:
+      'Permite a un Coordinador de Área crear múltiples informes de asignación académica proporcionando un arreglo de asignaciones en el cuerpo de la petición. Cada elemento del arreglo representa una asignación académica con su respectiva información.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description:
+      'ID del centro-departamento académico para el cual se están generando los informes de asignación académica. Este ID se utiliza para asociar los informes con el centro-departamento correspondiente.',
+    type: String,
+  })
+  @ApiBody({
+    type: AcademicAssignmentArrayDto,
+    description:
+      'Arreglo de objetos que representan las asignaciones académicas que se desean registrar.',
+    required: true,
+  })
+  @ApiCommonResponses({
+    summary: 'Crear múltiples informes de asignación académica',
+    createdDescription:
+      'Informes de asignación académica creados exitosamente a partir del arreglo de datos enviado.',
+    badRequestDescription:
+      'El cuerpo de la solicitud contiene datos inválidos o con formato incorrecto.',
+    internalErrorDescription:
+      'Error interno al procesar la creación de los informes de asignación académica.',
+  })
+  async createFromArray(
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
+    @GetCurrentUserId() currentUserId: string,
+    @Body() body: AcademicAssignmentArrayDto,
+  ) {
+    const parsedData = await this.academicAssignmentReportsService.parsedData(
+      body.assignments,
+      centerDepartmentId,
+      currentUserId,
+    );
+
+    return this.academicAssignmentReportsService.createFromArray(
+      parsedData.coursesGroupByTeacherCodeEntries,
+    );
+  }
+
+  @Post('file/coordinator/:centerDepartmentId')
+  @Roles(EUserRole.COORDINADOR_AREA)
+  @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se han creado los informes de asignación académica.')
   @ApiOperation({
     summary: 'Crea múltiples informes de asignación académica desde un archivo',
     description:
-      'Debería crear múltiples informes de asignación académica a partir de un archivo Excel.',
+      'Debería crear múltiples informes de asignación académica a partir de un archivo Excel. Esta operación solo puede ser realizada por un usuario con el rol de Coordinador de Área, que será autenticado a través de su token.',
+  })
+  @ApiParam({
+    name: 'centerDepartmentId',
+    description:
+      'ID del centro-departamento académico para el cual se están generando los informes de asignación académica. Este ID se utiliza para asociar los informes con el centro-departamento correspondiente.',
+    type: String,
   })
   @ApiBody({
     required: true,
@@ -602,7 +722,11 @@ export class AssignmentReportsController {
     badRequestDescription: 'Archivo inválido o datos erróneos.',
     internalErrorDescription: 'Error interno al procesar el archivo.',
   })
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFileCoordination(
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
+    @GetCurrentUserId() currentUserId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     const handledFile = this.excelFilesService.handleFileUpload(file);
 
     const data = await this.excelFilesService.processFile(
@@ -610,6 +734,18 @@ export class AssignmentReportsController {
       handledFile.buffer,
     );
 
-    return this.academicAssignmentReportsService.createFromExcel(data);
+    const parsedAcademicTitle =
+      this.academicAssignmentReportsService.parsedTitleFromExcel(data.subtitle);
+
+    const parsedData = await this.academicAssignmentReportsService.parsedData(
+      data.data,
+      centerDepartmentId,
+      currentUserId,
+      parsedAcademicTitle,
+    );
+
+    return this.academicAssignmentReportsService.createFromArray(
+      parsedData.coursesGroupByTeacherCodeEntries,
+    );
   }
 }

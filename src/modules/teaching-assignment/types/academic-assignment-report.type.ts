@@ -8,6 +8,7 @@ import {
   TDepartment,
 } from 'src/modules/centers/types';
 import { TCustomOmit, TCustomPick } from 'src/common/types';
+import { AcademicAssignmentDto } from '../dto';
 
 export type TAcademicAssignmentReport = {
   id: string;
@@ -37,3 +38,12 @@ export type TCreateAcademicAssignmentReport = TCustomOmit<
 // Tipo para la actualización
 export type TUpdateAcademicAssignmentReport =
   Partial<TCreateAcademicAssignmentReport>;
+
+export type TAcademicAssignmentReportFileView = TCustomOmit<
+  AcademicAssignmentDto,
+  'id'
+> & {
+  userId: string;
+  teacherId: string;
+  centerDepartmentId: string;
+};
