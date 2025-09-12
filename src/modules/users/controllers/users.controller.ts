@@ -11,10 +11,15 @@ import {
   forwardRef,
   Inject,
   ForbiddenException,
+  Query,
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
-import { GetCurrentUser, ResponseMessage } from 'src/common/decorators';
+import {
+  ApiPagination,
+  GetCurrentUser,
+  ResponseMessage,
+} from 'src/common/decorators';
 import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -23,6 +28,7 @@ import { Roles } from 'src/common/decorators';
 import { EUserRole } from '../../../common/enums';
 import { TeachersService } from 'src/modules/teachers/services/teachers.service';
 import { TJwtPayload } from 'src/modules/auth/types';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Controller('users')
 export class UsersController {
@@ -158,6 +164,27 @@ export class UsersController {
   })
   findAllUsersWithRole(@Param('roleId', ValidateIdPipe) roleId: string) {
     return this.usersService.findAllUsersWithRole(roleId);
+  }
+
+  @Get('search')
+  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de usuarios encontrado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Buscar usuarios por término',
+    okDescription:
+      'Retorna un listado paginado de docentes que coinciden con el término de búsqueda.',
+  })
+  @ApiPagination({
+    summary: 'Búsqueda de usuario',
+    description:
+      'Permite buscar usuarios utilizando un término (nombre, código y correo) y obtener los resultados de forma paginada.',
+  })
+  findBySearchTerm(
+    @Query('searchTerm') searchTerm: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.usersService.findBySearchTerm(searchTerm, query);
   }
 
   @Patch(':id')

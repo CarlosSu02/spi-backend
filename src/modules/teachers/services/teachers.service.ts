@@ -315,6 +315,45 @@ export class TeachersService {
     };
   }
 
+  async findBySearchTerm(searchTerm: string = '', query: QueryPaginationDto) {
+    const where = {
+      user: {
+        OR: [
+          { code: { contains: searchTerm } },
+          { name: { contains: searchTerm } },
+          { email: { contains: searchTerm } },
+        ],
+      },
+    };
+
+    const [results, count] = await Promise.all([
+      this.prisma.teacher.findMany({
+        where,
+        ...paginate(query),
+        select: {
+          id: true,
+          userId: true,
+          user: {
+            select: {
+              name: true,
+              email: true,
+              code: true,
+            },
+          },
+        },
+      }),
+      this.prisma.teacher.count({
+        where,
+      }),
+    ]);
+
+    return paginateOutput(
+      results.map(({ user, ...t }) => ({ ...t, ...user })),
+      count,
+      query,
+    );
+  }
+
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
     const { categoryId, contractTypeId, shiftId, undergradId, postgradId } =
       updateTeacherDto;

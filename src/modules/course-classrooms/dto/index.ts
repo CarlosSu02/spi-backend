@@ -6,3 +6,4 @@ export * from './create-course-stadistic.dto';
 export * from './update-course-stadistic.dto';
 export * from './create-modality.dto';
 export * from './update-modality.dto';
+export * from './search-courses.dto';

@@ -154,6 +154,32 @@ export class TeachersController {
     return this.teachersService.findOneByUserId(id);
   }
 
+  @Get('search')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de docentes encontrado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Buscar docentes por término',
+    okDescription:
+      'Retorna un listado paginado de docentes que coinciden con el término de búsqueda.',
+  })
+  @ApiPagination({
+    summary: 'Búsqueda de docentes',
+    description:
+      'Permite buscar docentes utilizando un término (nombre, código y correo) y obtener los resultados de forma paginada.',
+  })
+  findBySearchTerm(
+    @Query('searchTerm') searchTerm: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.teachersService.findBySearchTerm(searchTerm, query);
+  }
+
   @Get('my')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Perfil de docente autenticado.')

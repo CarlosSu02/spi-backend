@@ -10,15 +10,16 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiParam } from '@nestjs/swagger';
+import { ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { CreateCourseDto, UpdateCourseDto } from '../dto';
+import { CreateCourseDto, SearchCoursesDto, UpdateCourseDto } from '../dto';
 import { CoursesService } from '../services/courses.service';
 import { QueryPaginationDto } from 'src/common/dto';
+import { centerDepartmentesSeed } from 'prisma/data';
 
 @Controller('courses')
 export class CoursesController {
@@ -66,6 +67,65 @@ export class CoursesController {
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.coursesService.findAllWithPagination(query);
+  }
+
+  @Get('search')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de clases encontrado correctamente')
+  @ApiCommonResponses({
+    summary: 'Buscar clases por término',
+    okDescription:
+      'Retorna un listado paginado de clases que coinciden con el término de búsqueda.',
+  })
+  @ApiPagination({
+    summary: 'Búsqueda de clases',
+    description:
+      'Permite buscar clases utilizando un término (nombre y código) y obtener los resultados de forma paginada.',
+  })
+  findBySearchTerm(
+    @Query('searchTerm') searchTerm: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.coursesService.findBySearchTerm(searchTerm, query);
+  }
+
+  @Get('search/:centerDepartmentId')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Listado de clases del centro-departmento encontradas correctamente',
+  )
+  @ApiCommonResponses({
+    summary: 'Buscar clases por término e ID de centro-departmento',
+    okDescription:
+      'Retorna un listado paginado de clases que coinciden con el término de búsqueda y el centro-departmento especificado.',
+  })
+  @ApiPagination({
+    summary: 'Búsqueda de clases',
+    description:
+      'Permite buscar clases utilizando un término (nombre y código) y obtener los resultados de forma paginada. Si se coloca el ID del centro-departmento retornara solo clases asociadas a ese centro-departmento',
+  })
+  findBySearchTermAndCenterDepartment(
+    @Query('searchTerm') searchTerm: string,
+    @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
+  ) {
+    return this.coursesService.findBySearchTerm(
+      searchTerm,
+      query,
+      centerDepartmentId,
+    );
   }
 
   @Get(':id')

@@ -128,6 +128,54 @@ export class CoursesService {
     return course;
   }
 
+  async findBySearchTerm(
+    searchTerm: string = '',
+    query: QueryPaginationDto,
+    centerDepartmentId?: string,
+  ) {
+    const where = {
+      OR: [
+        { code: { contains: searchTerm } },
+        { name: { contains: searchTerm } },
+      ],
+      ...(centerDepartmentId
+        ? {
+            department: {
+              centers: {
+                every: {
+                  id: centerDepartmentId,
+                },
+              },
+            },
+          }
+        : {}),
+    };
+
+    const [results, count] = await Promise.all([
+      this.prisma.course.findMany({
+        ...paginate(query),
+        where,
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          uvs: true,
+          department: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+      this.prisma.course.count({
+        where,
+      }),
+    ]);
+
+    return paginateOutput(results, count, query);
+  }
+
   async update(
     id: string,
     updateCourseDto: UpdateCourseDto,

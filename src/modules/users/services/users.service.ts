@@ -13,13 +13,14 @@ import { TUser } from '../types';
 import { RolesService } from './roles.service';
 import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
-import { generatePassword } from 'src/common/utils';
+import { generatePassword, paginate, paginateOutput } from 'src/common/utils';
 import { MailService } from 'src/modules/mail/services/mail.service';
 import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
 import { TJwtPayload } from 'src/modules/auth/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
+import { QueryPaginationDto } from 'src/common/dto';
 
 @Injectable()
 export class UsersService {
@@ -312,6 +313,33 @@ export class UsersService {
     //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
 
     return users;
+  }
+
+  async findBySearchTerm(searchTerm: string = '', query: QueryPaginationDto) {
+    const where = {
+      OR: [
+        { code: { contains: searchTerm } },
+        { name: { contains: searchTerm } },
+        { email: { contains: searchTerm } },
+      ],
+    };
+
+    const [results, count] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        ...paginate(query),
+        select: {
+          id: true,
+          email: true,
+          code: true,
+        },
+      }),
+      this.prisma.user.count({
+        where,
+      }),
+    ]);
+
+    return paginateOutput(results, count, query);
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<TUser> {
