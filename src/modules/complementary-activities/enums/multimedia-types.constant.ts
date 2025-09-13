@@ -10,6 +10,7 @@ export const MULTIMEDIA_TYPES = {
 
   // Imágenes
   JPEG: 'JPEG',
+  JPG: 'JPG',
   PNG: 'PNG',
   GIF: 'GIF',
   BMP: 'BMP',

@@ -17,6 +17,10 @@ import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.se
 import { ComplementaryActivitiesService } from './complementary-activities.service';
 import { TCustomOmit, TCustomPick } from 'src/common/types';
 
+type TFile = Express.Multer.File & {
+  multimediaTypeId: string;
+};
+
 @Injectable()
 export class VerificationMediasService {
   constructor(
@@ -329,15 +333,38 @@ export class VerificationMediasService {
       'url' | 'multimediaTypeId' | 'public_id'
     >[] = [];
 
-    const [code, activity, multipediaTypes] = await Promise.all([
+    const [code, activity] = await Promise.all([
       this.complementaryActivitiesService.findUserCodeByActivityId(activityId),
       this.complementaryActivitiesService.findOne(activityId),
-      this.multimediaTypesService.findAll(), // no realizamos peticiones en cada tipo de multimedia
     ]);
+
+    const validFiles = await this.handleFiles(files);
+
+    for (const file of validFiles) {
+      const uploadResult = await this.cloudinaryService.handleFileUpload(
+        file,
+        code,
+        activity.activityType.name,
+      );
+
+      results.push({
+        url: uploadResult.url,
+        public_id: uploadResult.public_id,
+        multimediaTypeId: file.multimediaTypeId,
+      });
+    }
+
+    return results;
+  }
+
+  async handleFiles(files: Express.Multer.File[]): Promise<TFile[]> {
+    const multipediaTypes = await this.multimediaTypesService.findAll();
 
     const multimediaTypesMap = new Map(
       multipediaTypes.map((mt) => [mt.description, mt]),
     );
+
+    const validFiles: TFile[] = [];
 
     for (const file of files) {
       const extension =
@@ -356,19 +383,12 @@ export class VerificationMediasService {
           `El tipo de multimiedia <${multimediaType}> no fue encontrado.`,
         );
 
-      const uploadResult = await this.cloudinaryService.handleFileUpload(
-        file,
-        code,
-        activity.activityType.name,
-      );
-
-      results.push({
-        url: uploadResult.url,
-        public_id: uploadResult.public_id,
+      validFiles.push({
+        ...file,
         multimediaTypeId: multimediaTypeExists.id,
       });
     }
 
-    return results;
+    return validFiles;
   }
 }

@@ -42,6 +42,8 @@ export class ComplementaryActivitiesService {
     createComplementaryActivityDto: CreateComplementaryActivityDto,
     files: Express.Multer.File[],
   ): Promise<TComplementaryActivity> {
+    if (files.length) await this.verificationMediasService.handleFiles(files);
+
     const { activityType, description, ...dataToCreate } =
       createComplementaryActivityDto;
     const activityTypeExists =
