@@ -64,6 +64,32 @@ export class ClassroomController {
     return this.classroomService.findAllWithPagination(query);
   }
 
+  @Get('search')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.RRHH,
+    EUserRole.DIRECCION,
+    EUserRole.COORDINADOR_AREA,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Listado de aulas encontrado correctamente.')
+  @ApiCommonResponses({
+    summary: 'Buscar aulas por término',
+    okDescription:
+      'Retorna un listado paginado de aulas que coinciden con el término de búsqueda.',
+  })
+  @ApiPagination({
+    summary: 'Búsqueda de usuario',
+    description:
+      'Permite buscar aulas utilizando un término (nombre, edificio...) y obtener los resultados de forma paginada.',
+  })
+  findBySearchTerm(
+    @Query('searchTerm') searchTerm: string,
+    @Query() query: QueryPaginationDto,
+  ) {
+    return this.classroomService.findBySearchTerm(searchTerm, query);
+  }
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Se ha encontrado el aula.')
