@@ -143,10 +143,10 @@ export class CreateCourseClassroomDto {
       'La propiedad <groupCode> debe ser una cadena de texto, por ejemplo: G1, G2, etc.',
   })
   @IsNotEmpty({ message: 'La propiedad <groupCode> no debe estar vacía.' })
-  @Length(2, 10, {
-    message: 'La propiedad <groupCode> debe tener entre 2 y 10 caracteres.',
+  @Length(2, 50, {
+    message: 'La propiedad <groupCode> debe tener entre 2 y 50 caracteres.',
   })
-  groupCode: string = 'G1'; // ya está por defecto en la base de datos
+  groupCode: string; // ya está por defecto en la base de datos
 
   @ApiPropertyOptional({
     description: 'Observaciones adicionales.',

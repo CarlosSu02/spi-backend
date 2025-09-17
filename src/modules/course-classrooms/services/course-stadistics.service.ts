@@ -83,23 +83,21 @@ export class CourseStadisticsService {
       const total = valuesToSum.reduce((acc, val) => acc + val, 0);
       if (total !== studentCount) {
         throw new BadRequestException(
-          `La suma de ABD, APB, NSP, RPB (${total}) no coincide con la cantidad de estudiantes <${studentCount}>`,
+          `La suma de ABD, APB, NSP, RPB <${total}> no coincide con la cantidad de estudiantes <${studentCount}>`,
         );
       }
     }
 
-    const courseStadisticUpdate = await this.prisma.courseStadistic.updateMany(
-      {
-        where: {
-          courseClassroomId: id,
-        },
-        data: {
-          ...updateCourseStadisticDto,
-        },
+    const courseStadisticUpdate = await this.prisma.courseStadistic.update({
+      where: {
+        courseClassroomId: id,
       },
-    );
+      data: {
+        ...updateCourseStadisticDto,
+      },
+    });
 
-    return courseStadisticUpdate[0];
+    return courseStadisticUpdate;
   }
 
   async remove(id: string): Promise<TCourseStadistic> {
