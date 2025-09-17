@@ -127,6 +127,9 @@ export class CreateComplementaryActivityDto extends PickType(
         ? value
         : null,
   )
+  @Transform(({ value }) =>
+    value === 'undefined' || value === '' ? null : (value as string),
+  )
   fileNumber: string;
 
   @ApiProperty({

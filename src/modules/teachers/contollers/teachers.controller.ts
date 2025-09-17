@@ -132,8 +132,8 @@ export class TeachersController {
 
     return await this.teachersService.findAllByDepartmentIdWithPagination(
       query,
-      userPosition.centerDepartment.departmentId, // ⚡ mantiene consistencia con tus services actuales
-      userPosition.teacher.id, // opcional: para excluir al propio coordinador
+      userPosition.centerDepartment.departmentId,
+      userPosition.teacher.id,
     );
   }
 

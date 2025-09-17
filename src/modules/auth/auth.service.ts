@@ -71,7 +71,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findFirst({
       where: {
-        OR: [{ email }, { code }],
+        OR: [{ email: { contains: email, mode: 'insensitive' } }, { code }],
       },
       relationLoadStrategy: 'join',
       select: {
@@ -93,11 +93,11 @@ export class AuthService {
     });
 
     if (!user || (user && !user.activeStatus))
-      throw new ForbiddenException('Access denied!');
+      throw new ForbiddenException('¡Acceso denegado!');
 
     const passwordMatches = await argon.verify(user.hash, password);
 
-    if (!passwordMatches) throw new ForbiddenException('Access denied!');
+    if (!passwordMatches) throw new ForbiddenException('¡Acceso denegado!');
 
     const tokens = await this.getTokens(
       user.id,
@@ -242,11 +242,12 @@ export class AuthService {
       },
     });
 
-    if (!user || !user.hashedRt) throw new ForbiddenException('Access denied!');
+    if (!user || !user.hashedRt)
+      throw new ForbiddenException('¡Acceso denegado!');
 
     const rtMatches = await argon.verify(user.hashedRt, rt);
 
-    if (!rtMatches) throw new ForbiddenException('Access denied!');
+    if (!rtMatches) throw new ForbiddenException('¡Acceso denegado!');
 
     const tokens = await this.getTokens(
       user.id,
@@ -289,7 +290,7 @@ export class AuthService {
       ),
       // refresh token
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId },
         { secret: jwtConstants.rtSecret, expiresIn: 60 * 60 * 24 * 7 }, // 7 days => '7d'
       ),
     ]);

@@ -21,6 +21,7 @@ import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 import { QueryPaginationDto } from 'src/common/dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -182,7 +183,7 @@ export class UsersService {
     const baseData = {
       name,
       code,
-      email,
+      email: email.toLowerCase(),
       hash,
       // roles: roleEntities.map((role) => role.id),
       userRoles: {
@@ -316,11 +317,11 @@ export class UsersService {
   }
 
   async findBySearchTerm(searchTerm: string = '', query: QueryPaginationDto) {
-    const where = {
+    const where: Prisma.UserWhereInput = {
       OR: [
-        { code: { contains: searchTerm } },
-        { name: { contains: searchTerm } },
-        { email: { contains: searchTerm } },
+        { code: { contains: searchTerm, mode: 'insensitive' } },
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { email: { contains: searchTerm, mode: 'insensitive' } },
       ],
     };
 

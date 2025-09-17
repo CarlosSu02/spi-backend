@@ -11,6 +11,7 @@ import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { TCustomOmit } from 'src/common/types';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoursesService {
@@ -133,10 +134,10 @@ export class CoursesService {
     query: QueryPaginationDto,
     centerDepartmentId?: string,
   ) {
-    const where = {
+    const where: Prisma.CourseWhereInput = {
       OR: [
-        { code: { contains: searchTerm } },
-        { name: { contains: searchTerm } },
+        { code: { contains: searchTerm, mode: 'insensitive' } },
+        { name: { contains: searchTerm, mode: 'insensitive' } },
       ],
       ...(centerDepartmentId
         ? {

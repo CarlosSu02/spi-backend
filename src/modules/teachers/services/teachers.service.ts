@@ -14,6 +14,7 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TeachersService {
@@ -191,16 +192,17 @@ export class TeachersService {
     departmentId: string,
     omitTeacherId?: string, // Opcional para omitir un docente específico, en este caso el que esta haciendo la consulta
   ): Promise<IPaginateOutput<TOutputTeacher>> {
-    const where = {
+    const where: Prisma.TeacherWhereInput = {
       positionHeld: {
         some: {
           centerDepartment: {
             departmentId,
           },
+          endDate: null,
         },
       },
     };
-    const whereOmitId = {
+    const whereOmitId: Prisma.TeacherWhereInput = {
       ...where,
       id: {
         not: omitTeacherId,
@@ -316,12 +318,12 @@ export class TeachersService {
   }
 
   async findBySearchTerm(searchTerm: string = '', query: QueryPaginationDto) {
-    const where = {
+    const where: Prisma.TeacherWhereInput = {
       user: {
         OR: [
-          { code: { contains: searchTerm } },
-          { name: { contains: searchTerm } },
-          { email: { contains: searchTerm } },
+          { code: { contains: searchTerm, mode: 'insensitive' } },
+          { name: { contains: searchTerm, mode: 'insensitive' } },
+          { email: { contains: searchTerm, mode: 'insensitive' } },
         ],
       },
     };
