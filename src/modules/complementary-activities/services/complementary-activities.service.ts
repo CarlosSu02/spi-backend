@@ -16,6 +16,7 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
 import { VerificationMediasService } from './verification-medias.service';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
+import { TCustomPick } from 'src/common/types';
 
 @Injectable()
 export class ComplementaryActivitiesService {
@@ -238,6 +239,60 @@ export class ComplementaryActivitiesService {
       relationLoadStrategy: 'join',
       ...this.includeOptionsCA,
     });
+
+    return activityTypeUpdate;
+  }
+
+  async updateWithFiles(
+    id: string,
+    updateComplementaryActivityDto: UpdateComplementaryActivityDto,
+    files: Express.Multer.File[],
+  ): Promise<TComplementaryActivity> {
+    const { activityType, description, ...dataToUpdate } =
+      updateComplementaryActivityDto;
+    const activityTypeExists =
+      activityType &&
+      (await this.activityTypesService.findOneByName(activityType));
+
+    const activityTypeUpdate = await this.prisma.complementaryActivity.update({
+      where: {
+        id,
+      },
+      data: {
+        ...dataToUpdate,
+        ...(activityTypeExists && { activityTypeId: activityTypeExists.id }),
+        // ...(description && {
+        //   verificationMedia: {
+        //     update: {
+        //       data: {
+        //         description,
+        //       },
+        //     },
+        //   },
+        // }),
+        // ...(files.length > 0 && {
+        //   verificationMedia: {
+        //     create: {
+        //       verificationMediaFiles: {
+        //         createMany: {
+        //           data: filesParsed,
+        //         },
+        //       },
+        //     },
+        //   },
+        // }),
+      },
+      relationLoadStrategy: 'join',
+      ...this.includeOptionsCA,
+    });
+
+    await this.verificationMediasService.updateWithFilesByComplementaryActivityId(
+      id,
+      {
+        description,
+        files,
+      },
+    );
 
     return activityTypeUpdate;
   }

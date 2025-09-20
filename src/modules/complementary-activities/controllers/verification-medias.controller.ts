@@ -12,7 +12,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import {
   Roles,
   ResponseMessage,
@@ -22,7 +22,11 @@ import {
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { CreateVerificationMediaDto, UpdateVerificationMediaDto } from '../dto';
+import {
+  CreateVerificationMediaDto,
+  UpdateVerificationMediaDto,
+  UpdateVerificationMediaWithFilesDto,
+} from '../dto';
 import { VerificationMediasService } from '../services/verification-medias.service';
 import { QueryPaginationDto } from 'src/common/dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -147,6 +151,51 @@ export class VerificationMediasController {
     return this.verificationMediasService.update(
       id,
       updateVerificationMediaDto,
+    );
+  }
+
+  @Patch('files/:complementaryActivityId')
+  @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Se ha actualizado un medio de verificación con archivos adjuntos opcionales.',
+  )
+  @ApiOperation({
+    summary:
+      'Actualizar un medio de verificación con archivos adjuntos opcionales mediante el ID de la actividad complementaria',
+    description:
+      'Debería actualizar un medio de verificación y permitir la carga de archivos adjuntos opcionales.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateVerificationMediaWithFilesDto })
+  @ApiCommonResponses({
+    summary:
+      'Actualizar un medio de verificación con archivos adjuntos opcionales',
+    description:
+      'Debería actualizar un medio de verificación adjunto a la actividad complementaria y permitir la carga de archivos adjuntos opcionales.',
+    createdDescription: 'Medio de verificación actualizado exitosamente.',
+    badRequestDescription:
+      'Datos inválidos para actualizar el medio de verificación.',
+    internalErrorDescription:
+      'Error interno al actualizar el medio de verificación.',
+    notFoundDescription: 'Recurso no encontrado.',
+  })
+  updateWithFilesByComplementaryActivityId(
+    @Param('complementaryActivityId', ValidateIdPipe)
+    complementaryActivityId: string,
+    @Body()
+    updateVerificationMediaWithFilesDto: UpdateVerificationMediaWithFilesDto,
+  ) {
+    return this.verificationMediasService.updateWithFilesByComplementaryActivityId(
+      complementaryActivityId,
+      updateVerificationMediaWithFilesDto,
     );
   }
 

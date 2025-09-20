@@ -12,7 +12,13 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiBody,
+  ApiParam,
+  ApiConsumes,
+  PickType,
+} from '@nestjs/swagger';
 import {
   Roles,
   ResponseMessage,
@@ -26,6 +32,8 @@ import { ComplementaryActivitiesService } from '../services/complementary-activi
 import {
   CreateComplementaryActivityDto,
   UpdateComplementaryActivityDto,
+  UpdateComplementaryActivityWithFilesDto,
+  UpdateVerificationMediaWithFilesDto,
 } from '../dto';
 import { QueryPaginationDto } from 'src/common/dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -53,7 +61,7 @@ export class ComplementaryActivitiesController {
     description: 'Debería crear un nuevo tipo de actividad.',
   })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: CreateComplementaryActivityDto }) // tipo DTO que defines
+  @ApiBody({ type: CreateComplementaryActivityDto })
   @ApiCommonResponses({
     summary: 'Crear una actividad complementaria',
     description: 'Debería crear un nuevo tipo de actividad.',
@@ -166,6 +174,39 @@ export class ComplementaryActivitiesController {
     return this.complementaryActivitiesService.update(
       id,
       updateComplementaryActivityDto,
+    );
+  }
+
+  @Patch('/files/:id')
+  @UseInterceptors(FilesInterceptor('files', 5, multerConfig))
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Se ha actualizado la actividad complmentaria.')
+  @ApiOperation({
+    summary: 'Actualizar una actividad complmentaria por ID y con archivos.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    required: false,
+    description: 'Archivos a agregar al medio de verificación.',
+    type: UpdateComplementaryActivityWithFilesDto,
+  })
+  updateWithFiles(
+    @Param('id', ValidateIdPipe) id: string,
+    @Body()
+    updateComplementaryActivityWithFilesDto: UpdateComplementaryActivityWithFilesDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.complementaryActivitiesService.updateWithFiles(
+      id,
+      updateComplementaryActivityWithFilesDto,
+      files,
     );
   }
 

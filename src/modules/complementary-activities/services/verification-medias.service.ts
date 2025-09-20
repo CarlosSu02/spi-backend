@@ -6,7 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateVerificationMediaDto, UpdateVerificationMediaDto } from '../dto';
+import {
+  CreateVerificationMediaDto,
+  UpdateVerificationMediaDto,
+  UpdateVerificationMediaWithFilesDto,
+} from '../dto';
 import { TVerificationMedia, TVerificationMediaFile } from '../types';
 import { MultimediaTypesService } from './multimedia-types.service';
 import { QueryPaginationDto } from 'src/common/dto';
@@ -195,6 +199,37 @@ export class VerificationMediasService {
     return verificationMediaUpdate;
   }
 
+  async updateWithFilesByComplementaryActivityId(
+    complementaryActivityId: string,
+    updateVerificationMediaWithFilesDto: UpdateVerificationMediaWithFilesDto,
+  ): Promise<TCustomOmit<TVerificationMedia, 'verificationMediaFiles'>> {
+    const { files, ...dataToUpdate } = updateVerificationMediaWithFilesDto;
+
+    const filesParsed: TCustomPick<
+      TVerificationMediaFile,
+      'url' | 'multimediaTypeId' | 'public_id'
+    >[] =
+      files.length === 0
+        ? []
+        : await this.handleFilesAndActivity(complementaryActivityId, files);
+
+    const verificationMediaUpdate = await this.prisma.verificationMedia.update({
+      where: {
+        activityId: complementaryActivityId,
+      },
+      data: {
+        ...dataToUpdate,
+        verificationMediaFiles: {
+          createMany: {
+            data: filesParsed,
+          },
+        },
+      },
+    });
+
+    return verificationMediaUpdate;
+  }
+
   async remove(id: string): Promise<TVerificationMedia> {
     const verificationMediaDelete = await this.prisma.verificationMedia.delete({
       where: {
@@ -319,7 +354,7 @@ export class VerificationMediasService {
     return verificationMediaDelete;
   }
 
-  private async handleFilesAndActivity(
+  async handleFilesAndActivity(
     activityId: string,
     files: Express.Multer.File[],
   ): Promise<
