@@ -89,6 +89,13 @@ export class CourseClassroomsService {
         courseId: true,
         days: true,
         groupCode: true,
+        section: true,
+        course: {
+          select: {
+            code: true,
+            name: true,
+          },
+        },
         teachingSession: {
           select: {
             assignmentReport: {

@@ -118,6 +118,15 @@ export class AcademicAssignmentDto {
   })
   @IsOptional()
   observation?: string | null;
+
+  @ApiProperty({
+    example: 'Clase trasladada a otro horario por remodelación del aula.',
+    required: false,
+    nullable: true,
+    description: 'Observaciones adicionales relacionadas a la asignación.',
+  })
+  @IsNotEmpty()
+  nearGraduation: boolean = false;
 }
 
 export type TAcademicAssignment = Record<number, keyof AcademicAssignmentDto>;

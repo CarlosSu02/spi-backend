@@ -690,6 +690,19 @@ export class AcademicAssignmentReportsService {
       existingCourseClassroomsMap.set(key, cc);
     });
 
+    const existingCourseClassroomsTeacherMap = new Map<
+      string,
+      TCourseClassroomSelectPeriod[]
+    >();
+    existingCourseClassrooms.forEach((cc) => {
+      const key = cc.teachingSession.assignmentReport.teacherId;
+      if (!existingCourseClassroomsTeacherMap.has(key)) {
+        existingCourseClassroomsTeacherMap.set(key, []);
+      }
+
+      existingCourseClassroomsTeacherMap.get(key)?.push(cc);
+    });
+
     const coursesGroupByTeacherCodeEntries: Record<
       string,
       Omit<TAcademicAssignmentReport, 'id'> & {
@@ -710,6 +723,7 @@ export class AcademicAssignmentReportsService {
         departmentName,
         center: centerName,
         observation,
+        nearGraduation,
       } = item;
 
       // Validar días al inicio
@@ -733,9 +747,21 @@ export class AcademicAssignmentReportsService {
         existingCourseClassroomsMap,
         existingKey,
         teacherCode,
+        teacher.name,
         courseCode,
         academicPeriodTitle,
         academicPeriod.id,
+      );
+
+      this.validateIfExistingAnotherCourseClassroom(
+        existingCourseClassroomsTeacherMap,
+        teacher.id,
+        teacherCode,
+        teacher.name,
+        courseCode,
+        section,
+        days,
+        academicPeriodTitle,
       );
 
       // Salones de clase
@@ -765,7 +791,7 @@ export class AcademicAssignmentReportsService {
         modalityId: this.getModalityId(classroom.name, modalities),
         studentCount,
         groupCode: `${teacherCode}-${section}-${days}`, // Generamos un código de grupo único
-        nearGraduation: false, // Por defecto, ya que no se especifica en el archivo
+        nearGraduation,
         observation: observation || null, // Si no hay observación, se asigna
       };
 
@@ -788,6 +814,7 @@ export class AcademicAssignmentReportsService {
         centerDepartmentId: department.centerDepartmentId,
         coordinator: coordinator.teacher.user.name,
         observation: courseElement.observation,
+        nearGraduation,
       });
     }
 
@@ -1073,6 +1100,7 @@ export class AcademicAssignmentReportsService {
     existingCourseClassroomsMap: Map<string, TCourseClassroomSelectPeriod>,
     key: string,
     teacherCode: string,
+    teacherName: string,
     courseCode: string,
     academicPeriodTitle: string,
     periodId: string,
@@ -1085,10 +1113,44 @@ export class AcademicAssignmentReportsService {
         periodId
     )
       throw new BadRequestException(
-        `Ya existe una clase para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
+        `Ya existe una clase para el docente <${teacherCode} - ${teacherName}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
       );
 
     return existingCourseClassroom;
+  }
+
+  private validateIfExistingAnotherCourseClassroom(
+    existingCourseClassroomsMap: Map<string, TCourseClassroomSelectPeriod[]>,
+    key: string,
+    teacherCode: string,
+    teacherName: string,
+    courseCode: string,
+    section: string,
+    days: string,
+    academicPeriodTitle: string,
+  ) {
+    const existingCourseClassrooms = existingCourseClassroomsMap.get(key);
+
+    if (!existingCourseClassrooms) return;
+
+    const regex = new RegExp(
+      `(${days
+        .trim()
+        .split(/([a-zA-Z]{2})/gm)
+        .slice(1, -1)
+        .filter((e) => e !== '')
+        .join('|')})`,
+      'gm',
+    );
+
+    for (const cc of existingCourseClassrooms) {
+      if (cc.days.match(regex) && cc.section === section)
+        throw new BadRequestException(
+          `El docente <${teacherCode} - ${teacherName}> tiene un traslape de horario con una clase existente <${cc.course.code}> en el periodo académico ${academicPeriodTitle}>, por favor revise de nuevo.`,
+        );
+    }
+
+    return existingCourseClassrooms;
   }
 
   private getModalityId(

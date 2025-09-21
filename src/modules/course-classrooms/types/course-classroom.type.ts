@@ -43,16 +43,16 @@ export type TUpdateCourseClassroom = Partial<TCreateCourseClassroom> & {
 
 export type TCourseClassroomSelectPeriod = Omit<
   TCourseClassroom,
-  | 'section'
-  | 'studentCount'
-  | 'modalityId'
-  | 'nearGraduation'
-  | 'teachingSessionId'
+  'studentCount' | 'modalityId' | 'nearGraduation' | 'teachingSessionId'
 > & {
   teachingSession: {
     assignmentReport: {
       teacherId: string;
       periodId: string;
     };
+  };
+  course: {
+    code: string;
+    name: string;
   };
 };
