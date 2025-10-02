@@ -64,17 +64,15 @@ model UserRole {
 }
 
 model Teacher {
-  id             String @id @default(uuid()) @db.Uuid
-  // undergradId    String? @db.Uuid
-  // postgradId     String? @db.Uuid
-  categoryId     String @db.Uuid
-  contractTypeId String @db.Uuid
-  shiftId        String @db.Uuid
-  userId         String @unique @db.Uuid
+  id             String    @id @default(uuid()) @db.Uuid
+  categoryId     String    @db.Uuid
+  contractTypeId String    @db.Uuid
+  shiftId        String    @db.Uuid
+  shiftStart     DateTime? @db.Time
+  shiftEnd       DateTime? @db.Time
+  userId         String    @unique @db.Uuid
 
   // Relations
-  // undergrad                  Undergraduate_Degree?         @relation(fields: [undergradId], references: [id])
-  // postgrad                   Postgraduate_Degree?          @relation(fields: [postgradId], references: [id])
   category            TeacherCategory              @relation(fields: [categoryId], references: [id])
   contractType        ContractType                 @relation(fields: [contractTypeId], references: [id])
   shift               Shift                        @relation(fields: [shiftId], references: [id])
@@ -83,7 +81,7 @@ model Teacher {
   academicReports     AcademicAssignmentReport[]
   undergradDegrees    TeacherUndergraduateDegree[]
   postgraduateDegrees TeacherPostgraduateDegree[]
-  teacherPreference   TeacherPreference? // 1:1
+  preferredClasses    TeacherPreferredClass[]
 
   @@map("teachers")
   @@schema("academic")
@@ -94,7 +92,6 @@ model UndergraduateDegree {
   name String @unique
 
   // Relations
-  // teachers             Teacher[]
   undergraduateDegrees TeacherUndergraduateDegree[]
 
   @@map("undergraduate_degrees")
@@ -106,7 +103,6 @@ model PostgraduateDegree {
   name String @unique
 
   // Relations
-  // teachers            Teacher[]
   postgraduateDegrees TeacherPostgraduateDegree[]
 
   @@map("postgraduate_degrees")
@@ -201,15 +197,11 @@ model Faculty {
 model Department {
   id        String @id @default(uuid()) @db.Uuid
   name      String @unique
-  // code   String?
   uvs       Int?
-  // centerId  String @db.Uuid
   facultyId String @db.Uuid
 
   // Relations
-  // center              Center                      @relation(fields: [centerId], references: [id])
   faculty Faculty            @relation(fields: [facultyId], references: [id])
-  // teacherAppointments TeacherDepartmentPosition[]
   courses Course[]
   centers CenterDepartment[]
 
@@ -237,7 +229,6 @@ model Course {
 model TeacherDepartmentPosition {
   id                 String    @id @default(uuid()) @db.Uuid
   teacherId          String    @db.Uuid
-  // departmentId String    @db.Uuid
   centerDepartmentId String    @db.Uuid
   positionId         String    @db.Uuid
   startDate          DateTime  @default(now()) // por si no se agrega al momento de agregar el dato.
@@ -248,7 +239,6 @@ model TeacherDepartmentPosition {
   teacher          Teacher          @relation(fields: [teacherId], references: [id])
   centerDepartment CenterDepartment @relation(fields: [centerDepartmentId], references: [id])
 
-  // @@unique([teacherId, centerDepartmentId, positionId])
   @@unique([teacherId, centerDepartmentId]) // Para que un docente solo pueda estar una vez en un departamento, esta quiza invalida la anterior.
   @@map("teacher_department_position")
   @@schema("academic")
@@ -664,37 +654,15 @@ model ResetPasswordToken {
 }
 
 // Preferencias del docente
-model TeacherPreference {
-  id        String   @id @default(uuid()) @db.Uuid
-  startTime DateTime
-  endTime   DateTime
-  teacherId String   @unique @db.Uuid
-
-  // Relations
-  teacher          Teacher                 @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  preferredClasses TeacherPreferredClass[]
-
-  @@map("teacher_preferences")
-  @@schema("ai")
-}
-
 model TeacherPreferredClass {
-  id                  String @id @default(uuid()) @db.Uuid
-  courseId            String @db.Uuid
-  teacherPreferenceId String @db.Uuid
+  id        String @id @default(uuid()) @db.Uuid
+  courseId  String @db.Uuid
+  teacherId String @db.Uuid
 
   // Relations
-  teacherPreference TeacherPreference @relation(fields: [teacherPreferenceId], references: [id], onDelete: Cascade)
-  course            Course            @relation(fields: [courseId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@map("teacher_preferred_classes")
   @@schema("ai")
 }
-
-// model Base {
-//   id String @id @default(uuid()) @db.Uuid
-//
-//   // Relations
-//
-//   @@map("bases")
-// }

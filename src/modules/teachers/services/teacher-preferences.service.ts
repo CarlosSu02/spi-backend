@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   forwardRef,
   Inject,
@@ -13,8 +12,10 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { CreateTeacherPreferenceDto } from '../dto/create-teacher-preference.dto';
 import { UpdateTeacherPreferenceDto } from '../dto/update-teacher-preference.dto';
-import { TTeacherPreference } from '../types/teacher-preference.types';
-import { TCustomOmit } from 'src/common/types';
+import { TTeacherPreferredClass } from '../types';
+import { Prisma } from '@prisma/client';
+import { TeachersService } from './teachers.service';
+import { CoursesService } from 'src/modules/course-classrooms/services/courses.service';
 
 @Injectable()
 export class TeacherPreferencesService {
@@ -22,60 +23,72 @@ export class TeacherPreferencesService {
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
+    @Inject(forwardRef(() => TeachersService))
+    private readonly teachersService: TeachersService,
   ) {}
 
   async create(createTeacherPreferenceDto: CreateTeacherPreferenceDto) {
-    const { preferredClasses, ...dataToCreate } = createTeacherPreferenceDto;
+    const { preferredClasses, teacherId } = createTeacherPreferenceDto;
 
-    const newTeacherPreference = await this.prisma.teacherPreference.create({
-      data: {
-        ...dataToCreate,
-        preferredClasses: {
-          create: preferredClasses.map((c) => ({
-            course: {
-              connect: {
-                code: c,
-              },
-            },
-          })),
+    await this.teachersService.findOne(teacherId);
+
+    const courses = await this.prisma.course.findMany({
+      where: {
+        id: {
+          in: preferredClasses,
         },
+      },
+      select: {
+        id: true,
       },
     });
 
-    return newTeacherPreference;
+    const coursesSet = new Set(courses.map((c) => c.id));
+    const existsCourses = Array.from(coursesSet);
+    const missingCourses = preferredClasses.filter(
+      (courseId) => !coursesSet.has(courseId),
+    );
+
+    const newTeacherPreference =
+      await this.prisma.teacherPreferredClass.createMany({
+        data: existsCourses.map((c) => ({
+          teacherId,
+          courseId: c,
+        })),
+        skipDuplicates: true,
+      });
+
+    return {
+      count: newTeacherPreference.count,
+      inserted: existsCourses,
+      skipped: missingCourses,
+    };
   }
 
-  async findAll(): Promise<TTeacherPreference[]> {
-    const teacherPreferences = await this.prisma.teacherPreference.findMany({
-      relationLoadStrategy: 'join',
-      include: {
-        preferredClasses: {
-          include: {
-            course: true,
-          },
+  async findAll(): Promise<TTeacherPreferredClass[]> {
+    const teacherPreferences = await this.prisma.teacherPreferredClass.findMany(
+      {
+        relationLoadStrategy: 'join',
+        include: {
+          course: true,
+          teacher: true,
         },
       },
-    });
+    );
 
     return teacherPreferences;
   }
 
   async findAllWithPagination(
     query: QueryPaginationDto,
-  ): Promise<IPaginateOutput<TTeacherPreference>> {
+  ): Promise<IPaginateOutput<TTeacherPreferredClass>> {
     const [teacherPreferences, count] = await Promise.all([
-      this.prisma.teacherPreference.findMany({
+      this.prisma.teacherPreferredClass.findMany({
         ...paginate(query),
         relationLoadStrategy: 'join',
-        include: {
-          preferredClasses: {
-            include: {
-              course: true,
-            },
-          },
-        },
+        include: { course: true, teacher: true },
       }),
-      this.prisma.teacherPreference.count(),
+      this.prisma.teacherPreferredClass.count(),
     ]);
 
     if (teacherPreferences.length === 0)
@@ -83,16 +96,21 @@ export class TeacherPreferencesService {
         'No se encontraron preferencias de docentes.',
       );
 
-    return paginateOutput<TTeacherPreference>(teacherPreferences, count, query);
+    return paginateOutput<TTeacherPreferredClass>(
+      teacherPreferences,
+      count,
+      query,
+    );
   }
 
   async findOne(id: string) {
     // TODO: se puede buscar por el del docente, ya que solo tiene una
-    const teacherPreference = await this.prisma.teacherPreference.findUnique({
-      where: {
-        id,
-      },
-    });
+    const teacherPreference =
+      await this.prisma.teacherPreferredClass.findUnique({
+        where: {
+          id,
+        },
+      });
 
     if (!teacherPreference)
       throw new NotFoundException(
@@ -102,22 +120,21 @@ export class TeacherPreferencesService {
     return teacherPreference;
   }
 
-  async findOneByUserId(userId: string): Promise<TTeacherPreference> {
-    const teacherPreference = await this.prisma.teacherPreference.findFirst({
-      where: {
-        teacher: {
-          userId,
-        },
-      },
-      relationLoadStrategy: 'join',
-      include: {
-        preferredClasses: {
-          include: {
-            course: true,
+  async findOneByUserId(userId: string): Promise<TTeacherPreferredClass> {
+    const teacherPreference = await this.prisma.teacherPreferredClass.findFirst(
+      {
+        where: {
+          teacher: {
+            userId,
           },
         },
+        relationLoadStrategy: 'join',
+        include: {
+          course: true,
+          teacher: true,
+        },
       },
-    });
+    );
 
     if (!teacherPreference)
       throw new NotFoundException(
@@ -128,23 +145,22 @@ export class TeacherPreferencesService {
   }
 
   async findOneByCode(code: string) {
-    const teacherPreference = await this.prisma.teacherPreference.findFirst({
-      where: {
-        teacher: {
-          user: {
-            code,
+    const teacherPreference = await this.prisma.teacherPreferredClass.findFirst(
+      {
+        where: {
+          teacher: {
+            user: {
+              code,
+            },
           },
         },
-      },
-      relationLoadStrategy: 'join',
-      include: {
-        preferredClasses: {
-          include: {
-            course: true,
-          },
+        relationLoadStrategy: 'join',
+        include: {
+          course: true,
+          teacher: true,
         },
       },
-    });
+    );
 
     if (!teacherPreference)
       throw new NotFoundException(
@@ -154,38 +170,36 @@ export class TeacherPreferencesService {
     return teacherPreference;
   }
 
-  async update(
-    id: string,
-    updateTeacherPreferenceDto: UpdateTeacherPreferenceDto,
-  ) {
-    await this.findOne(id);
+  // async update(
+  //   id: string,
+  //   updateTeacherPreferenceDto: UpdateTeacherPreferenceDto,
+  // ) {
+  //   const teacherPreferenceUpdate =
+  //     await this.prisma.teacherPreferredClass.update({
+  //       where: {
+  //         id,
+  //       },
+  //       data: {
+  //         ...updateTeacherPreferenceDto,
+  //       },
+  //     });
+  //
+  //   return teacherPreferenceUpdate;
+  // }
 
-    const teacherPreferenceUpdate = await this.prisma.teacherPreference.update({
-      where: {
-        id,
-      },
-      data: {
-        ...updateTeacherPreferenceDto,
-      },
-    });
-
-    return teacherPreferenceUpdate;
-  }
-
-  async remove(
-    id: string,
-  ): Promise<TCustomOmit<TTeacherPreference, 'preferredClasses'>> {
+  async remove(id: string): Promise<Prisma.BatchPayload> {
     const teacherPreference = await this.findOne(id);
 
     const teacher = await this.usersService.findOne(
       teacherPreference.teacherId,
     );
 
-    const deleteTeacherPreference = await this.prisma.teacherPreference.delete({
-      where: {
-        teacherId: teacher.id,
-      },
-    });
+    const deleteTeacherPreference =
+      await this.prisma.teacherPreferredClass.deleteMany({
+        where: {
+          teacherId: teacher.id,
+        },
+      });
 
     return deleteTeacherPreference;
   }

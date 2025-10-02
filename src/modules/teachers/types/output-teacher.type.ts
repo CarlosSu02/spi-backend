@@ -5,6 +5,8 @@ export type TOutputTeacher = {
   name: string;
   code: string;
   email?: string;
+  shiftStart?: string;
+  shiftEnd?: string;
   categoryId: string;
   contractTypeId: string;
   shiftId: string;

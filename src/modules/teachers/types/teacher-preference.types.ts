@@ -1,4 +1,6 @@
 import { TCourse } from 'src/modules/course-classrooms/types';
+import { TTeacher } from './teacher.type';
+import { TCustomOmit } from 'src/common/types';
 
 export type TTeacherPreference = {
   id: string;
@@ -11,6 +13,7 @@ export type TTeacherPreference = {
 export type TTeacherPreferredClass = {
   id: string;
   courseId: string;
-  teacherPreferenceId: string;
-  course: TCourse;
+  teacherId: string;
+  course?: TCourse;
+  teacher?: TCustomOmit<TTeacher, 'undergradId' | 'postgradId'>;
 };

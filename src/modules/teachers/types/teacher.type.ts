@@ -19,6 +19,8 @@ export type TTeacher = {
   categoryId: string;
   contractTypeId: string;
   shiftId: string;
+  shiftStart?: Date | null;
+  shiftEnd?: Date | null;
 };
 
 export type TTeacherJoin = TCustomOmit<

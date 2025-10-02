@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsMilitaryTime,
   IsNotEmpty,
   IsOptional,
   IsUUID,
@@ -161,4 +162,26 @@ export class CreateTeacherDto {
   @IsUUID()
   @Validate(IsValidPositionIdConstraint)
   positionId: string;
+
+  @ApiProperty({
+    description: 'Hora de inicio de jornada (en formato de 24 horas).',
+    example: '11:00',
+    required: false,
+  })
+  @IsMilitaryTime({
+    message: 'La propiedad <shiftStart> debe ser una hora válida.',
+  })
+  @IsOptional()
+  shiftStart?: string;
+
+  @ApiProperty({
+    description: 'Hora de finalización jornada (en formato de 24 horas).',
+    example: '17:00',
+    required: false,
+  })
+  @IsMilitaryTime({
+    message: 'La propiedad <shiftEnd> debe ser una hora válida.',
+  })
+  @IsOptional()
+  shiftEnd?: string;
 }

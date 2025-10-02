@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsNotEmpty, IsDateString, IsArray } from 'class-validator';
+import { IsUUID, IsNotEmpty, IsArray, ArrayMaxSize } from 'class-validator';
 
 export class CreateTeacherPreferenceDto {
   @ApiProperty({
@@ -17,51 +17,23 @@ export class CreateTeacherPreferenceDto {
   teacherId: string;
 
   @ApiProperty({
-    description:
-      'Hora de inicio de jornada (fecha y hora), sólo se toma la hora después.',
-    example: '2025-08-09T16:00:00Z',
-  })
-  @IsDateString(
-    {},
-    {
-      message: 'La propiedad <startTime> debe ser una fecha con hora válida.',
-    },
-  )
-  @IsNotEmpty({
-    message: 'La propiedad <startTime> no debe estar vacía.',
-  })
-  startTime: string;
-
-  @ApiProperty({
-    description:
-      'Hora de finalización de jornada (fecha y hora), sólo se toma la hora después.',
-    example: '2025-08-09T16:00:00Z',
-  })
-  @IsDateString(
-    {},
-    {
-      message: 'La propiedad <endTime> debe ser una fecha con hora válida.',
-    },
-  )
-  @IsNotEmpty({
-    message: 'La propiedad <endTime> no debe estar vacía.',
-  })
-  endTime: string;
-
-  // codigos de clase en un array?
-  // TODO: Se pueden comprobar mediante un validator constraint!
-  @ApiProperty({
-    description: 'Clases de preferencia del docente (solamente 5).',
+    description: 'Clases de preferencia del docente (máximo 5).',
     type: 'array',
-    items: { type: 'string', format: 'string' },
+    items: { type: 'string', format: 'uuid' },
     maxItems: 5,
     required: true,
     nullable: false,
+    example: [
+      'a5854c2b-6547-4109-9208-97ee4cc64555',
+      '748e42de-4125-4acd-b551-a9cbdd422dc9',
+    ],
   })
   @IsArray({
     message:
-      'Las preferencias de clases deben mandarse en un arreglo con los códigos. Ejemplo: ["IS...", "IS..."]',
+      'Las preferencias de clases deben mandarse en un arreglo con los IDs de las clases.',
   })
+  @ArrayMaxSize(5, { message: 'Solo se permiten máximo 5 clases.' })
+  @IsUUID('all', { each: true, message: 'Cada clase debe ser un UUID válido.' })
   @IsNotEmpty({
     message: 'El docente debe elegir al menos una clase de preferencia.',
   })

@@ -8,7 +8,6 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  UseInterceptors,
   Query,
 } from '@nestjs/common';
 import {
@@ -19,7 +18,6 @@ import {
 } from 'src/common/decorators';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { EUserRole } from 'src/common/enums';
-import { ExtractIdInterceptor } from 'src/common/interceptors';
 import { ValidateIdPipe } from 'src/common/pipes';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -49,24 +47,24 @@ export class TeacherPreferencesController {
     return this.teacherPreferencesService.create(createTeacherPreferenceDto);
   }
 
-  @Post('my')
-  @HttpCode(HttpStatus.CREATED)
-  @ResponseMessage('')
-  @UseInterceptors(ExtractIdInterceptor)
-  @ApiBody({
-    type: CreateTeacherPreferenceDto,
-    description: '',
-  })
-  @ApiCommonResponses({
-    summary: '',
-    createdDescription: '',
-  })
-  createMyTeacherPreferenceProfile(
-    @GetCurrentUserId() userId: string,
-    @Body() createTeacherPreferenceDto: CreateTeacherPreferenceDto,
-  ) {
-    return this.teacherPreferencesService.create(createTeacherPreferenceDto);
-  }
+  // @Post('my')
+  // @HttpCode(HttpStatus.CREATED)
+  // @ResponseMessage('')
+  // @UseInterceptors(ExtractIdInterceptor)
+  // @ApiBody({
+  //   type: CreateTeacherPreferenceDto,
+  //   description: '',
+  // })
+  // @ApiCommonResponses({
+  //   summary: '',
+  //   createdDescription: '',
+  // })
+  // createMyTeacherPreferenceProfile(
+  //   @GetCurrentUserId() userId: string,
+  //   @Body() createTeacherPreferenceDto: CreateTeacherPreferenceDto,
+  // ) {
+  //   return this.teacherPreferencesService.create(createTeacherPreferenceDto);
+  // }
 
   @Get()
   @Roles(
@@ -134,27 +132,27 @@ export class TeacherPreferencesController {
     return this.teacherPreferencesService.findOne(id);
   }
 
-  @Patch(':id')
-  @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('')
-  @ApiBody({
-    type: UpdateTeacherPreferenceDto,
-    description: '',
-  })
-  @ApiCommonResponses({
-    summary: '',
-    okDescription: '',
-  })
-  update(
-    @Param('id', ValidateIdPipe) id: string,
-    @Body() updateTeacherPreferenceDto: UpdateTeacherPreferenceDto,
-  ) {
-    return this.teacherPreferencesService.update(
-      id,
-      updateTeacherPreferenceDto,
-    );
-  }
+  // @Patch(':id')
+  // @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
+  // @HttpCode(HttpStatus.OK)
+  // @ResponseMessage('')
+  // @ApiBody({
+  //   type: UpdateTeacherPreferenceDto,
+  //   description: '',
+  // })
+  // @ApiCommonResponses({
+  //   summary: '',
+  //   okDescription: '',
+  // })
+  // update(
+  //   @Param('id', ValidateIdPipe) id: string,
+  //   @Body() updateTeacherPreferenceDto: UpdateTeacherPreferenceDto,
+  // ) {
+  //   return this.teacherPreferencesService.update(
+  //     id,
+  //     updateTeacherPreferenceDto,
+  //   );
+  // }
 
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -15,6 +16,7 @@ import { paginate, paginateOutput } from 'src/common/utils';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
 import { Prisma } from '@prisma/client';
+import { formatISO, getHours, getMinutes } from 'date-fns';
 
 @Injectable()
 export class TeachersService {
@@ -24,6 +26,8 @@ export class TeachersService {
       categoryId: true,
       contractTypeId: true,
       shiftId: true,
+      shiftStart: true,
+      shiftEnd: true,
       user: {
         select: {
           id: true,
@@ -82,6 +86,8 @@ export class TeachersService {
       // centerId,
       // departmentId,
       centerDepartmentId,
+      shiftStart,
+      shiftEnd,
       positionId,
     } = createTeacherDto;
 
@@ -91,6 +97,12 @@ export class TeachersService {
         categoryId,
         contractTypeId,
         shiftId,
+        ...(shiftStart && shiftEnd
+          ? {
+              shiftStart: this.hourToDateUTC(shiftStart),
+              shiftEnd: this.hourToDateUTC(shiftEnd),
+            }
+          : {}),
         undergradDegrees: {
           create: [
             {
@@ -357,8 +369,15 @@ export class TeachersService {
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
-    const { categoryId, contractTypeId, shiftId, undergradId, postgradId } =
-      updateTeacherDto;
+    const {
+      categoryId,
+      contractTypeId,
+      shiftId,
+      undergradId,
+      postgradId,
+      shiftStart,
+      shiftEnd,
+    } = updateTeacherDto;
 
     await this.findOne(id);
 
@@ -370,6 +389,8 @@ export class TeachersService {
         categoryId,
         contractTypeId,
         shiftId,
+        shiftStart: shiftStart ? this.hourToDateUTC(shiftStart) : undefined,
+        shiftEnd: shiftEnd ? this.hourToDateUTC(shiftEnd) : undefined,
       },
     });
 
@@ -410,9 +431,15 @@ export class TeachersService {
       name: teacher.user.name,
       email: teacher.user.email ?? undefined,
       code: teacher.user.code,
+      shiftStart: teacher.shiftStart
+        ? this.dateToHHMM(teacher.shiftStart)
+        : undefined,
+      shiftEnd: teacher.shiftEnd
+        ? this.dateToHHMM(teacher.shiftEnd)
+        : undefined,
+      shiftId: teacher.shiftId,
       categoryId: teacher.categoryId,
       contractTypeId: teacher.contractTypeId,
-      shiftId: teacher.shiftId,
       userId: teacher.user.id,
       categoryName: teacher.category.name,
       contractTypeName: teacher.contractType.name,
@@ -433,5 +460,24 @@ export class TeachersService {
         position: ph.position,
       })),
     };
+  }
+
+  private hourToDateUTC(hour: string): Date {
+    if (!hour.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/gm))
+      throw new BadRequestException('Hora no válida.');
+
+    const [hh, mm] = hour.split(':').map((n) => parseInt(n, 10));
+
+    return new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
+  }
+
+  private dateToHHMM(date: Date): string {
+    const d = new Date(date);
+
+    return (
+      d.getUTCHours().toString().padStart(2, '0') +
+      ':' +
+      d.getUTCMinutes().toString().padStart(2, '0')
+    );
   }
 }
