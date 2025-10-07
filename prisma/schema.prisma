@@ -663,6 +663,7 @@ model TeacherPreferredClass {
   course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   teacher Teacher @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
+  @@unique([teacherId, courseId])
   @@map("teacher_preferred_classes")
   @@schema("ai")
 }

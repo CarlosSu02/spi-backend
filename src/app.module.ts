@@ -19,6 +19,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AppController } from './app.controller';
 import { TeachersDegreesModule } from './modules/teachers-degrees/teachers-degrees.module';
+import { PlanificatorAiModule } from './modules/planificator-ai/planificator-ai.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { TeachersDegreesModule } from './modules/teachers-degrees/teachers-degre
     ComplementaryActivitiesModule,
     CloudinaryModule,
     TeachersDegreesModule,
+    PlanificatorAiModule,
   ],
   providers: [
     {

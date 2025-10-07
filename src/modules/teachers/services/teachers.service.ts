@@ -12,11 +12,10 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { TOutputTeacher, TOutputTeacherCustom, TTeacherJoin } from '../types';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
-import { paginate, paginateOutput } from 'src/common/utils';
+import { dateToHHMM, paginate, paginateOutput } from 'src/common/utils';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
 import { Prisma } from '@prisma/client';
-import { formatISO, getHours, getMinutes } from 'date-fns';
 
 @Injectable()
 export class TeachersService {
@@ -369,15 +368,8 @@ export class TeachersService {
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
-    const {
-      categoryId,
-      contractTypeId,
-      shiftId,
-      undergradId,
-      postgradId,
-      shiftStart,
-      shiftEnd,
-    } = updateTeacherDto;
+    const { categoryId, contractTypeId, shiftId, shiftStart, shiftEnd } =
+      updateTeacherDto;
 
     await this.findOne(id);
 
@@ -432,11 +424,9 @@ export class TeachersService {
       email: teacher.user.email ?? undefined,
       code: teacher.user.code,
       shiftStart: teacher.shiftStart
-        ? this.dateToHHMM(teacher.shiftStart)
+        ? dateToHHMM(teacher.shiftStart)
         : undefined,
-      shiftEnd: teacher.shiftEnd
-        ? this.dateToHHMM(teacher.shiftEnd)
-        : undefined,
+      shiftEnd: teacher.shiftEnd ? dateToHHMM(teacher.shiftEnd) : undefined,
       shiftId: teacher.shiftId,
       categoryId: teacher.categoryId,
       contractTypeId: teacher.contractTypeId,
@@ -469,15 +459,5 @@ export class TeachersService {
     const [hh, mm] = hour.split(':').map((n) => parseInt(n, 10));
 
     return new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
-  }
-
-  private dateToHHMM(date: Date): string {
-    const d = new Date(date);
-
-    return (
-      d.getUTCHours().toString().padStart(2, '0') +
-      ':' +
-      d.getUTCMinutes().toString().padStart(2, '0')
-    );
   }
 }

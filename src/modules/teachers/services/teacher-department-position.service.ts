@@ -21,7 +21,6 @@ import { formatDateTimeZone, paginate, paginateOutput } from 'src/common/utils';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { DepartmentsService } from 'src/modules/centers/services/departments.service';
-import { centerDepartmentesSeed } from 'prisma/data';
 
 @Injectable()
 export class TeacherDepartmentPositionService {
