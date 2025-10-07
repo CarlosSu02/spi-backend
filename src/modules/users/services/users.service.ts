@@ -13,7 +13,12 @@ import { TUser } from '../types';
 import { RolesService } from './roles.service';
 import * as argon from 'argon2';
 import { EUserRole } from 'src/common/enums';
-import { generatePassword, paginate, paginateOutput } from 'src/common/utils';
+import {
+  generatePassword,
+  hourToDateUTC,
+  paginate,
+  paginateOutput,
+} from 'src/common/utils';
 import { MailService } from 'src/modules/mail/services/mail.service';
 import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
 import { TJwtPayload } from 'src/modules/auth/types';
@@ -344,43 +349,72 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<TUser> {
-    const { name, code, email, password, roles, activeStatus } = updateUserDto;
+    const { name, code, email, password, roles, activeStatus, teacher } =
+      updateUserDto;
 
     const roleEntities =
       roles && roles.length
         ? await this.roleService.findManyByNames(roles)
         : [];
 
-    const userUpdate = await this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        name,
-        code,
-        email,
-        hash: password && (await argon.hash(password)),
-        // roleId: role && (await this.roleService.findOneByName(role)).id,
-        ...(roleEntities.length !== 0
-          ? {
-              userRoles: {
-                deleteMany: {},
-                create: roleEntities.map((role) => ({
-                  role: {
-                    connect: {
-                      id: role.id,
-                    },
-                  },
-                })),
-              },
-            }
-          : {}),
-        activeStatus,
-      },
-      select: this.selectPropsUser,
-    });
+    const userData: Partial<Prisma.UserUpdateInput> = {
+      name,
+      code,
+      email,
+      activeStatus,
+    };
 
-    return userUpdate;
+    if (password) userData.hash = await argon.hash(password);
+
+    if (roleEntities.length) {
+      userData.userRoles = {
+        deleteMany: {},
+        create: roleEntities.map((r) => ({
+          role: {
+            connect: {
+              id: r.id,
+            },
+          },
+        })),
+      };
+    }
+
+    if (!teacher)
+      return await this.prisma.user.update({
+        where: {
+          id,
+        },
+        data: userData,
+        select: this.selectPropsUser,
+      });
+
+    const teacherData: Prisma.TeacherUpdateInput = {
+      category: teacher.categoryId
+        ? { connect: { id: teacher.categoryId } }
+        : undefined,
+      contractType: teacher.contractTypeId
+        ? { connect: { id: teacher.contractTypeId } }
+        : undefined,
+      shift: teacher.shiftId ? { connect: { id: teacher.shiftId } } : undefined,
+      shiftStart: teacher.shiftStart
+        ? hourToDateUTC(teacher.shiftStart)
+        : undefined,
+      shiftEnd: teacher.shiftEnd ? hourToDateUTC(teacher.shiftEnd) : undefined,
+    };
+
+    const [updatedUser, updatedTeacher] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id },
+        data: userData,
+        select: this.selectPropsUser,
+      }),
+      this.prisma.teacher.update({
+        where: { userId: id },
+        data: teacherData,
+      }),
+    ]);
+
+    return updatedUser;
   }
 
   async remove(id: string): Promise<boolean> {

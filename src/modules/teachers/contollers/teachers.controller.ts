@@ -208,6 +208,21 @@ export class TeachersController {
     return this.teachersService.findOne(id);
   }
 
+  @Patch('my')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Docente actualizado exitosamente.')
+  @ApiBody({
+    type: UpdateTeacherDto,
+    description:
+      'Datos para actualizar un perfil de docente (usuario autenticado)',
+  })
+  updateMy(
+    @GetCurrentUserId() userId: string,
+    @Body() updateTeacherDto: UpdateTeacherDto,
+  ) {
+    return this.teachersService.update(userId, updateTeacherDto);
+  }
+
   @Patch(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)

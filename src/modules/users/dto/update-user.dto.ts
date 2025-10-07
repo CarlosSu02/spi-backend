@@ -1,6 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsOptional, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { UpdateTeacherDto } from 'src/modules/teachers/dto/update-teacher.dto';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsBoolean({
@@ -8,4 +10,9 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   })
   @IsOptional()
   activeStatus: boolean;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateTeacherDto)
+  teacher?: UpdateTeacherDto;
 }

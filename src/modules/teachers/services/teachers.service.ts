@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -12,7 +11,12 @@ import { UsersService } from 'src/modules/users/services/users.service';
 import { TOutputTeacher, TOutputTeacherCustom, TTeacherJoin } from '../types';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
-import { dateToHHMM, paginate, paginateOutput } from 'src/common/utils';
+import {
+  dateToHHMM,
+  hourToDateUTC,
+  paginate,
+  paginateOutput,
+} from 'src/common/utils';
 import { TPosition } from 'src/modules/teachers-config/types';
 import { TCenter, TDepartmentJoin } from 'src/modules/centers/types';
 import { Prisma } from '@prisma/client';
@@ -98,8 +102,8 @@ export class TeachersService {
         shiftId,
         ...(shiftStart && shiftEnd
           ? {
-              shiftStart: this.hourToDateUTC(shiftStart),
-              shiftEnd: this.hourToDateUTC(shiftEnd),
+              shiftStart: hourToDateUTC(shiftStart),
+              shiftEnd: hourToDateUTC(shiftEnd),
             }
           : {}),
         undergradDegrees: {
@@ -381,8 +385,8 @@ export class TeachersService {
         categoryId,
         contractTypeId,
         shiftId,
-        shiftStart: shiftStart ? this.hourToDateUTC(shiftStart) : undefined,
-        shiftEnd: shiftEnd ? this.hourToDateUTC(shiftEnd) : undefined,
+        shiftStart: shiftStart ? hourToDateUTC(shiftStart) : undefined,
+        shiftEnd: shiftEnd ? hourToDateUTC(shiftEnd) : undefined,
       },
     });
 
@@ -450,14 +454,5 @@ export class TeachersService {
         position: ph.position,
       })),
     };
-  }
-
-  private hourToDateUTC(hour: string): Date {
-    if (!hour.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/gm))
-      throw new BadRequestException('Hora no válida.');
-
-    const [hh, mm] = hour.split(':').map((n) => parseInt(n, 10));
-
-    return new Date(Date.UTC(1970, 0, 1, hh, mm, 0));
   }
 }

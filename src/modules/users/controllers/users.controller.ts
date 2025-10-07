@@ -18,6 +18,7 @@ import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator
 import {
   ApiPagination,
   GetCurrentUser,
+  GetCurrentUserId,
   ResponseMessage,
 } from 'src/common/decorators';
 import { UsersService } from '../services/users.service';
@@ -185,6 +186,27 @@ export class UsersController {
     @Query() query: QueryPaginationDto,
   ) {
     return this.usersService.findBySearchTerm(searchTerm, query);
+  }
+
+  @Patch('my')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Usuario actualizado correctamente.')
+  @ApiBody({
+    type: UpdateUserDto,
+    description: 'Datos para actualizar usuario autenticado',
+    required: true,
+  })
+  @ApiCommonResponses({
+    summary: 'Actualizar usuario autenticado',
+    description: 'Actualiza la información de un usuario existente.',
+    internalErrorDescription: 'Error interno al actualizar el usuario.',
+    notFoundDescription: 'No se encontró el usuario solicitado.',
+  })
+  updateMy(
+    @GetCurrentUserId() userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(userId, updateUserDto);
   }
 
   @Patch(':id')
