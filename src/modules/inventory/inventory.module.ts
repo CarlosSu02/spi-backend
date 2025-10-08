@@ -16,11 +16,11 @@ import { PcEquipmentsService } from './services/pc-equipments.service';
 import { PcTypesService } from './services/pc-types.service';
 import { IsValidIdsInventoryConfigConstraint } from './validators';
 import { InfraestructureModule } from '../infraestructure/infraestructure.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [InfraestructureModule],
+  imports: [PrismaModule, InfraestructureModule],
   providers: [
-    PrismaService,
     BrandsService,
     ConditionsService,
     AirConditionersService,

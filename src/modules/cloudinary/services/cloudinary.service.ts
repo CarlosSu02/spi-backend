@@ -7,14 +7,15 @@ import {
 import {
   v2 as cloudinary,
   UploadApiResponse,
-  UploadApiErrorResponse,
   UploadApiOptions,
+  UploadApiErrorResponse,
 } from 'cloudinary';
+import { envs } from 'src/config';
 import {
-  TCloudinaryResource,
-  TCloudinaryResponse,
-  TFileResponse,
   TResponse,
+  TCloudinaryResource,
+  TFileResponse,
+  TCloudinaryResponse,
 } from '../types';
 
 // interface IFileResponse {
@@ -35,9 +36,9 @@ export class CloudinaryService {
 
   constructor() {
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: envs.cloudinaryCloudName,
+      api_key: envs.cloudinaryApiKey,
+      api_secret: envs.cloudinaryApiSecret,
     });
   }
 

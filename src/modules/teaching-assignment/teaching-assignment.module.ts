@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { AcademicPeriodsController } from './controllers/academic-periods.controller';
 import { AssignmentReportsController } from './controllers/academic-assignment-reports.controller';
 import { AcademicPeriodsService } from './services/academic-periods.service';
@@ -13,9 +12,11 @@ import { CourseClassroomsModule } from '../course-classrooms/course-classrooms.m
 import { InfraestructureModule } from '../infraestructure/infraestructure.module';
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 import { CentersModule } from '../centers/centers.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     TeachersModule,
     TeachersConfigModule,
     CentersModule,
@@ -29,7 +30,6 @@ import { CentersModule } from '../centers/centers.module';
     TeachingSessionsController,
   ],
   providers: [
-    PrismaService,
     AcademicPeriodsService,
     AcademicAssignmentReportsService,
     TeachingSessionsService,

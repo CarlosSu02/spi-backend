@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ParseUUIDPipe, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { envs } from './config';
 
 async function bootstrap() {
+  const logger = new Logger('Main');
+
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('/v1/api');
@@ -56,14 +59,15 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: process.env.FE_URL ?? 'http://localhost:5173',
+    origin: envs.feUrl ?? 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization',
   });
 
-  app.use(cookieParser(process.env.COOKIE_KEY));
+  app.use(cookieParser(envs.cookieKey));
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(envs.port);
+  logger.log(`App running on port ${envs.port}`);
 }
 bootstrap();

@@ -9,10 +9,11 @@ import { AudioEquipmentService } from './services/audio-equipment.service';
 import { ConnectivityService } from './services/connectivity.service';
 import { ClassroomController } from './controllers/classroom.controller';
 import { ClassroomService } from './services/classroom.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { IsValidIdsClassroomConfigConstraint } from './validators';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [
     BuildingController,
     ClassroomController,
@@ -21,7 +22,6 @@ import { IsValidIdsClassroomConfigConstraint } from './validators';
     AudioEquipmentController,
   ],
   providers: [
-    PrismaService,
     BuildingService,
     ClassroomService,
     RoomTypeService,

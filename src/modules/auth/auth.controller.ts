@@ -20,13 +20,13 @@ import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { CookieOptions, Response } from 'express';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { envs } from 'src/config';
 
 @Controller('auth')
 export class AuthController {
   private cookieOptions: CookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: envs.nodeEnv === 'production',
+    sameSite: envs.nodeEnv === 'production' ? 'none' : 'lax',
     // path: '/auth/refresh',
     path: '/',
     maxAge: 1000 * 60 * 60 * 24 * 7, // Cambiar al mismo del refreshToken, colocar este valor como una constante

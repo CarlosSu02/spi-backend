@@ -1,4 +1,3 @@
-import { PrismaService } from 'src/prisma/prisma.service';
 import { ComplementaryActivitiesController } from './controllers/complementary-activities.controller';
 import { MultimediaTypesController } from './controllers/multimedia-types.controller';
 import { VerificationMediasController } from './controllers/verification-medias.controller';
@@ -10,17 +9,17 @@ import { Module } from '@nestjs/common';
 import { ActivityTypesService } from './services/activity-types.service';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { ActivityTypesController } from './controllers/activity-types.controller';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-  imports: [CloudinaryModule],
+  imports: [PrismaModule, CloudinaryModule],
   controllers: [
     ComplementaryActivitiesController,
     VerificationMediasController,
     MultimediaTypesController,
-    ActivityTypesController
+    ActivityTypesController,
   ],
   providers: [
-    PrismaService,
     ActivityTypesService,
     VerificationMediasService,
     MultimediaTypesService,
@@ -34,4 +33,4 @@ import { ActivityTypesController } from './controllers/activity-types.controller
     ComplementaryActivitiesService,
   ],
 })
-export class ComplementaryActivitiesModule { }
+export class ComplementaryActivitiesModule {}

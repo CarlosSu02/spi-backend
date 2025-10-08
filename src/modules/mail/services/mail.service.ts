@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { SentMessageInfo } from 'nodemailer';
 import { TEMPLATE } from '../constants';
+import { envs } from 'src/config';
+
+const logger = new Logger('MailService');
 
 interface ISendMail {
   to: string;
@@ -12,7 +15,17 @@ interface ISendMail {
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(private readonly mailerService: MailerService) {
+    const promise: Promise<boolean> = Promise.resolve(this.test());
+
+    promise
+      .then((value: boolean) => {
+        if (!value) throw new Error('Error starting the mail service');
+
+        return logger.log('MailService running');
+      })
+      .catch((err) => logger.error(err));
+  }
 
   async test() {
     return await this.mailerService.verifyAllTransporters();
@@ -24,7 +37,7 @@ export class MailService {
     subject = `How to Send Emails with Nodemailer`,
     html,
   }: ISendMail): Promise<SentMessageInfo> {
-    const email = process.env.EMAIL;
+    const email = envs.email;
 
     if (!email) throw new Error('Environment variable EMAIL is not set!');
 
@@ -38,7 +51,7 @@ export class MailService {
   }
 
   async sendResetPassword(to: string, token: string): Promise<SentMessageInfo> {
-    const resetPasswordLink = `${process.env.FE_URL}/auth/recuperar?token=${token}`;
+    const resetPasswordLink = `${envs.feUrl}/auth/recuperar?token=${token}`;
 
     return await this.sendMail({
       to,

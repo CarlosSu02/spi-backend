@@ -12,11 +12,12 @@ import {
 import { IsValidDepartmentIdConstraint } from './validators/is-valid-department-id.validator';
 import { DepartmentsController } from './controllers/departments.controller';
 import { CenterDepartmentsService } from './services/center-departments.service';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [CentersController, DepartmentsController, FacultiesController],
   providers: [
-    PrismaService,
     CentersService,
     DepartmentsService,
     CenterDepartmentsService,

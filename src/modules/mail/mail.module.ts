@@ -2,17 +2,18 @@ import { Module } from '@nestjs/common';
 import { MailService } from './services/mail.service';
 import { MailController } from './controllers/mail.controller';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { envs } from 'src/config';
 
 @Module({
   imports: [
     MailerModule.forRootAsync({
       useFactory: () => ({
         transport: {
-          host: process.env.SMTP_HOST,
-          port: +process.env.SMTP_PORT!,
+          host: envs.smtpHost,
+          port: envs.smtpPort,
           auth: {
-            user: process.env.EMAIL,
-            pass: process.env.EMAIL_KEY,
+            user: envs.email,
+            pass: envs.emailKey,
           },
         },
       }),

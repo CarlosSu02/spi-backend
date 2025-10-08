@@ -12,9 +12,12 @@ import {
   CreatePlanificatorAiDto,
 } from '../dto/create-planificator-ai.dto';
 import { roundToNearestHours } from 'date-fns';
+import { envs } from 'src/config';
 
 @Injectable()
 export class PlanificatorAiService {
+  private host = `${envs.planificatorAiHost}`;
+
   private days = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE'];
   private STRIPES_FALLBACK = [
     // Lunes
@@ -101,7 +104,7 @@ export class PlanificatorAiService {
   health(): Observable<AxiosResponse<string>> {
     // NOTE: With Observable
     // https://docs.nestjs.com/techniques/http-module
-    return this.httpService.get(`${process.env.PLANIFICATOR_AI_HOST}`);
+    return this.httpService.get(`${this.host}`);
 
     // NOTE: Using Axios directly
     // const res = await this.httpService.axiosRef.get(
@@ -116,10 +119,7 @@ export class PlanificatorAiService {
   ): Promise<Observable<AxiosResponse<unknown>> | string> {
     const data = await this.assembleDatasetFallback(createPlanificatorAiDto);
 
-    return this.httpService.post(
-      `${process.env.PLANIFICATOR_AI_HOST}/planificar`,
-      data,
-    );
+    return this.httpService.post(`${this.host}/planificar`, data);
   }
 
   private async assembleDatasetFallback(dto: CreatePlanificatorAiDto) {

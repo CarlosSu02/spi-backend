@@ -7,7 +7,6 @@ import { CourseClassroomsService } from './services/course-classrooms.service';
 import { CourseStadisticsService } from './services/course-stadistics.service';
 import { CoursesService } from './services/courses.service';
 import { ModalitiesService } from './services/modalities.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import {
   ExistsCodeCourseValidator,
   IsValidClassroomConfigConstraint,
@@ -16,9 +15,11 @@ import { TeachingAssignmentModule } from '../teaching-assignment/teaching-assign
 import { TeachersConfigModule } from '../teachers-config/teachers-config.module';
 import { TeachersModule } from '../teachers/teachers.module';
 import { CentersModule } from '../centers/centers.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     forwardRef(() => TeachingAssignmentModule),
     TeachersModule,
     TeachersConfigModule,
@@ -31,7 +32,6 @@ import { CentersModule } from '../centers/centers.module';
     CourseStadisticsController,
   ],
   providers: [
-    PrismaService,
     CourseClassroomsService,
     CoursesService,
     ModalitiesService,
