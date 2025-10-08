@@ -7,3 +7,4 @@ export * from './update-course-stadistic.dto';
 export * from './create-modality.dto';
 export * from './update-modality.dto';
 export * from './search-courses.dto';
+export * from './query-consolidated.dto';

@@ -16,7 +16,11 @@ import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator
 import { Roles, ResponseMessage, ApiPagination } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { CreateCourseStadisticDto, UpdateCourseStadisticDto } from '../dto';
+import {
+  CreateCourseStadisticDto,
+  QueryConsolidatedDto,
+  UpdateCourseStadisticDto,
+} from '../dto';
 import { CourseStadisticsService } from '../services/course-stadistics.service';
 import { QueryPaginationDto } from 'src/common/dto';
 
@@ -63,6 +67,33 @@ export class CourseStadisticsController {
   })
   findAll(@Query() query: QueryPaginationDto) {
     return this.courseStadisticsService.findAllWithPagination(query);
+  }
+
+  @Get('consolidated')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(
+    'Consolidado de estadísticas según los filtros proporcionados.',
+  )
+  @ApiCommonResponses({
+    summary:
+      'Generar un consolidado de estadísticas filtrado por diversos criterios.',
+    okDescription: 'El consolidado ha sido generado exitosamente.',
+    badRequestDescription: 'Los parámetros proporcionados son inválidos.',
+    notFoundDescription:
+      'No se encontraron estadísticas que coincidan con los criterios solicitados.',
+  })
+  @ApiPagination({
+    summary:
+      'Obtener estadísticas consolidadas de asignaturas filtradas por los parámetros proporcionados.',
+  })
+  generateConsolidated(
+    @Query() query: QueryPaginationDto,
+    @Query() searchQuery: QueryConsolidatedDto,
+  ) {
+    return this.courseStadisticsService.generateConsolidated(
+      query,
+      searchQuery,
+    );
   }
 
   @Get(':id')
@@ -123,25 +154,5 @@ export class CourseStadisticsController {
   })
   remove(@Param('id', ValidateIdPipe) id: string) {
     return this.courseStadisticsService.remove(id);
-  }
-
-  @Get('consolidated/:periodId')
-  @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Consolidado por ID de periodo académico.')
-  @ApiCommonResponses({
-    summary: 'Generar consolidado de estadísticas para un periodo específico.',
-    okDescription: 'Consolidado generado exitosamente.',
-    badRequestDescription: 'El ID del periodo es inválido.',
-    notFoundDescription:
-      'No se encontraron datos para el periodo especificado.',
-  })
-  @ApiPagination({
-    summary: 'Obtener todas las estadísticas de asignatura',
-  })
-  generateConsolidated(
-    @Query() query: QueryPaginationDto,
-    @Param('periodId', ValidateIdPipe) periodId: string,
-  ) {
-    return this.courseStadisticsService.generateConsolidated(query, periodId);
   }
 }

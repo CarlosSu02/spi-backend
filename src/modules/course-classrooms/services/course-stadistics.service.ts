@@ -4,7 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCourseStadisticDto, UpdateCourseStadisticDto } from '../dto';
+import {
+  CreateCourseStadisticDto,
+  QueryConsolidatedDto,
+  UpdateCourseStadisticDto,
+} from '../dto';
 import {
   TCreateCourseStadistic,
   TCourseStadistic,
@@ -15,6 +19,7 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { paginate, paginateOutput } from 'src/common/utils';
 import { AcademicPeriodsService } from 'src/modules/teaching-assignment/services/academic-periods.service';
+import { parse } from 'path';
 
 @Injectable()
 export class CourseStadisticsService {
@@ -117,25 +122,34 @@ export class CourseStadisticsService {
   // Consolidado
   async generateConsolidated(
     query: QueryPaginationDto,
-    periodId: string,
+    searchQuery: QueryConsolidatedDto,
   ): Promise<IPaginateOutput<TOutputConsolidated>> {
-    await this.academicPeriodsService.findOne(periodId);
-
-    // const currentPeriod =
-    //   await this.academicPeriodsService.currentAcademicPeriod();
+    const where = {
+      courseClassroom: {
+        teachingSession: {
+          assignmentReport: {
+            period: {
+              ...(searchQuery.year
+                ? { year: Math.abs(parseInt(searchQuery.year)) }
+                : {}),
+              ...(searchQuery.pac
+                ? { pac: Math.abs(parseInt(searchQuery.pac)) }
+                : {}),
+              ...(searchQuery.periodId ? { id: searchQuery.periodId } : {}),
+            },
+            ...(searchQuery.centerDepartmentId
+              ? { centerDepartmentId: searchQuery.centerDepartmentId }
+              : {}),
+          },
+        },
+        ...(searchQuery.courseId ? { courseId: searchQuery.courseId } : {}),
+      },
+    };
 
     const [allCoursesStadistics, count] = await Promise.all([
       this.prisma.courseStadistic.findMany({
         ...paginate(query),
-        where: {
-          courseClassroom: {
-            teachingSession: {
-              assignmentReport: {
-                periodId,
-              },
-            },
-          },
-        },
+        where,
         relationLoadStrategy: 'join',
         include: {
           courseClassroom: {
@@ -189,15 +203,7 @@ export class CourseStadisticsService {
         },
       }),
       this.prisma.courseStadistic.count({
-        where: {
-          courseClassroom: {
-            teachingSession: {
-              assignmentReport: {
-                periodId,
-              },
-            },
-          },
-        },
+        where,
       }),
     ]);
 
