@@ -1,10 +1,18 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AtGuard, RolesGuard } from './common/guards';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-import { TransformInterceptor } from './common/interceptors';
+import {
+  RequestLoggerInterceptor,
+  TransformInterceptor,
+} from './common/interceptors';
 import { TeachersConfigModule } from './modules/teachers-config/teachers-config.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
 import { CentersModule } from './modules/centers/centers.module';
@@ -53,6 +61,11 @@ import { PlanificatorAiModule } from './modules/planificator-ai/planificator-ai.
     },
     {
       // automatic inject reflector
+      provide: APP_INTERCEPTOR,
+      useClass: RequestLoggerInterceptor,
+    },
+    {
+      // automatic inject reflector
       /*
        * para controlar el acceso por roles, este cubre toda la app,
        * pero de ser necesario se puede hacer en los controllers individuales y eliminar este.
@@ -66,6 +79,8 @@ import { PlanificatorAiModule } from './modules/planificator-ai/planificator-ai.
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*path');
+    consumer
+      .apply(LoggerMiddleware)
+      .forRoutes({ path: '/auth', method: RequestMethod.ALL });
   }
 }
