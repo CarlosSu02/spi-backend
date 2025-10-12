@@ -554,36 +554,60 @@ export class AcademicAssignmentReportsService {
   }
 
   async findOneByCoordinatorAndPeriodId(
+    query: QueryPaginationDto,
     userId: string,
     centerDepartmentId: string,
-    periodId: string,
-  ): Promise<TAcademicAssignmentReport[]> {
+    periodId?: string,
+    teacherId?: string,
+  ): Promise<
+    IPaginateOutput<
+      TCustomOmit<
+        TAcademicAssignmentReport,
+        'centerDepartment' | 'teachingSession'
+      >
+    >
+  > {
     // Validacion
     await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
       userId,
       centerDepartmentId,
     );
 
-    const academicAssignmentReports =
-      await this.prisma.academicAssignmentReport.findMany({
-        where: {
-          periodId,
-          centerDepartmentId,
-        },
+    const where = {
+      periodId,
+      centerDepartmentId,
+      // ...(teacherId ? { teacherId } : {}),
+      teacherId,
+    };
+
+    const [academicAssignmentReports, count] = await Promise.all([
+      this.prisma.academicAssignmentReport.findMany({
+        ...paginate(query),
+        where,
         relationLoadStrategy: 'join',
-        include: this.includeOptionsAAR,
+        include: {
+          period: this.includeOptionsAAR.period,
+          teacher: this.includeOptionsAAR.teacher,
+        },
         omit: {
           teacherId: true,
           centerDepartmentId: true,
         },
-      });
+      }),
+      this.prisma.academicAssignmentReport.count({ where }),
+    ]);
 
-    if (academicAssignmentReports.length === 0)
+    if (!academicAssignmentReports.length)
       throw new NotFoundException(
-        'No se encontraron asignaciones académicas para el periodo seleccionado.',
+        'No se encontraron asignaciones académicas para el periodo y docente seleccionado.',
       );
 
-    return academicAssignmentReports;
+    return paginateOutput<
+      TCustomOmit<
+        TAcademicAssignmentReport,
+        'centerDepartment' | 'teachingSession'
+      >
+    >(academicAssignmentReports, count, query);
   }
 
   async update(

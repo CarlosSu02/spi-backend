@@ -30,7 +30,13 @@ import {
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QueryPaginationDto } from 'src/common/dto';
@@ -428,13 +434,13 @@ export class AssignmentReportsController {
     return this.academicAssignmentReportsService.findOne(id);
   }
 
-  @Get('coordinator/:centerDepartmentId/periods/:periodId')
+  @Get('departments/:centerDepartmentId')
   @Roles(EUserRole.COORDINADOR_AREA)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(
     'Detalle de asignaciones académicas para el periodo especificado en el centro-departamento indicado.',
   )
-  @ApiOperation({
+  @ApiPagination({
     summary:
       'Obtener detalle de asignaciones académicas por periodo y centro-departamento',
     description:
@@ -461,15 +467,35 @@ export class AssignmentReportsController {
   //   type: String,
   //   format: 'uuid',
   // })
+  @ApiQuery({
+    name: 'periodId',
+    description:
+      'ID del periodo a obtener los reportes de asignación académica',
+    type: String,
+    format: 'uuid',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'teacherId',
+    description:
+      'ID del docente a obtener los reportes de asignación académica',
+    type: String,
+    format: 'uuid',
+    required: false,
+  })
   findOneByCoordinatorAndPeriodId(
-    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
-    @Param('periodId', ValidateIdPipe) periodId: string,
     @GetCurrentUserId() userId: string,
+    @Query() query: QueryPaginationDto,
+    @Param('centerDepartmentId', ValidateIdPipe) centerDepartmentId: string,
+    @Query('periodId', ValidateIdPipe) periodId?: string,
+    @Query('teacherId', ValidateIdPipe) teacherId?: string,
   ) {
     return this.academicAssignmentReportsService.findOneByCoordinatorAndPeriodId(
+      query,
       userId,
       centerDepartmentId,
       periodId,
+      teacherId,
     );
   }
 
