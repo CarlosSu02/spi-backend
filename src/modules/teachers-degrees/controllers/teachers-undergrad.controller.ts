@@ -6,7 +6,6 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -18,13 +17,8 @@ import {
 } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { UndergradsService } from '../services/undergrads.service';
 import { ApiBody } from '@nestjs/swagger';
-import {
-  CreateTeacherUndergradDto,
-  CreateUndergradDto,
-  UpdateUndergradDto,
-} from '../dto';
+import { CreateTeacherUndergradDto } from '../dto';
 import { TeachersUndergradService } from '../services/teachers-undergrad.service';
 import { QueryPaginationDto } from 'src/common/dto';
 

@@ -1,13 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClassroomController } from '../classroom.controller';
+import { ClassroomService } from '../../services/classroom.service';
 
 describe('ClassroomController', () => {
   let controller: ClassroomController;
 
+  const mockClassroomService = {};
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ClassroomController],
-    }).compile();
+      providers: [ClassroomService],
+    })
+      .overrideProvider(ClassroomService)
+      .useValue(mockClassroomService)
+      .compile();
 
     controller = module.get<ClassroomController>(ClassroomController);
   });

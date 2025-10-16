@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   HttpCode,
@@ -22,7 +21,6 @@ import { ValidateIdPipe } from 'src/common/pipes';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ApiBody } from '@nestjs/swagger';
 import { CreateTeacherPreferenceDto } from '../dto/create-teacher-preference.dto';
-import { UpdateTeacherPreferenceDto } from '../dto/update-teacher-preference.dto';
 import { TeacherPreferencesService } from '../services/teacher-preferences.service';
 
 @Controller('teacher-preferences')

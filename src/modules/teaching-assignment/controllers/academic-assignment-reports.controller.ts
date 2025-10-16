@@ -16,7 +16,6 @@ import { AcademicAssignmentReportsService } from '../services/academic-assignmen
 import {
   AcademicAssignmentArrayDto,
   AcademicAssignmentDto,
-  CreateAcademicAssignmentDto,
   CreateAcademicAssignmentReportDto,
   propertiesAcademicAssignment,
   TAcademicAssignment,
@@ -41,7 +40,6 @@ import { ExcelFilesService } from 'src/modules/excel-files/services/excel-files.
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QueryPaginationDto } from 'src/common/dto';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
-import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 
 @Controller('academic-assignment-reports')
 export class AssignmentReportsController {
@@ -51,7 +49,6 @@ export class AssignmentReportsController {
       TAcademicAssignment,
       AcademicAssignmentDto
     >,
-    private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
   ) {}
 
   @Post()

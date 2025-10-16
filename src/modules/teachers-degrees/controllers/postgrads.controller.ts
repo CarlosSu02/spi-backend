@@ -19,7 +19,6 @@ import {
   Roles,
 } from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { TeachersPostgradService } from '../services/teachers-postgrad.service';
 
 @Controller('postgrads')
 @Roles(
@@ -30,10 +29,7 @@ import { TeachersPostgradService } from '../services/teachers-postgrad.service';
   EUserRole.COORDINADOR_AREA,
 )
 export class PostgradsController {
-  constructor(
-    private readonly postgradsService: PostgradsService,
-    private readonly teachersPostgradService: TeachersPostgradService,
-  ) {}
+  constructor(private readonly postgradsService: PostgradsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)

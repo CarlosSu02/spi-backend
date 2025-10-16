@@ -16,6 +16,17 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "resolveJsonModule": true
+    // "paths": {
+    //   "@config": ["src/config/index"],
+    //   "@config/*": ["src/config/*"],
+    //   "@common": ["src/common/index"],
+    //   "@common/*": ["src/common/*"],
+    //   "@db": ["src/prisma/index"],
+    //   "@db/*": ["src/prisma/*"],
+    //   "@modules": ["src/modules/index"],
+    //   "@modules/*": ["src/modules/*"]
+    // }
   }
 }

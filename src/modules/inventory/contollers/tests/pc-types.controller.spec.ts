@@ -1,13 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PcTypesController } from '../pc-types.controller';
+import { PcTypesService } from '../../services/pc-types.service';
 
 describe('PcTypesController', () => {
   let controller: PcTypesController;
 
+  const mockPcTypesService = {};
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PcTypesController],
-    }).compile();
+      providers: [PcTypesService],
+    })
+      .overrideProvider(PcTypesService)
+      .useValue(mockPcTypesService)
+      .compile();
 
     controller = module.get<PcTypesController>(PcTypesController);
   });

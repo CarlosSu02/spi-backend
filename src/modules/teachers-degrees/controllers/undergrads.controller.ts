@@ -19,7 +19,6 @@ import {
   Roles,
 } from 'src/common/decorators';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { TeachersUndergradService } from '../services/teachers-undergrad.service';
 import { ApiBody } from '@nestjs/swagger';
 
 @Controller('undergrads')
@@ -31,10 +30,7 @@ import { ApiBody } from '@nestjs/swagger';
   EUserRole.COORDINADOR_AREA,
 )
 export class UndergradsController {
-  constructor(
-    private readonly undergradsService: UndergradsService,
-    private readonly teachersUndegradService: TeachersUndergradService,
-  ) {}
+  constructor(private readonly undergradsService: UndergradsService) {}
 
   @Post()
   @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)

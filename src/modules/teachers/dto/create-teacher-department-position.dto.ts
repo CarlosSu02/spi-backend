@@ -10,10 +10,7 @@ import {
 import { formatISO } from 'date-fns';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { ECenterConfig } from 'src/modules/centers/enums';
-import {
-  IsValidCenterConfigConstraint,
-  IsValidDepartmentIdConstraint,
-} from 'src/modules/centers/validators';
+import { IsValidCenterConfigConstraint } from 'src/modules/centers/validators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
 import { IsValidUserIdConstraint } from 'src/modules/teachers/validators';
 
