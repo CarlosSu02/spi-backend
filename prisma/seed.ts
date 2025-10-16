@@ -6,7 +6,7 @@ import {
   brandsSeed,
   careersSeed,
   categoriesSeed,
-  centerDepartmentesSeed,
+  centerDepartmentsSeed,
   centersSeed,
   conditionsSeed,
   contractsSeed,
@@ -200,7 +200,7 @@ async function main() {
   // "Tercera" tanda
   const [centerDepartments, courses, buildings] = await Promise.all([
     prisma.centerDepartment.createMany({
-      data: centerDepartmentesSeed,
+      data: centerDepartmentsSeed,
       skipDuplicates: true,
     }),
     prisma.course.createMany({

@@ -113,7 +113,7 @@ export const departmentsSeed: Record<string, IDepartment> = {
   },
 };
 
-export const centerDepartmentesSeed = [
+export const centerDepartmentsSeed = [
   {
     id: 'e499cb3d-6339-4533-bce8-bebe52f6ab53',
     centerId: centersSeed.copan.id,
