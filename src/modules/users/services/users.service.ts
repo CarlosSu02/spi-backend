@@ -24,7 +24,6 @@ import { TEMPLATE_TEMP_PASSWORD } from 'src/modules/mail/constants';
 import { TJwtPayload } from 'src/modules/auth/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
-import { TeacherDepartmentPositionService } from 'src/modules/teachers/services/teacher-department-position.service';
 import { QueryPaginationDto } from 'src/common/dto';
 import { Prisma } from '@prisma/client';
 
@@ -48,8 +47,6 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly roleService: RolesService,
     private readonly mailService: MailService,
-    @Inject(forwardRef(() => TeacherDepartmentPositionService))
-    private readonly teacherDepartmentPositionService: TeacherDepartmentPositionService,
     @Inject(forwardRef(() => PositionsService))
     private readonly positionsService: PositionsService,
   ) {}

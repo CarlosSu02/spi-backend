@@ -16,7 +16,6 @@ import { QueryPaginationDto } from 'src/common/dto';
 import { ActivityTypesService } from './activity-types.service';
 import { VerificationMediasService } from './verification-medias.service';
 import { CloudinaryService } from 'src/modules/cloudinary/services/cloudinary.service';
-import { TCustomPick } from 'src/common/types';
 
 @Injectable()
 export class ComplementaryActivitiesService {
