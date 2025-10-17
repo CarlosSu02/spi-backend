@@ -10,16 +10,15 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiParam } from '@nestjs/swagger';
 import { ApiBody } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { ApiPagination, ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
-import { CreateCourseDto, SearchCoursesDto, UpdateCourseDto } from '../dto';
+import { CreateCourseDto, UpdateCourseDto } from '../dto';
 import { CoursesService } from '../services/courses.service';
 import { QueryPaginationDto } from 'src/common/dto';
-import { centerDepartmentesSeed } from 'prisma/data';
 
 @Controller('courses')
 export class CoursesController {
