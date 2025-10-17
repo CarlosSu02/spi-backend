@@ -11,7 +11,6 @@ import { App } from 'supertest/types';
 import { UsersModule } from '../src/modules/users/users.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
-import { CreateTeacherDto } from 'src/modules/teachers/dto/create-teacher.dto';
 import { EUserRole } from 'src/common/enums';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
