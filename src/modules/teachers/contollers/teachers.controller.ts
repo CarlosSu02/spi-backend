@@ -216,11 +216,13 @@ export class TeachersController {
     description:
       'Datos para actualizar un perfil de docente (usuario autenticado)',
   })
-  updateMy(
+  async updateMy(
     @GetCurrentUserId() userId: string,
     @Body() updateTeacherDto: UpdateTeacherDto,
   ) {
-    return this.teachersService.update(userId, updateTeacherDto);
+    const teacher = await this.teachersService.findOneByUserId(userId);
+
+    return await this.teachersService.update(teacher.id, updateTeacherDto);
   }
 
   @Patch(':id')

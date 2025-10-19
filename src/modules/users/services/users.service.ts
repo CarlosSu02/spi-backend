@@ -346,8 +346,16 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<TUser> {
-    const { name, code, email, password, roles, activeStatus, teacher } =
-      updateUserDto;
+    const {
+      name,
+      code,
+      email,
+      password,
+      passwordConfirm,
+      roles,
+      activeStatus,
+      ...teacher
+    } = updateUserDto;
 
     const roleEntities =
       roles && roles.length
@@ -360,6 +368,11 @@ export class UsersService {
       email,
       activeStatus,
     };
+
+    if (passwordConfirm !== password)
+      throw new BadRequestException(
+        'La contraseña <password> y la contraseña de confirmación <passwordConfirm> deben coincidir.',
+      );
 
     if (password) userData.hash = await argon.hash(password);
 
@@ -376,7 +389,7 @@ export class UsersService {
       };
     }
 
-    if (!teacher)
+    if (!Object.values(teacher).filter((el) => el).length)
       return await this.prisma.user.update({
         where: {
           id,
