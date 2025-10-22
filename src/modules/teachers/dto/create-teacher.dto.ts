@@ -12,6 +12,7 @@ import {
   IsValidConfigTeacherConstraint,
   IsValidGradDegreeConstraint,
   IsValidUserIdConstraint,
+  IsValidWorkinDayConstraint,
 } from '../validators';
 import { ValidatorConstraintDecorator } from 'src/common/decorators';
 import { IsValidPositionIdConstraint } from 'src/modules/teachers-config/validators';
@@ -172,8 +173,10 @@ export class CreateTeacherDto {
     message: 'La propiedad <shiftStart> debe ser una hora válida.',
   })
   @IsOptional()
+  @Validate(IsValidWorkinDayConstraint)
   shiftStart?: string;
 
+  // @ValidateIf((o: CreateTeacherDto) => o.shiftStart !== undefined)
   @ApiProperty({
     description: 'Hora de finalización jornada (en formato de 24 horas).',
     example: '17:00',
@@ -183,5 +186,6 @@ export class CreateTeacherDto {
     message: 'La propiedad <shiftEnd> debe ser una hora válida.',
   })
   @IsOptional()
+  @Validate(IsValidWorkinDayConstraint)
   shiftEnd?: string;
 }
