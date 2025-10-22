@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -12,6 +13,7 @@ import {
 import {
   ApiCommonResponses,
   ApiPagination,
+  GetCurrentUser,
   ResponseMessage,
   Roles,
 } from 'src/common/decorators';
@@ -21,6 +23,7 @@ import { ApiBody } from '@nestjs/swagger';
 import { TeachersPostgradService } from '../services/teachers-postgrad.service';
 import { CreateTeacherPostgradDto } from '../dto';
 import { QueryPaginationDto } from 'src/common/dto';
+import { TJwtPayload } from 'src/modules/auth/types';
 
 @Controller('teachers-postgrad')
 @Roles(
@@ -36,7 +39,6 @@ export class TeachersPostgradController {
   ) {}
 
   @Post()
-  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage('Se ha creado la relación docente-postgrado.')
   @ApiBody({
@@ -49,7 +51,19 @@ export class TeachersPostgradController {
     badRequestDescription: 'Datos inválidos para crear la relación.',
     internalErrorDescription: 'Error interno al crear la relación.',
   })
-  create(@Body() createTeachersPostgradDto: CreateTeacherPostgradDto) {
+  create(
+    @Body() createTeachersPostgradDto: CreateTeacherPostgradDto,
+    @GetCurrentUser() currentUser: TJwtPayload,
+  ) {
+    if (
+      currentUser.roles.length === 1 &&
+      currentUser.roles.includes(EUserRole.DOCENTE) &&
+      currentUser.sub !== createTeachersPostgradDto.userId
+    )
+      throw new ForbiddenException(
+        'No tiene permiso para agregar registros a otro usuario.',
+      );
+
     return this.teachersPostgradService.create(createTeachersPostgradDto);
   }
 
@@ -117,8 +131,7 @@ export class TeachersPostgradController {
   //   return this.teachersPostgradService.update(id, updateTeachersPostgradDto);
   // }
 
-  @Delete(':id')
-  @Roles(EUserRole.ADMIN, EUserRole.RRHH, EUserRole.DIRECCION)
+  @Delete('user/:userId/postgrad/:postgradId')
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Relación docente-postgrado eliminada correctamente.')
   @ApiCommonResponses({
@@ -131,7 +144,17 @@ export class TeachersPostgradController {
   remove(
     @Param('userId', ValidateIdPipe) userId: string,
     @Param('postgradId', ValidateIdPipe) postgradId: string,
+    @GetCurrentUser() currentUser: TJwtPayload,
   ) {
+    if (
+      currentUser.roles.length === 1 &&
+      currentUser.roles.includes(EUserRole.DOCENTE) &&
+      currentUser.sub !== userId
+    )
+      throw new ForbiddenException(
+        'No tiene permiso para eliminar registros de otro usuario.',
+      );
+
     return this.teachersPostgradService.remove(userId, postgradId);
   }
 }
