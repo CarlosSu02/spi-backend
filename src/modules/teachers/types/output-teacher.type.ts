@@ -22,6 +22,7 @@ export type TOutputTeacher = {
     id: string;
     name: string;
   }[];
+  activeStatus: boolean;
 };
 
 export type TOutputTeacherCustom = TCustomOmit<

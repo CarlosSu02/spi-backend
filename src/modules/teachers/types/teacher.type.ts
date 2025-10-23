@@ -30,7 +30,7 @@ export type TTeacherJoin = TCustomOmit<
   category: TTeacherCategory;
   shift: TShift;
   contractType: TContractType;
-  user: TCustomPick<TUser, 'id' | 'code' | 'name'> & {
+  user: TCustomPick<TUser, 'id' | 'code' | 'name' | 'activeStatus'> & {
     email?: string;
   };
   undergradDegrees: {

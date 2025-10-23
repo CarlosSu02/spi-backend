@@ -210,7 +210,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(EUserRole.ADMIN)
+  @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
   @ResponseMessage('Usuario actualizado correctamente.')
   @ApiBody({
@@ -227,7 +227,17 @@ export class UsersController {
   update(
     @Param('id', ValidateIdPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @GetCurrentUser() currentUser: TJwtPayload,
   ) {
+    if (
+      currentUser.roles.length === 1 &&
+      currentUser.roles.includes(EUserRole.DOCENTE) &&
+      currentUser.sub !== id
+    )
+      throw new ForbiddenException(
+        'No tiene permiso para actualizar registros de otro usuario.',
+      );
+
     return this.usersService.update(id, updateUserDto);
   }
 

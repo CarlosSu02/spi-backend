@@ -37,6 +37,7 @@ export class TeachersService {
           code: true,
           name: true,
           email: true,
+          activeStatus: true,
         },
       },
       contractType: true,
@@ -158,6 +159,7 @@ export class TeachersService {
             id: true,
             code: true,
             name: true,
+            activeStatus: true,
           },
         },
       },
@@ -175,6 +177,7 @@ export class TeachersService {
       contractTypeId: teacher.contractTypeId,
       shiftId: teacher.shiftId,
       userId: teacher.user.id,
+      activeStatus: teacher.user.activeStatus,
     }));
 
     return mappedTeachers;
@@ -453,6 +456,7 @@ export class TeachersService {
         department: ph.centerDepartment.department,
         position: ph.position,
       })),
+      activeStatus: teacher.user.activeStatus,
     };
   }
 }

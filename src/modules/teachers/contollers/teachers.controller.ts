@@ -248,10 +248,10 @@ export class TeachersController {
   @Delete(':id')
   @Roles(EUserRole.ADMIN, EUserRole.COORDINADOR_AREA, EUserRole.RRHH)
   @HttpCode(HttpStatus.OK)
-  @ResponseMessage('Docente desactivado exitosamente.')
+  @ResponseMessage('Cambio de active status cambiado exitosamente.')
   @ApiCommonResponses({
-    summary: 'Eliminar un docente por ID',
-    okDescription: 'Se ha desactivado el docente.',
+    summary: 'Cambiar el active status del docente por ID',
+    okDescription: 'Se ha cambiado el active status del docente.',
   })
   remove(@Param('id', ValidateIdPipe) id: string) {
     return this.teachersService.remove(id);
