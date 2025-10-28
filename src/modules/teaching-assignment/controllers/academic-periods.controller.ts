@@ -8,14 +8,16 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiQuery } from '@nestjs/swagger';
 import { ApiCommonResponses } from 'src/common/decorators/api-response.decorator';
 import { AcademicPeriodsService } from '../services/academic-periods.service';
 import { CreateAcademicPeriodDto, UpdateAcademicPeriodDto } from '../dto';
 import { ResponseMessage, Roles } from 'src/common/decorators';
 import { EUserRole } from 'src/common/enums';
 import { ValidateIdPipe } from 'src/common/pipes';
+import { TPacModality } from '../types';
 
 @Controller('academic-periods')
 export class AcademicPeriodsController {
@@ -104,8 +106,51 @@ export class AcademicPeriodsController {
     internalErrorDescription: 'Error interno al obtener el periodo.',
     notFoundDescription: 'No se encontró el periodo solicitado.',
   })
-  findCurrent() {
-    return this.academicPeriodsService.currentAcademicPeriod();
+  @ApiQuery({
+    name: 'modality',
+    description:
+      'Modalidad del perido: ' +
+      (['Trimestre', 'Semestre'] as TPacModality[]).join(', '),
+    type: String,
+    enum: ['Trimestre', 'Semestre'] as TPacModality[],
+    required: false,
+  })
+  findCurrent(@Query('modality') modality: TPacModality = 'Trimestre') {
+    return this.academicPeriodsService.currentAcademicPeriod(modality);
+  }
+
+  @Get('next-to-create')
+  @Roles(
+    EUserRole.ADMIN,
+    EUserRole.DIRECCION,
+    EUserRole.RRHH,
+    EUserRole.COORDINADOR_AREA,
+    EUserRole.DOCENTE,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ApiCommonResponses({
+    summary: 'Obtener periodo académico siguiente a crear una planificación',
+    description:
+      'Obtiene la información del periodo académico siguiente a crear una planificación.',
+    okDescription: 'Periodo académico obtenido correctamente.',
+    internalErrorDescription: 'Error interno al obtener el periodo.',
+    notFoundDescription: 'No se encontró el periodo solicitado.',
+  })
+  @ApiQuery({
+    name: 'modality',
+    description:
+      'Modalidad del perido: ' +
+      (['Trimestre', 'Semestre'] as TPacModality[]).join(', '),
+    type: String,
+    enum: ['Trimestre', 'Semestre'] as TPacModality[],
+    required: false,
+  })
+  async findNextToCreate(
+    @Query('modality') modality: TPacModality = 'Trimestre',
+  ) {
+    return await this.academicPeriodsService.getNextAcademicPeriod(
+      await this.academicPeriodsService.currentAcademicPeriod(modality),
+    );
   }
 
   @Patch(':id')
