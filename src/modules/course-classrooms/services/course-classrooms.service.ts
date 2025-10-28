@@ -102,8 +102,25 @@ export class CourseClassroomsService {
               select: {
                 periodId: true,
                 teacherId: true,
+                teacher: {
+                  select: {
+                    user: {
+                      select: {
+                        id: true,
+                        code: true,
+                      },
+                    },
+                  },
+                },
               },
             },
+          },
+        },
+        classroom: {
+          select: {
+            name: true,
+            desks: true,
+            maxCapacity: true,
           },
         },
       },

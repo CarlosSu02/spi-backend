@@ -6,4 +6,5 @@ export enum EClassModality {
   DISTANCE = 'Distancia',
   BLENDED = 'Semipresencial',
   BLEARNING = 'B-Learning',
+  VIRTUAL_SPACE = 'Espacio Virtual',
 }

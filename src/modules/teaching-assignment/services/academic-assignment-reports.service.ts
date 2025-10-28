@@ -28,7 +28,6 @@ import {
   TCourseClassroomSelectPeriod,
   TCreateCourseClassroom,
   TModality,
-  TOutputCourseWithSelect,
 } from 'src/modules/course-classrooms/types';
 import { ModalitiesService } from 'src/modules/course-classrooms/services/modalities.service';
 import { EClassModality } from 'src/modules/course-classrooms/enums';
@@ -36,9 +35,7 @@ import { formatISO } from 'date-fns';
 import { ClassroomService } from 'src/modules/infraestructure/services/classroom.service';
 import { TeachingSessionsService } from './teaching-sessions.service';
 import { CourseClassroomsService } from 'src/modules/course-classrooms/services/course-classrooms.service';
-import { TOutputTeacher } from 'src/modules/teachers/types';
-import { TClassroom } from 'src/modules/infraestructure/types';
-import { Prisma } from '@prisma/client';
+import { Classroom, Course, Prisma, User } from '@prisma/client';
 import { TCustomOmit } from 'src/common/types';
 import { TComplementaryActivity } from 'src/modules/complementary-activities/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
@@ -49,7 +46,7 @@ import { TCenterJoin, TDepartment } from 'src/modules/centers/types';
 import { CenterDepartmentsService } from 'src/modules/centers/services/center-departments.service';
 import { CentersService } from 'src/modules/centers/services/centers.service';
 
-interface ParsedTitle {
+interface IParsedTitle {
   year: number;
   pac: number;
   pac_modality: TPacModality;
@@ -63,6 +60,8 @@ type TGroupedCoursesByTeacher = Record<
     courses: TCreateCourseClassroom[];
   }
 >;
+
+type TCommonFindResponse<T> = [T | null, string];
 
 @Injectable()
 export class AcademicAssignmentReportsService {
@@ -658,7 +657,12 @@ export class AcademicAssignmentReportsService {
     allData: AcademicAssignmentDto[],
     centerDepartmentId: string,
     currentUserId: string,
-    parseAcademicTitle?: ParsedTitle,
+    parseAcademicTitle?: {
+      year: number;
+      pac: number;
+      pac_modality: TPacModality;
+      title: string;
+    },
   ) {
     const coordinator =
       await this.teacherDepartmentPositionService.findOneDepartmentHeadByUserIdAndCenterDepartment(
@@ -673,6 +677,7 @@ export class AcademicAssignmentReportsService {
       await this.academicPeriodsService.getNextAcademicPeriod(
         await this.academicPeriodsService.currentAcademicPeriod(),
       );
+
     const academicPeriodTitle = `Periodo Académico No. ${academicPeriod.pac}, ${academicPeriod.pac_modality}, ${academicPeriod.year}`;
 
     // En cuestion de rendimiento, es mejor hacer las consultas
@@ -681,36 +686,86 @@ export class AcademicAssignmentReportsService {
     // Aca se evita realizar hasta quiza +100 consultas a la base de datos
     const [
       teachers,
-      centerDepartments,
       allCourses,
       modalities,
       existingCourseClassrooms,
       classrooms,
     ] = await Promise.all([
-      this.teachersService.findAll(),
-      this.centersService.findOne(coordinator.centerDepartment.centerId),
-      this.coursesService.findAllByCenterDepartmentId(centerDepartmentId),
+      // this.teachersService.findAll(),
+      this.prisma.user.findMany({
+        where: {
+          code: {
+            in: allData.map((u) => u.teacherCode.toString()),
+          },
+        },
+        relationLoadStrategy: 'join',
+        include: {
+          teacher: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      }),
+      // this.coursesService.findAllByCenterDepartmentId(centerDepartmentId),
+      this.prisma.course.findMany({
+        where: {
+          code: {
+            in: allData.map((u) =>
+              normalizeText(u.courseCode.toString().replace(/-/g, '')),
+            ),
+          },
+          department: {
+            centers: {
+              every: {
+                id: centerDepartmentId,
+              },
+            },
+          },
+          activeStatus: true,
+        },
+      }),
       this.modalitiesService.findAll(),
       this.courseClassroomsService.findAllWithSelectAndPeriodId(
         academicPeriod.id,
       ),
-      this.classroomService.findAll(),
+      this.prisma.classroom.findMany({
+        where: {
+          OR: allData.map((u) => ({
+            classroomInfoView: {
+              normalizedName: {
+                contains: normalizeText(u.classroomName),
+                mode: 'insensitive',
+              },
+            },
+          })),
+        },
+        relationLoadStrategy: 'join',
+        include: {
+          roomType: {
+            select: {
+              description: true,
+            },
+          },
+        },
+      }),
     ]);
 
-    const teachersMap = new Map(teachers.map((t) => [t.code, t]));
-    // const centerDepartmentsMap = new Map(
-    //   centerDepartments.map((d) => [normalizeText(d.name), d]),
-    // );
-    const allCoursesMap = new Map(allCourses.map((c) => [c.code, c]));
-    const classroomsMap = new Map(
+    const teacherMap = new Map(teachers.map((t) => [t.code, t]));
+    // const courseSet = new Set(allCourses.map((c) => c.code));
+    const courseMap = new Map<string, Course>(
+      allCourses.map((c) => [c.code, c]),
+    );
+    const classroomMap = new Map(
       classrooms.map((c) => [normalizeText(c.name), c]),
     );
+
     const existingCourseClassroomsMap = new Map<
       string,
       TCourseClassroomSelectPeriod
     >();
     existingCourseClassrooms.forEach((cc) => {
-      const key = `${cc.courseId}|${cc.days}|${cc.teachingSession.assignmentReport.teacherId}`;
+      const key = `${cc.teachingSession.assignmentReport.teacher.user.code}|${cc.course.code}|${cc.days}`;
       existingCourseClassroomsMap.set(key, cc);
     });
 
@@ -719,13 +774,47 @@ export class AcademicAssignmentReportsService {
       TCourseClassroomSelectPeriod[]
     >();
     existingCourseClassrooms.forEach((cc) => {
-      const key = cc.teachingSession.assignmentReport.teacherId;
+      const key = cc.teachingSession.assignmentReport.teacher.user.code;
+
       if (!existingCourseClassroomsTeacherMap.has(key)) {
         existingCourseClassroomsTeacherMap.set(key, []);
       }
 
       existingCourseClassroomsTeacherMap.get(key)?.push(cc);
     });
+
+    const classroomNotAvailableSet = new Set(
+      existingCourseClassrooms.map(
+        (cc) => `${cc.section}|${cc.days}|${normalizeText(cc.classroom.name)}`,
+      ),
+    );
+
+    // const currentCourseClassroomSet = new Set(
+    //   allData.map(
+    //     (cc) => `${cc.teacherCode}|${cc.courseCode}|${cc.section}|${cc.days}`,
+    //   ),
+    // );
+
+    const currentCourseClassroomSetMap = allData.reduce(
+      (acc, cc) => {
+        const key = `${cc.teacherCode}|${cc.courseCode}|${cc.section}|${cc.days}`;
+
+        if (!acc.set.has(key)) {
+          acc.set.add(key);
+          acc.items.push(cc);
+        }
+
+        return acc;
+      },
+      {
+        set: new Set<string>(),
+        items: [] as typeof allData,
+      },
+    );
+
+    const modalitySet = new Map(
+      modalities.map((m) => [normalizeText(m.name).replace(/-/g, ''), m]),
+    );
 
     const coursesGroupByTeacherCodeEntries: Record<
       string,
@@ -736,109 +825,152 @@ export class AcademicAssignmentReportsService {
     > = {};
     const coursesArray: TAcademicAssignmentReportFileView[] = [];
 
-    for (const item of allData) {
-      const {
-        teacherCode,
-        courseCode,
-        section,
-        days,
-        studentCount,
-        classroomName,
-        departmentName,
-        center: centerName,
-        observation,
-        nearGraduation,
-      } = item;
+    const validElements: AcademicAssignmentDto[] = [];
+    const invalidElements: (AcademicAssignmentDto & { errors: string[] })[] =
+      [];
 
-      // Validar días al inicio
-      this.validateDays(days);
+    for (const item of currentCourseClassroomSetMap.items) {
+      const errors: string[] = [];
+      // item.coordinator = coordinatorInfo.teacher.user.name;
+      // item.center = coordinatorInfo.centerDepartment.center.name;
 
-      this.validateUniqueClass(allData, item);
+      item.coordinator = coordinator.teacher.user.name;
+      item.center = coordinator.centerDepartment.center.name;
+      item.departmentName = coordinator.centerDepartment.department.name;
+      item.courseCode = normalizeText(item.courseCode.replace(/-/g, ''));
 
-      const teacher = this.findTeacher(teachersMap, teacherCode);
-      // const center = this.findCenterDepartment(centerDepartments, centerName);
-      const department = this.findDepartment(
-        // new Map(center.departments.map((d) => [normalizeText(d.name), d])),
-        centerDepartments.departments,
-        departmentName,
+      const dayError = this.validateDays(item.days);
+      if (dayError) errors.push(dayError);
+
+      const [teacher, teacherError] = this.findTeacher(
+        teacherMap,
+        item.teacherCode,
       );
-      const course = this.findCourse(allCoursesMap, courseCode, department);
+      if (!teacher) errors.push(teacherError);
 
-      // existingClass - todos los de existingCourseClassrooms son del periodo académico actual
-      // Este if verifica si ya existe una clase para el docente y la asignatura
-      const existingKey = `${course.id}|${days}|${teacher.id}`;
-      this.validateCourseClassroom(
-        existingCourseClassroomsMap,
-        existingKey,
-        teacherCode,
-        teacher.name,
-        courseCode,
-        academicPeriodTitle,
-        academicPeriod.id,
+      const [course, courseError] = this.findCourse(
+        courseMap,
+        item.courseCode,
+        item.departmentName,
       );
+      if (!course) errors.push(courseError);
 
-      this.validateIfExistingAnotherCourseClassroom(
+      const [classroom, classroomError] = this.findClassroom(
+        classroomMap,
+        item.classroomName,
+      );
+      if (!classroom) errors.push(classroomError);
+
+      // const existingCourseClassroom = existingCourseClassroomsMap.get(
+      //   `${course.id}|${days}|${teacher.id}`,
+      // );
+
+      const [validateCourseClassroom, validateCourseClassroomError] =
+        this.validateCourseClassroom(
+          existingCourseClassroomsMap,
+          item,
+          academicPeriodTitle,
+          academicPeriod.id,
+        );
+      if (!validateCourseClassroom && validateCourseClassroomError !== '')
+        errors.push(validateCourseClassroomError);
+
+      const [
+        validateIfExistingAnotherCourseClassroom,
+        validateIfExistingAnotherCourseClassroomError,
+      ] = this.validateIfExistingAnotherCourseClassroom(
         existingCourseClassroomsTeacherMap,
-        teacher.id,
-        teacherCode,
-        teacher.name,
-        courseCode,
-        section,
-        days,
+        item.teacherCode,
+        item,
         academicPeriodTitle,
       );
+      if (
+        !validateIfExistingAnotherCourseClassroom &&
+        validateIfExistingAnotherCourseClassroomError !== ''
+      )
+        errors.push(validateIfExistingAnotherCourseClassroomError);
 
-      // Salones de clase
-      if (!classroomName || classroomName === null || classroomName === '')
-        throw new BadRequestException(
-          `El nombre del salón de clase no puede estar vacío para el docente <${teacherCode}> con la asignatura <${courseCode}> en el periodo académico <${academicPeriodTitle}>.`,
+      const validClassroom = classroomNotAvailableSet.has(
+        `${item.section}|${item.days}|${normalizeText(item.classroomName)}`,
+      );
+
+      if (
+        classroom &&
+        validClassroom &&
+        normalizeText(classroom.roomType.description) !==
+          normalizeText(EClassModality.VIRTUAL_SPACE)
+      )
+        errors.push(
+          `El salón de clase <${classroom.name}> ya se encuentra en uso los días <${item.days}> en la sección <${item.section}>.`,
         );
 
-      const classroom = this.findClassroom(classroomsMap, classroomName);
+      const [modality, modalityError] = this.getModalityId(
+        item.classroomName,
+        modalitySet,
+      );
+      if (!modality) errors.push(modalityError);
 
-      // Agrupamos las clases por docente, ya que en este punto ya están validadas
-      if (!coursesGroupByTeacherCodeEntries[teacherCode]) {
-        coursesGroupByTeacherCodeEntries[teacherCode] = {
-          teacherId: teacher.id,
-          userId: teacher.userId,
-          centerDepartmentId: department.centerDepartmentId,
+      if (errors.length) {
+        invalidElements.push({
+          ...item,
+          errors,
+        });
+
+        continue;
+      }
+
+      validElements.push({
+        ...item,
+      });
+
+      if (!coursesGroupByTeacherCodeEntries[item.teacherCode]) {
+        coursesGroupByTeacherCodeEntries[item.teacherCode] = {
+          teacherId: teacher!.teacher!.id,
+          userId: teacher!.id,
+          centerDepartmentId,
           periodId: academicPeriod.id,
           courses: [],
         };
       }
 
       const courseElement = {
-        courseId: course.id,
-        section,
-        days: days.toString(),
-        classroomId: classroom.id,
-        modalityId: this.getModalityId(classroom.name, modalities),
-        studentCount,
-        groupCode: `${teacherCode}-${section}-${days}`, // Generamos un código de grupo único
-        nearGraduation,
-        observation: observation || null, // Si no hay observación, se asigna
+        courseId: course!.id,
+        section: item.section,
+        days: item.days.toString(),
+        classroomId: classroom!.id,
+        modalityId: modality!.id,
+        studentCount: isNaN(parseInt(item.studentCount.toString()))
+          ? 0
+          : item.studentCount,
+        groupCode: `${item.teacherCode}-${item.section}-${item.days}`, // Generamos un código de grupo único
+        nearGraduation: item.nearGraduation,
+        observation: item.observation || null, // Si no hay observación, se asigna
       };
 
-      coursesGroupByTeacherCodeEntries[teacherCode].courses.push(courseElement);
+      coursesGroupByTeacherCodeEntries[item.teacherCode].courses.push(
+        courseElement,
+      );
 
       coursesArray.push({
-        userId: teacher.userId,
-        teacherId: teacher.id,
-        teacherCode: teacher.code,
-        teacherName: teacher.name,
-        courseCode: course.code,
-        courseName: course.name,
-        uv: course.uvs,
-        section,
-        studentCount,
-        days,
-        center: centerDepartments.name,
-        classroomName: classroom.name,
-        departmentName: course.department.name,
-        centerDepartmentId: department.centerDepartmentId,
+        userId: teacher!.id,
+        teacherId: teacher!.teacher!.id,
+        teacherCode: teacher!.code,
+        teacherName: teacher!.name,
+        courseCode: course!.code,
+        courseName: course!.name,
+        uv: course!.uvs,
+        section: item.section,
+        studentCount: isNaN(parseInt(item.studentCount.toString()))
+          ? 0
+          : item.studentCount,
+        days: item.days.toString(),
+        center: item.center,
+        classroomName: classroom!.name,
+        departmentName: item.departmentName,
+        centerDepartmentId,
         coordinator: coordinator.teacher.user.name,
         observation: courseElement.observation,
-        nearGraduation,
+        nearGraduation: item.nearGraduation,
       });
     }
 
@@ -850,6 +982,7 @@ export class AcademicAssignmentReportsService {
         pac_modality: academicPeriod.pac_modality,
         title: academicPeriodTitle,
         courses: coursesArray,
+        invalidElements,
       },
       coursesGroupByTeacherCodeEntries,
     };
@@ -936,7 +1069,7 @@ export class AcademicAssignmentReportsService {
     return results;
   }
 
-  private parseAcademicTitle(title?: string): ParsedTitle | undefined {
+  private parseAcademicTitle(title?: string): IParsedTitle | undefined {
     if (!title) return;
 
     // Inicialmente permitimos numero o null
@@ -970,7 +1103,9 @@ export class AcademicAssignmentReportsService {
 
     // Valor por defecto si no se encontró
     if (year === null) {
-      throw new BadRequestException(`No se detectó año en “${title}”.`);
+      year = new Date(Date.now()).getFullYear();
+
+      // throw new BadRequestException(`No se detectó año en “${title}”.`);
     }
 
     if (pac === null) {
@@ -1005,49 +1140,29 @@ export class AcademicAssignmentReportsService {
     }
   }
 
-  private validateDays(days: string) {
+  private validateDays(days: string): string | undefined {
     const validDays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
     const regex = /^(Lu|Ma|Mi|Ju|Vi|Sa|Do)+$/;
 
     if (!regex.test(days)) {
-      throw new BadRequestException(
-        `El valor de 'days' (${days}) no es válido. Debe ser combinación de: ${validDays.join(
-          ', ',
-        )}.`,
-      );
+      return `El valor de 'days' (${days}) no es válido. Debe ser combinación de: ${validDays.join(
+        ', ',
+      )}.`;
     }
+
+    return;
   }
 
   private findTeacher(
-    teachersMap: Map<
-      string,
-      TCustomOmit<
-        TOutputTeacher,
-        | 'categoryName'
-        | 'contractTypeName'
-        | 'shiftName'
-        | 'postgrads'
-        | 'undergrads'
-      >
-    >,
+    teacherMap: Map<string, User & { teacher: { id: string } | null }>,
     teacherCode: string,
-  ): TCustomOmit<
-    TOutputTeacher,
-    | 'categoryName'
-    | 'contractTypeName'
-    | 'shiftName'
-    | 'postgrads'
-    | 'undergrads'
-  > {
-    const teacher = teachersMap.get(teacherCode);
+  ): TCommonFindResponse<User & { teacher: { id: string } | null }> {
+    const teacher = teacherMap.get(teacherCode);
 
-    if (!teacher)
-      throw new NotFoundException(
-        `No se encontró el docente con código <${teacherCode}>.`,
-      );
-
-    return teacher;
+    return teacher
+      ? [teacher, '']
+      : [null, `No se encontró el docente con código <${teacherCode}>.`];
   }
 
   private findCenterDepartment(
@@ -1079,86 +1194,76 @@ export class AcademicAssignmentReportsService {
   }
 
   private findCourse(
-    allCoursesMap: Map<string, TOutputCourseWithSelect>,
+    courseMap: Map<string, Course>,
     courseCode: string,
-    department: TDepartment & { centerDepartmentId: string },
-  ): TOutputCourseWithSelect {
-    const course = allCoursesMap.get(courseCode);
+    departmentName: string,
+  ): TCommonFindResponse<Course> {
+    const course = courseMap.get(courseCode.replace(/-/g, ''));
 
     if (!course)
-      throw new NotFoundException(
-        `No se encontró la asignatura con código <${courseCode}>.`,
-      );
+      return [
+        null,
+        `No se encontró la clase con código <${courseCode}> en el departamento <${departmentName}> (puede que no exista o no esté activa).`,
+      ];
 
-    // Si la asignatura no se encuentra activa, lanzamos un error,
+    // NOTE: Si la asignatura no se encuentra activa, lanzamos un error,
     // ya que puede ser una clase de un pensum anterior
     if (!course.activeStatus)
-      throw new BadRequestException(
-        `La asignatura con código <${courseCode}> no está activa.`,
-      );
+      return [null, `La asignatura con código <${courseCode}> no está activa.`];
 
-    // Si la asignatura no pertenece al departamento, lanzamos un error
-    if (course.departmentId !== department.id)
-      throw new BadRequestException(
-        `La asignatura con código <${courseCode}> no pertenece al departamento <${department.name}>.`,
-      );
-
-    return course;
+    return [course, ''];
   }
 
   private findClassroom(
-    classroomsMap: Map<string, TClassroom>,
+    classroomMap: Map<
+      string,
+      Classroom & { roomType: { description: string } }
+    >,
     classroomName: string,
-  ): TClassroom {
-    const classroom = classroomsMap.get(normalizeText(classroomName));
+  ): TCommonFindResponse<Classroom & { roomType: { description: string } }> {
+    const classroom = classroomMap.get(normalizeText(classroomName));
 
-    if (!classroom)
-      throw new NotFoundException(
-        `No se encontró el salón de clase con nombre <${classroomName}>.`,
-      );
-
-    return classroom;
+    return classroom
+      ? [classroom, '']
+      : [
+          null,
+          `No se encontró el salón de clase con nombre <${classroomName}>.`,
+        ];
   }
 
   private validateCourseClassroom(
     existingCourseClassroomsMap: Map<string, TCourseClassroomSelectPeriod>,
-    key: string,
-    teacherCode: string,
-    teacherName: string,
-    courseCode: string,
+    { teacherName, teacherCode, courseCode, days }: AcademicAssignmentDto,
     academicPeriodTitle: string,
     periodId: string,
-  ): TCourseClassroomSelectPeriod | undefined {
-    const existingCourseClassroom = existingCourseClassroomsMap.get(key);
+  ): TCommonFindResponse<TCourseClassroomSelectPeriod | undefined> {
+    const existingCourseClassroom = existingCourseClassroomsMap.get(
+      `${teacherCode}|${courseCode}|${days}`,
+    );
 
-    if (
-      existingCourseClassroom &&
+    return existingCourseClassroom &&
       existingCourseClassroom.teachingSession.assignmentReport.periodId ===
         periodId
-    )
-      throw new BadRequestException(
-        `Ya existe una clase para el docente <${teacherCode} - ${teacherName}> con la asignatura <${courseCode}> en el periodo académico ${academicPeriodTitle}>.`,
-      );
-
-    return existingCourseClassroom;
+      ? [
+          null,
+          `Ya existe una clase para el docente <${teacherCode} - ${teacherName}> con la asignatura <${courseCode}> en <${academicPeriodTitle}>.`,
+        ]
+      : [existingCourseClassroom, ''];
   }
 
   private validateIfExistingAnotherCourseClassroom(
     existingCourseClassroomsMap: Map<string, TCourseClassroomSelectPeriod[]>,
     key: string,
-    teacherCode: string,
-    teacherName: string,
-    courseCode: string,
-    section: string,
-    days: string,
+    { teacherCode, teacherName, days, section }: AcademicAssignmentDto,
     academicPeriodTitle: string,
-  ) {
+  ): TCommonFindResponse<TCourseClassroomSelectPeriod[] | undefined> {
     const existingCourseClassrooms = existingCourseClassroomsMap.get(key);
 
-    if (!existingCourseClassrooms) return;
+    if (!existingCourseClassrooms) return [existingCourseClassrooms, ''];
 
     const regex = new RegExp(
       `(${days
+        .toString()
         .trim()
         .split(/([a-zA-Z]{2})/gm)
         .slice(1, -1)
@@ -1169,34 +1274,28 @@ export class AcademicAssignmentReportsService {
 
     for (const cc of existingCourseClassrooms) {
       if (cc.days.match(regex) && cc.section === section)
-        throw new BadRequestException(
+        return [
+          null,
           `El docente <${teacherCode} - ${teacherName}> tiene un traslape de horario con una clase existente <${cc.course.code}> en el periodo académico ${academicPeriodTitle}>, por favor revise de nuevo.`,
-        );
+        ];
     }
 
-    return existingCourseClassrooms;
+    return [existingCourseClassrooms, ''];
   }
 
   private getModalityId(
     classroomName: string,
-    modalities: TModality[],
-  ): string {
-    if (
-      normalizeText(classroomName.toString()) ===
-      normalizeText(EClassModality.TELEDUCATION)
-    )
-      return (
-        modalities.find(
-          (m) =>
-            normalizeText(m.name as EClassModality) ===
-            normalizeText(EClassModality.TELEDUCATION),
-        )?.id || ''
-      );
-
-    return (
-      modalities.find(
-        (m) => (m.name as EClassModality) === EClassModality.PRESENTIAL,
-      )?.id || ''
+    modalities: Map<string, TModality>,
+  ): TCommonFindResponse<TModality> {
+    const normalizedClassroomName = normalizeText(classroomName).replace(
+      /-/g,
+      '',
     );
+
+    const modality =
+      modalities.get(normalizedClassroomName) ??
+      modalities.get(normalizeText(EClassModality.PRESENTIAL));
+
+    return modality ? [modality, ''] : [null, `No se encontró las modalidad.`];
   }
 }

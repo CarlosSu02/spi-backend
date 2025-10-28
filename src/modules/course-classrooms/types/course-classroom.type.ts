@@ -47,12 +47,23 @@ export type TCourseClassroomSelectPeriod = Omit<
 > & {
   teachingSession: {
     assignmentReport: {
-      teacherId: string;
       periodId: string;
+      teacherId: string;
+      teacher: {
+        user: {
+          id: string;
+          code: string;
+        };
+      };
     };
   };
   course: {
     code: string;
     name: string;
+  };
+  classroom: {
+    name: string;
+    desks: number;
+    maxCapacity: number | null;
   };
 };

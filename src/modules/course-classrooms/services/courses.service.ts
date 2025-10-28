@@ -21,6 +21,7 @@ export class CoursesService {
     const newCourse = await this.prisma.course.create({
       data: {
         ...createCourseDto,
+        code: createCourseDto.code.replace(/-/g, ''),
       },
     });
 
@@ -136,7 +137,9 @@ export class CoursesService {
   ) {
     const where: Prisma.CourseWhereInput = {
       OR: [
-        { code: { contains: searchTerm, mode: 'insensitive' } },
+        {
+          code: { contains: searchTerm.replace(/-/g, ''), mode: 'insensitive' },
+        },
         { name: { contains: searchTerm, mode: 'insensitive' } },
       ],
       ...(centerDepartmentId
@@ -187,6 +190,9 @@ export class CoursesService {
       },
       data: {
         ...updateCourseDto,
+        code: updateCourseDto.code
+          ? updateCourseDto.code.replace(/-/g, '')
+          : undefined,
       },
     });
     return courseUpdate;

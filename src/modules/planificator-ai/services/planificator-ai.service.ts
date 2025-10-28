@@ -226,7 +226,7 @@ export class PlanificatorAiService {
     return classrooms.map((c) => ({
       id: c.name,
       tipo: this.normalizeTextPlanificator(c.roomType?.description) ?? 'NORMAL',
-      capacidad: c.maxCapacitiy ?? c.desks ?? 30,
+      capacidad: c.maxCapacity ?? c.desks ?? 30,
     }));
   }
 
