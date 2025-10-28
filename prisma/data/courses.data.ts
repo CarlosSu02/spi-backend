@@ -2102,7 +2102,7 @@ export const coursesSeed = [
     activeStatus: true,
   },
   {
-    code: 'IS911',
+    code: 'IS906',
     name: 'Topicos Especiales y Avanzados',
     uvs: 3,
     departmentId: departmentsSeed.sistemas.id,

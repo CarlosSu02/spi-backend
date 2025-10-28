@@ -7,13 +7,14 @@
 generator client {
   provider        = "prisma-client-js"
   output          = "../node_modules/.prisma/client"
-  previewFeatures = ["multiSchema", "relationJoins"]
+  previewFeatures = ["multiSchema", "relationJoins", "postgresqlExtensions", "views"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  schemas  = ["auth", "academic", "infraestructure", "inventory", "public", "ai"]
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  schemas    = ["auth", "academic", "infraestructure", "inventory", "public", "ai"]
+  extensions = [unaccent]
 }
 
 // # User - Teachers
@@ -221,6 +222,7 @@ model Course {
   department            Department              @relation(fields: [departmentId], references: [id])
   courseClassroom       CourseClassroom[]
   teacherPreferredClass TeacherPreferredClass[]
+  courseInfoView        CourseInfoView?
 
   @@map("courses")
   @@schema("academic")
@@ -305,17 +307,18 @@ model Classroom {
   connectivityId   String? @db.Uuid
   audioEquipmentId String? @db.Uuid
   conditionId      String? @db.Uuid
-  maxCapacitiy     Int?
+  maxCapacity      Int?
 
   // Relations
-  building         Building          @relation(fields: [buildingId], references: [id])
-  roomType         RoomType          @relation(fields: [roomTypeId], references: [id])
-  connectivity     Connectivity?     @relation(fields: [connectivityId], references: [id])
-  audioEquipment   AudioEquipment?   @relation(fields: [audioEquipmentId], references: [id])
-  condition        Condition?        @relation(fields: [conditionId], references: [id])
-  airConditioners  AirConditioner[]
-  courseClassrooms CourseClassroom[]
-  pcEquipments     PcEquipment[]
+  building          Building           @relation(fields: [buildingId], references: [id])
+  roomType          RoomType           @relation(fields: [roomTypeId], references: [id])
+  connectivity      Connectivity?      @relation(fields: [connectivityId], references: [id])
+  audioEquipment    AudioEquipment?    @relation(fields: [audioEquipmentId], references: [id])
+  condition         Condition?         @relation(fields: [conditionId], references: [id])
+  airConditioners   AirConditioner[]
+  courseClassrooms  CourseClassroom[]
+  pcEquipments      PcEquipment[]
+  classroomInfoView ClassroomInfoView?
 
   @@map("classrooms")
   @@schema("infraestructure")
@@ -666,4 +669,28 @@ model TeacherPreferredClass {
   @@unique([teacherId, courseId])
   @@map("teacher_preferred_classes")
   @@schema("ai")
+}
+
+// Views
+view ClassroomInfoView {
+  id             String  @unique @db.Uuid
+  normalizedName String?
+
+  // Relations
+  classroom Classroom @relation(fields: [id], references: [id])
+
+  @@map("vw_classroom_info")
+  @@schema("infraestructure")
+}
+
+view CourseInfoView {
+  id             String  @unique @db.Uuid
+  normalizedName String?
+  normalizedCode String?
+
+  // Relations
+  course Course @relation(fields: [id], references: [id])
+
+  @@map("vw_course_info")
+  @@schema("infraestructure")
 }

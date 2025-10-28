@@ -57,6 +57,20 @@ export const buildingsSeed = [
     floors: '1',
     centerId: centersSeed.copan.id,
   },
+  {
+    id: 'd3238ac4-9be6-4e1b-a35e-463da6a347fd',
+    name: 'Ninguna',
+    color: 'No definido',
+    floors: '0',
+    centerId: centersSeed.copan.id,
+  },
+  {
+    id: '49902ab3-29c8-494d-a832-0b427ae14119',
+    name: 'Ninguna',
+    color: 'No definido',
+    floors: '0',
+    centerId: centersSeed.craedCopan.id,
+  },
 ];
 
 export const connectivitiesSeed = {
@@ -115,6 +129,10 @@ export const roomTypesSeed = {
   specializedSpace: {
     id: '4bd234e7-f543-4c63-b6c4-00b25fc20207',
     description: 'Espacio especializado',
+  },
+  virtualSpace: {
+    id: '3228afdc-c881-4b06-852e-1c96732c1de5',
+    description: 'Espacio virtual',
   },
 };
 
