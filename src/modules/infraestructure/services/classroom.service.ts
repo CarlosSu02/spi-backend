@@ -5,7 +5,7 @@ import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { TClassroom, TCreateClassroom, TUpdateClassroom } from '../types';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
-import { paginate, paginateOutput } from 'src/common/utils';
+import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -58,6 +58,14 @@ export class ClassroomService {
     const where: Prisma.ClassroomWhereInput = {
       OR: [
         { name: { contains: searchTerm, mode: 'insensitive' } },
+        {
+          classroomInfoView: {
+            normalizedName: {
+              contains: normalizeText(searchTerm),
+              mode: 'insensitive',
+            },
+          },
+        },
         {
           roomType: {
             description: { contains: searchTerm, mode: 'insensitive' },

@@ -838,6 +838,7 @@ export class AcademicAssignmentReportsService {
       item.center = coordinator.centerDepartment.center.name;
       item.departmentName = coordinator.centerDepartment.department.name;
       item.courseCode = normalizeText(item.courseCode.replace(/-/g, ''));
+      item.nearGraduation = item.nearGraduation ?? false;
 
       const dayError = this.validateDays(item.days);
       if (dayError) errors.push(dayError);

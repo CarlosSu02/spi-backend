@@ -404,15 +404,19 @@ export class CourseClassroomsService {
   // CurrentPeriod
   async changeCourseClassroom(teacherId: string, courseClassroomId: string) {
     const courseClassroomData = await this.findOne(courseClassroomId);
-    const currentPeriod =
-      await this.academicPeriodsService.currentAcademicPeriod();
+    const academicPeriod =
+      await this.academicPeriodsService.getNextAcademicPeriod(
+        await this.academicPeriodsService.currentAcademicPeriod(),
+      );
+
+    const academicPeriodTitle = `Periodo Académico No. ${academicPeriod.pac}, ${academicPeriod.pac_modality}, ${academicPeriod.year}`;
 
     if (
       courseClassroomData.teachingSession.assignmentReport.periodId !==
-      currentPeriod.id
+      academicPeriod.id
     )
       throw new BadRequestException(
-        `No puede cambiar una clase que no sea del periodo actual <${currentPeriod.title}>.`,
+        `No puede cambiar una clase que no sea del periodo <${academicPeriodTitle}>.`,
       );
 
     const { course, teachingSession, ...dataToCreate } = courseClassroomData;
@@ -425,7 +429,7 @@ export class CourseClassroomsService {
           centerDepartmentId:
             teachingSession.assignmentReport.centerDepartmentId,
           teacherId,
-          periodId: currentPeriod.id,
+          periodId: academicPeriod.id,
         },
       },
       // update: {
