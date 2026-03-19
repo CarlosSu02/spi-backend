@@ -11,7 +11,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('/v1/api');
+  app.setGlobalPrefix('/api/v1');
 
   // app.useGlobalPipes(new ValidateGlobalIdsPipe()); // Para no validar uno por uno, los ValidateIdPipe pueden no ser utiles con esto activo.
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));

@@ -18,4 +18,14 @@ export class AppController {
       HttpStatus.OK,
     );
   }
+
+  @Get('health')
+  @HttpCode(HttpStatus.OK)
+  health() {
+    return {
+      status: 'ok',
+      message: 'API is running',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

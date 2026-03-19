@@ -118,7 +118,7 @@ export class TransformInterceptor<T>
     console.log(exception.message);
 
     response.status(status).json({
-      status: false,
+      status: status >= 200 && status < 300,
       statusCode: status,
       path: request.url,
       message,
