@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -17,20 +18,33 @@ import {
   Public,
 } from 'src/common/decorators';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
-import { CookieOptions, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { envs } from 'src/config';
 
 @Controller('auth')
 export class AuthController {
-  private cookieOptions: CookieOptions = {
-    secure: envs.nodeEnv === 'production',
-    sameSite: envs.nodeEnv === 'production' ? 'none' : 'lax',
-    // path: '/auth/refresh',
-    path: '/',
-    maxAge: 1000 * 60 * 60 * 24 * 7, // Cambiar al mismo del refreshToken, colocar este valor como una constante
-    signed: true,
+  private getCookieOptions = (req?: Request): CookieOptions => {
+    const isProduction = envs.nodeEnv === 'production';
+    // const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+
+    return {
+      httpOnly: true,
+      // NOTE: Required when sameSite is 'lax' (enforced by modern browsers)
+      // secure: true,
+      // NOTE: Update this in production with https
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      // INFO: It's necessary in cross-site (LAN) development (frontend localhost/IP different)
+      // sameSite: 'none' is required for cross-site requests
+      // sameSite: 'none',
+      // path: '/auth/refresh',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Cambiar al mismo del refreshToken, colocar este valor como una constante
+      signed: true,
+      partitioned: true,
+    };
   };
 
   constructor(private readonly authService: AuthService) {}
@@ -53,11 +67,12 @@ export class AuthController {
       passthrough: true,
     })
     res: Response,
+    @Req() req: Request,
   ) {
     const { refresh_token, access_token } =
       await this.authService.signinLocal(dto);
 
-    res.cookie('refresh_token', refresh_token, this.cookieOptions);
+    res.cookie('refresh_token', refresh_token, this.getCookieOptions(req));
 
     return {
       access_token,
@@ -71,7 +86,7 @@ export class AuthController {
     @GetCurrentUserId() userId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    res.clearCookie('refresh_token');
+    res.clearCookie('refresh_token', this.getCookieOptions());
 
     return this.authService.logout(userId);
   }
@@ -90,11 +105,12 @@ export class AuthController {
     @GetCurrentUserId() userId: string,
     @GetCurrentUser('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
   ) {
     const { refresh_token, access_token } =
       await this.authService.refreshTokens(userId, refreshToken);
 
-    res.cookie('refresh_token', refresh_token, this.cookieOptions);
+    res.cookie('refresh_token', refresh_token, this.getCookieOptions(req));
 
     return {
       access_token,

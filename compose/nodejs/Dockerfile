@@ -1,5 +1,10 @@
 FROM node:25-alpine3.22 AS builder
 
+# ENV NODE_ENV=production
+
+ARG APP_ENVIRONMENT=production
+ENV NODE_ENV=$APP_ENVIRONMENT
+
 # RUN mkdir -p /home/app
 
 WORKDIR /home/app
@@ -12,6 +17,9 @@ COPY . .
 RUN pnpm prisma generate && pnpm build
 
 FROM node:25-alpine3.22
+
+ARG APP_ENVIRONMENT=production
+ENV NODE_ENV=$APP_ENVIRONMENT
 
 WORKDIR /home/app
 

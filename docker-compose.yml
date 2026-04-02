@@ -34,15 +34,34 @@ services:
     build:
       context: .
       dockerfile: ./compose/nodejs/Dockerfile
+      args:
+        - APP_ENVIRONMENT=production
     env_file:
       - .env
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-postgres}?schema=public
-    ports:
-      - '${PORT:-3000}:3000'
+    # ports:
+    #   - '${PORT:-3000}:3000'
     depends_on:
       postgres:
         condition: service_healthy
+
+  nginx:
+    # image: nginx:alpine
+    build:
+      context: ./compose/nginx
+      dockerfile: Dockerfile
+    container_name: spi_nginx
+    restart: always
+    ports:
+      - '${PORT:-3000}:443'
+    # volumes:
+    #   - ./compose/nginx/nginx_config.conf:/etc/nginx/conf.d/spi_backend.conf:ro
+    # volumes:
+    # - ./certs:/etc/nginx/certs:ro
+    # - ./compose/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
 
 volumes:
   local_postgres_data:
