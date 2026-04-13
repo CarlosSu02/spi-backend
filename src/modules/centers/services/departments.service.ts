@@ -32,37 +32,34 @@ export class DepartmentsService {
     return departments;
   }
 
-  async findAllWithCoordinators(): Promise<TDepartment[]> {
-    const departments = await this.prisma.centerDepartment.findMany({
-      where: {
-        teacherAppointments: {
-          some: {
-            position: {
-              // name: EPosition.DEPARTMENT_HEAD,
-              name: {
-                contains: EPosition.DEPARTMENT_HEAD,
-              },
-            },
-          },
-        },
-      },
+  async findAllWithCoordinators() {
+    const departments = await this.prisma.department.findMany({
       include: {
-        teacherAppointments: {
-          where: {
-            position: {
-              name: EPosition.DEPARTMENT_HEAD,
-            },
-          },
-          select: {
-            position: true,
-            teacher: {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    code: true,
+        faculty: true, // opcional
+        centers: {
+          include: {
+            center: true,
+            teacherAppointments: {
+              where: {
+                position: {
+                  name: {
+                    contains: EPosition.DEPARTMENT_HEAD,
+                    // equals: EPosition.DEPARTMENT_HEAD,
+                  },
+                },
+                endDate: null,
+              },
+              // take: 1,
+              include: {
+                teacher: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        code: true,
+                      },
+                    },
                   },
                 },
               },
@@ -70,48 +67,37 @@ export class DepartmentsService {
           },
         },
       },
+      orderBy: { name: 'asc' },
     });
 
-    // if (departments.length === 0)
-    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
-
-    const mapped: Array<
-      TDepartment & {
-        center: TCenter;
-        coordinator: {
-          id: string;
-          code: string;
-          name: string;
-          teacherId: string;
-        };
-      }
-    > = (
-      departments as (TCenterDepartmentJoin & {
-        teacherAppointments: {
-          position: TPosition;
-          teacher: {
-            id: string;
-            user: TCustomPick<TUser, 'id' | 'code' | 'name'>;
-          };
-        }[];
-      })[]
-    ).map((dep) => {
-      const { teacherAppointments, ...depToMap } = dep;
-      const tc = teacherAppointments[0];
+    const result = departments.map((dept) => {
+      const coordinations = dept.centers
+        .flatMap((cd) =>
+          cd.teacherAppointments.map((appointment) => ({
+            centerDepartmentId: cd.id,
+            centerId: cd.center.id,
+            centerName: cd.center.name,
+            coordinator: {
+              teacherId: appointment.teacher.id,
+              userId: appointment.teacher.user.id,
+              name: appointment.teacher.user.name,
+              code: appointment.teacher.user.code,
+            },
+          })),
+        )
+        .filter(Boolean);
 
       return {
-        ...depToMap.department,
-        center: depToMap.center,
-        coordinator: {
-          id: tc.teacher.id,
-          teacherId: tc.teacher.id,
-          name: tc.teacher.user.name,
-          code: tc.teacher.user.code,
-        },
+        id: dept.id,
+        name: dept.name,
+        uvs: dept.uvs,
+        facultyId: dept.facultyId,
+        // facultyName: dept.faculty?.name,
+        coordinations,
       };
     });
 
-    return mapped;
+    return result;
   }
 
   async findOne(id: string): Promise<TDepartment> {

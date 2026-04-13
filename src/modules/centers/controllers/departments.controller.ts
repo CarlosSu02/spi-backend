@@ -56,7 +56,7 @@ export class DepartmentsController {
     okDescription: 'Listado de departamentos.',
   })
   findAll() {
-    return this.departmentsService.findAll();
+    return this.departmentsService.findAllWithCoordinators();
   }
 
   @Get(':id')
