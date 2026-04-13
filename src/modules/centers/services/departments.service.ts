@@ -26,8 +26,8 @@ export class DepartmentsService {
   async findAll(): Promise<TDepartment[]> {
     const departments = await this.prisma.department.findMany();
 
-    // if (departments.length === 0)
-    //   throw new NotFoundException('No se encontraron datos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
+    if (departments.length === 0)
+      throw new NotFoundException('No se encontraron datos de departamentos.'); // tambien se puede devolver un 200 como consulta exitosa pero con data []
 
     return departments;
   }

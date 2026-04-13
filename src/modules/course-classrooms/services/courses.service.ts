@@ -12,6 +12,7 @@ import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { TCustomOmit } from 'src/common/types';
 import { Prisma } from '@prisma/client';
+import { TDepartment } from 'src/modules/centers/types';
 
 @Injectable()
 export class CoursesService {
@@ -100,10 +101,21 @@ export class CoursesService {
     return paginateOutput<TCourse>(courses, count, query);
   }
 
-  async findOne(id: string): Promise<TCourse> {
+  async findOne(
+    id: string,
+  ): Promise<TCourse & { department: Pick<TDepartment, 'id' | 'name'> }> {
     const course = await this.prisma.course.findUnique({
       where: {
         id,
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -146,7 +158,7 @@ export class CoursesService {
         ? {
             department: {
               centers: {
-                every: {
+                some: {
                   id: centerDepartmentId,
                 },
               },
@@ -164,6 +176,7 @@ export class CoursesService {
           code: true,
           name: true,
           uvs: true,
+          activeStatus: true,
           department: {
             select: {
               id: true,
@@ -206,5 +219,15 @@ export class CoursesService {
     });
 
     return courseDelete;
+  }
+
+  async existsByCode(code: string): Promise<boolean> {
+    const normalizedCode = normalizeText(code);
+
+    const course = await this.prisma.course.findUnique({
+      where: { code: normalizedCode },
+    });
+
+    return !!course;
   }
 }

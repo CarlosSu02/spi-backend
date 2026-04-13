@@ -1,4 +1,3 @@
-// validator constraint para buscar si ya existe un código de curso y no permitir duplicados
 import { Injectable } from '@nestjs/common';
 import {
   ValidationArguments,
@@ -12,13 +11,10 @@ import { CoursesService } from '../services/courses.service';
 export class ExistsCodeCourseValidator implements ValidatorConstraintInterface {
   constructor(private readonly coursesService: CoursesService) {}
 
-  async validate(code: string, args: ValidationArguments): Promise<boolean> {
-    if (!code || code === '') return true;
-
-    if (typeof code !== 'string') return false;
-
-    const course = await this.coursesService.findOneByCode(code);
-    return !course;
+  async validate(code: string): Promise<boolean> {
+    if (!code || typeof code !== 'string') return true;
+    const exists = await this.coursesService.existsByCode(code);
+    return !exists;
   }
 
   defaultMessage(args: ValidationArguments): string {
