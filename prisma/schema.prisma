@@ -5,14 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../node_modules/.prisma/client"
-  previewFeatures = ["multiSchema", "relationJoins", "postgresqlExtensions", "views"]
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["relationJoins", "postgresqlExtensions", "views"]
 }
 
 datasource db {
   provider   = "postgresql"
-  url        = env("DATABASE_URL")
   schemas    = ["auth", "academic", "infraestructure", "inventory", "public", "ai"]
   extensions = [unaccent]
 }

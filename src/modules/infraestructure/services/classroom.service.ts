@@ -6,7 +6,7 @@ import { TClassroom, TCreateClassroom, TUpdateClassroom } from '../types';
 import { QueryPaginationDto } from 'src/common/dto';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class ClassroomService {

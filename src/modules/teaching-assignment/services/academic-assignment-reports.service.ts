@@ -35,7 +35,7 @@ import { formatISO } from 'date-fns';
 import { ClassroomService } from 'src/modules/infraestructure/services/classroom.service';
 import { TeachingSessionsService } from './teaching-sessions.service';
 import { CourseClassroomsService } from 'src/modules/course-classrooms/services/course-classrooms.service';
-import { Classroom, Course, Prisma, User } from '@prisma/client';
+import { Classroom, Course, Prisma, User } from 'src/generated/prisma/client';
 import { TCustomOmit } from 'src/common/types';
 import { TComplementaryActivity } from 'src/modules/complementary-activities/types';
 import { EPosition } from 'src/modules/teachers-config/enums';

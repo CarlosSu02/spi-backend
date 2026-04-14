@@ -4,7 +4,9 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from 'src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { envs } from 'src/config';
 
 const logger = new Logger('DB');
 
@@ -13,16 +15,13 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
-  // constructor() {
-  //   const url: string = process.env.DATABASE_URL;
-  //   super({
-  //     datasources: {
-  //       db: {
-  //         url,
-  //       },
-  //     },
-  //   });
-  // }
+  constructor() {
+    const adapter = new PrismaPg({
+      connectionString: envs.databaseUrl,
+    });
+
+    super({ adapter });
+  }
 
   async onModuleInit() {
     await this.$connect();

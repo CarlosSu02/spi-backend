@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { Reflector } from '@nestjs/core';
 import { RESPONSE_MESSAGE_METADATA } from '../decorators';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 export interface IResponse<T> {
   status: boolean;

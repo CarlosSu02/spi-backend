@@ -11,7 +11,7 @@ import { normalizeText, paginate, paginateOutput } from 'src/common/utils';
 import { IPaginateOutput } from 'src/common/interfaces';
 import { QueryPaginationDto } from 'src/common/dto';
 import { TCustomOmit } from 'src/common/types';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { TDepartment } from 'src/modules/centers/types';
 
 @Injectable()

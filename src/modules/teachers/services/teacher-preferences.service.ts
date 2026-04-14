@@ -13,7 +13,7 @@ import { paginate, paginateOutput } from 'src/common/utils';
 import { CreateTeacherPreferenceDto } from '../dto/create-teacher-preference.dto';
 import { UpdateTeacherPreferenceDto } from '../dto/update-teacher-preference.dto';
 import { TTeacherPreferredClass } from '../types';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { TeachersService } from './teachers.service';
 import { CoursesService } from 'src/modules/course-classrooms/services/courses.service';
 

@@ -25,7 +25,7 @@ import { TJwtPayload } from 'src/modules/auth/types';
 import { EPosition } from 'src/modules/teachers-config/enums';
 import { PositionsService } from 'src/modules/teachers-config/services/positions.service';
 import { QueryPaginationDto } from 'src/common/dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class UsersService {
