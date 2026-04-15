@@ -1,109 +1,258 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# SGOA - Sistema de Gestión y Organización Académica
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend REST API para la gestión y organización académica de una universidad, desarrollado con NestJS y Prisma ORM.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Descripción
 
-## Description
+SGOA es un sistema integral para la administración académica que permite gestionar docentes, cursos, salones, períodos académicos, asignaciones docentes, actividades complementarias, inventario de equipos y más. El proyecto fue desarrollado como parte de la clase de Tópicos Especiales y Avanzados del II PAC 2025.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Participantes
 
-## Project setup
+| Nombre        | Correo                          |
+| ------------- | ------------------------------- |
+| Carlos Su     | carlosj.sup@gmail.com           |
+| Jorge Canales | jorgecanalesortega935@gmail.com |
+
+## Tecnologías
+
+- **Framework**: NestJS
+- **ORM**: Prisma v7
+- **Base de datos**: PostgreSQL
+- **Autenticación**: JWT con refresh tokens
+- **Validación**: class-validator + Joi
+
+## Características
+
+### Gestión de Docentes
+
+- Registro y administración de docentes
+- Categorías, tipos de contrato y turnos
+- Grados académicos (pregrado y posgrado)
+- Preferencias de clases
+- Cargos académicos por departamento
+
+### Gestión Académica
+
+- Períodos académicos (trimestrales y semestrales)
+- Fechas estimadas de períodos académicos (edición)
+- Asignaciones docentes
+- Sesiones de enseñanza
+- Clases por salón
+- Modalidades (presencial, virtual, semipresencial)
+- Estadísticas de cursos
+
+### Gestión de Infraestructura
+
+- Edificios y salones
+- Equipamiento de salones (proyectores, computadoras, aire acondicionado)
+- Tipos de salón, conectividad y equipos de audio
+
+### Inventario
+
+- Equipos de computación
+- Aires acondicionados
+- Marcas y condiciones
+- Tipos y tamaños de monitores
+
+### Actividades Complementarias
+
+- Registro de actividades
+- Tipos de actividad
+- Medios de verificación
+- Archivos multimedia (Cloudinary)
+
+### Módulos Adicionales
+
+- Integración con Cloudinary
+- Planificador con IA
+- Sistema de correos
+
+### API Endpoints
+
+| Módulo                      | Endpoint principal          |
+| --------------------------- | --------------------------- |
+| Autenticación               | `/auth`                     |
+| Usuarios                    | `/users`                    |
+| Docentes                    | `/teachers`                 |
+| Centros                     | `/centers`                  |
+| Departamentos               | `/departments`              |
+| Cursos                      | `/courses`                  |
+| Salones                     | `/classrooms`               |
+| Períodos Académicos         | `/academic-periods`         |
+| Asignaciones                | `/academic-assignments`     |
+| Actividades Complementarias | `/complementary-activities` |
+| Inventario                  | `/inventory`                |
+| Excel                       | `/excel`                    |
+
+> Para documentación completa de la API, iniciar el servidor y acceder a `/api/docs`
+
+## Requisitos Previos
+
+- Node.js 20+
+- pnpm
+- Docker y Docker Compose
+- PostgreSQL (local o contenedor)
+
+## Configuración
+
+1. Clonar el repositorio
+2. Instalar dependencias:
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
+3. Configurar variables de entorno en `.env`:
 
-```bash
-# development
-$ pnpm run start
+```env
+# ============================================
+# Servidor
+# ============================================
 
-# watch mode
-$ pnpm run start:dev
+PORT=9999                      # Puerto del servidor
+HOST={{ your_host }}/v1/api    # Host de la API
 
-# production mode
-$ pnpm run start:prod
+# ============================================
+# Base de datos
+# ============================================
+
+DATABASE_URL="postgresql://[user]:[password]@[host]:[port]/[database]?schema=public"
+# URL de conexión a PostgreSQL (formato: postgresql://user:password@host:puerto/db?schema=)
+
+# ============================================
+# PostgreSQL (Docker)
+# ============================================
+
+POSTGRES_USER=your_user       # Usuario de PostgreSQL
+POSTGRES_PASSWORD=your_password  # Contraseña del usuario
+POSTGRES_DB=db              # Nombre de la base de datos
+
+# ============================================
+# pgAdmin (Docker)
+# ============================================
+
+PGADMIN_DEFAULT_EMAIL=your_email     # Correo para iniciar sesión en pgAdmin
+PGADMIN_DEFAULT_PASSWORD=your_password  # Contraseña de pgAdmin
+
+# ============================================
+# JWT (Autenticación)
+# ============================================
+
+AT_SECRET=value  # Clave secreta para tokens de acceso
+RT_SECRET=value # Clave secreta para tokens de actualización
+
+# ============================================
+# Cloudinary (Almacenamiento de imágenes)
+# ============================================
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name  # Nombre de la nube en Cloudinary
+CLOUDINARY_API_KEY=your_api_key        # API Key de Cloudinary
+CLOUDINARY_API_SECRET=your_api_secret # API Secret de Cloudinary
+
+# ============================================
+# Frontend
+# ============================================
+
+FE_URL=url  # URL del frontend para CORS y cookies
+
+# ============================================
+# Cookie Parser
+# ============================================
+
+COOKIE_KEY=your_cookie_secret_key  # Clave para firmar las cookies
+
+# ============================================
+# Correo (Nodemailer)
+# ============================================
+
+EMAIL=your_email         # Correo remitente
+EMAIL_KEY=your_email_key   # Clave de aplicación de Google
+SMTP_HOST=email_host    # Servidor SMTP
+SMTP_PORT=email_port  # Puerto SMTP
+
+# ============================================
+# Planificador IA
+# ============================================
+
+PLANIFICATOR_AI_HOST=url  # Host del servicio de IA
 ```
 
-## Run tests
+4. Generar el cliente de Prisma:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm prisma generate
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+5. Ejecutar migraciones y seed (datos iniciales):
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Ejecutar migraciones
+pnpm prisma migrate dev
+
+# Poblar la base de datos con datos iniciales (roles, usuarios, categorías, etc.)
+pnpm prisma db seed
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+> El seed incluye: roles, usuarios, categorías de docentes, tipos de contrato, turnos, cargos, centros, facultades, departamentos, cursos, modalidades, edificios, salones, marcas, condiciones, equipos, tipos de actividades, y más.
 
-## Resources
+> Para obtener el query con información adicional para el seed, contactar al coordinador de área o quien corresponda.
 
-Check out a few resources that may come in handy when working with NestJS:
+## Ejecución
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-
----
-
-# Exec this before to exec `docker compose up -d`
+### Desarrollo
 
 ```bash
+pnpm run start:dev
+```
+
+### Producción con Docker
+
+```bash
+docker compose up -d
+```
+
+Esto inició:
+
+- PostgreSQL en el puerto 5432
+- pgAdmin en el puerto 5433
+- Backend API
+- Nginx con SSL en el puerto 3000
+
+### Generar certificados SSL (desarrollo)
+
+```bash
+# Ejemplo => cambiar según la región
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout compose/ngnix/certs/privkey.pem \
-  -out compose/ngnix/certs/fullchain.pem \
-  -subj "/C=<Country Prefix>/ST=<City>/L=<City>/O=Local Development/CN=localhost"
+  -keyout compose/nginx/certs/privkey.pem \
+  -out compose/nginx/certs/fullchain.pem \
+  -subj "/C=HN/ST=Tegucigalpa/L=Tegucigalpa/O=Local Development/CN=localhost"
 ```
+
+## Estructura del Proyecto
+
+```
+src/
+├── modules/
+│   ├── auth/                   # Autenticación
+│   ├── users/                  # Gestión de usuarios
+│   ├── teachers/              # Docentes
+│   ├── centers/              # Centros y facultades
+│   ├── course-classrooms/      # Cursos y salones
+│   ├── teaching-assignment/   # Asignaciones
+│   ├── complementary-activities/ # Actividades
+│   ├── inventory/            # Inventario
+│   ├── infraestructure/      # Infraestructura
+│   └── ...
+├── generated/prisma/           # Cliente Prisma generado
+└── main.ts
+```
+
+## Base de Datos
+
+El esquema incluye múltiples esquemas:
+
+- `auth` - Usuarios y roles
+- `academic` - Gestión académica
+- `infraestructure` - Edificios y salones
+- `inventory` - Equipos
+- `ai` - Preferencias de docentes
