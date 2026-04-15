@@ -40,9 +40,10 @@ interface IResponseWithMeta<T> {
 }
 
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, IResponse<T>>
-{
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  IResponse<T>
+> {
   private readonly METHOD_TRANSLATIONS: Record<string, string> = {
     POST: 'crear',
     PUT: 'actualizar',
@@ -106,28 +107,44 @@ export class TransformInterceptor<T>
       message: string;
     }
 
+    const exceptionResponse =
+      exception instanceof HttpException ? exception.getResponse() : null;
+
     const resultMessage =
-      exception instanceof HttpException && exception.getResponse()
-        ? (exception.getResponse() as IHEWithMessage).message === message
+      exception instanceof HttpException && exceptionResponse
+        ? (exceptionResponse as IHEWithMessage).message === message
           ? []
-          : (exception.getResponse() as IHEWithMessage).message
+          : (exceptionResponse as IHEWithMessage).message
         : [];
 
-    const uniqueMessages = [...new Set(resultMessage)]; // Eliminar duplicados
+    const uniqueMessages = [...new Set(resultMessage)];
+
+    const additionalData: Record<string, unknown> = {};
+    if (exceptionResponse && typeof exceptionResponse === 'object') {
+      const responseObj = exceptionResponse as Record<string, unknown>;
+      Object.keys(responseObj).forEach((key) => {
+        if (key !== 'message' && key !== 'error') {
+          additionalData[key] = responseObj[key];
+        }
+      });
+    }
 
     console.log(exception.message);
+
+    const dataPayload =
+      Object.keys(additionalData).length > 0
+        ? {
+            ...additionalData,
+            ...(uniqueMessages.length > 0 ? { errors: uniqueMessages } : {}),
+          }
+        : uniqueMessages;
 
     response.status(status).json({
       status: status >= 200 && status < 300,
       statusCode: status,
       path: request.url,
       message,
-      // result:
-      // exception instanceof HttpException &&
-      // Object.entries(exception).includes('response') &&
-      // exception.reponse,
-      // result: exception instanceof HttpException && exception.getResponse(),
-      data: uniqueMessages,
+      data: dataPayload,
       timestamp: format(new Date().toISOString(), 'yyyy-MM-dd HH:mm:ss'),
     });
   }

@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { AcademicAssignmentReportsService } from '../services/academic-assignment-reports.service';
 import {
@@ -704,6 +705,13 @@ export class AssignmentReportsController {
       currentUserId,
     );
 
+    if (parsedData.coursesView.invalidElements.length > 0) {
+      throw new BadRequestException({
+        message: 'Algunos elementos no pasaron la validación',
+        invalidElements: parsedData.coursesView.invalidElements,
+      });
+    }
+
     return this.academicAssignmentReportsService.createFromArray(
       parsedData.coursesGroupByTeacherCodeEntries,
     );
@@ -766,6 +774,13 @@ export class AssignmentReportsController {
       currentUserId,
       parsedAcademicTitle,
     );
+
+    if (parsedData.coursesView.invalidElements.length > 0) {
+      throw new BadRequestException({
+        message: 'Algunos elementos no pasaron la validación',
+        invalidElements: parsedData.coursesView.invalidElements,
+      });
+    }
 
     return this.academicAssignmentReportsService.createFromArray(
       parsedData.coursesGroupByTeacherCodeEntries,

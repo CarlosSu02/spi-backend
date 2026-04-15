@@ -43,7 +43,7 @@ export class AuthController {
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 7, // Cambiar al mismo del refreshToken, colocar este valor como una constante
       signed: true,
-      partitioned: true,
+      partitioned: isProduction,
     };
   };
 
