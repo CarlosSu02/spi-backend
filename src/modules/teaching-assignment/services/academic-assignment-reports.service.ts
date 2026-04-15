@@ -785,7 +785,12 @@ export class AcademicAssignmentReportsService {
 
     const classroomNotAvailableMap = new Map<
       string,
-      { daysSet: Set<string>; days: string }[]
+      {
+        daysSet: Set<string>;
+        days: string;
+        courseName: string;
+        teacherCode: string;
+      }[]
     >();
 
     for (const cc of existingCourseClassrooms) {
@@ -795,7 +800,12 @@ export class AcademicAssignmentReportsService {
       if (!classroomNotAvailableMap.has(key)) {
         classroomNotAvailableMap.set(key, []);
       }
-      classroomNotAvailableMap.get(key)!.push({ daysSet, days: cc.days });
+      classroomNotAvailableMap.get(key)!.push({
+        daysSet,
+        days: cc.days,
+        courseName: cc.course.name,
+        teacherCode: cc.teachingSession.assignmentReport.teacher.user.code,
+      });
     }
 
     // const currentCourseClassroomSet = new Set(
@@ -857,25 +867,31 @@ export class AcademicAssignmentReportsService {
       item.nearGraduation = item.nearGraduation ?? false;
 
       const dayError = this.validateDays(item.days);
+
       if (dayError) errors.push(dayError);
 
       const [teacher, teacherError] = this.findTeacher(
         teacherMap,
         item.teacherCode,
       );
+
       if (!teacher) errors.push(teacherError);
+      if (teacher) item.teacherName = teacher.name;
 
       const [course, courseError] = this.findCourse(
         courseMap,
         item.courseCode,
         item.departmentName,
       );
+
       if (!course) errors.push(courseError);
+      if (course) item.courseName = course.name;
 
       const [classroom, classroomError] = this.findClassroom(
         classroomMap,
         item.classroomName,
       );
+
       if (!classroom) errors.push(classroomError);
 
       // const existingCourseClassroom = existingCourseClassroomsMap.get(
@@ -889,6 +905,7 @@ export class AcademicAssignmentReportsService {
           academicPeriodTitle,
           academicPeriod.id,
         );
+
       if (!validateCourseClassroom && validateCourseClassroomError !== '')
         errors.push(validateCourseClassroomError);
 
@@ -912,11 +929,13 @@ export class AcademicAssignmentReportsService {
       const itemDaysSet = new Set(item.days.match(/.{1,2}/g) || []);
 
       let hasOverlap = false;
+
       if (occupiedSchedules) {
         for (const occupied of occupiedSchedules) {
           const hasCommonDay = [...itemDaysSet].some((day) =>
             occupied.daysSet.has(day),
           );
+
           if (hasCommonDay) {
             hasOverlap = true;
             break;
@@ -929,23 +948,36 @@ export class AcademicAssignmentReportsService {
         hasOverlap &&
         normalizeText(classroom.roomType.description) !==
           normalizeText(EClassModality.VIRTUAL_SPACE)
-      )
-        errors.push(
-          `El salón de clase <${classroom.name}> ya se encuentra en uso los días <${item.days}> en la sección <${item.section}>.`,
+      ) {
+        const occupiedInfo = occupiedSchedules?.find((o) =>
+          [...itemDaysSet].some((day) => o.daysSet.has(day)),
         );
 
+        const conflictInfo = occupiedInfo
+          ? ` por <${occupiedInfo.courseName}> (${occupiedInfo.teacherCode})`
+          : '';
+
+        errors.push(
+          `El salón de clase <${classroom.name}> ya se encuentra en uso${conflictInfo} los días <${item.days}> en la sección <${item.section}>.`,
+        );
+      }
+
       const currentArrayOccupied = currentArrayClassroomMap.get(classroomKey);
+
       if (classroom && currentArrayOccupied) {
         for (const occupied of currentArrayOccupied) {
           const hasCommonDay = [...itemDaysSet].some((day) =>
             occupied.daysSet.has(day),
           );
+
           if (hasCommonDay) {
             errors.push(
-              `El salón de clase <${classroom.name}> ya se encuentra en uso los días <${occupied.item.days}> en la sección <${occupied.item.section}> dentro del mismo archivo.`,
+              `El salón de clase <${classroom.name}> ya se encuentra en uso por <${occupied.item.courseName}> (${occupied.item.teacherCode}) los días <${occupied.item.days}> en la sección <${occupied.item.section}>.`,
             );
+
             itemsToInvalidate.add(item.originalIndex);
             itemsToInvalidate.add(occupied.item.originalIndex);
+
             break;
           }
         }
@@ -955,6 +987,7 @@ export class AcademicAssignmentReportsService {
         item.classroomName,
         modalitySet,
       );
+
       if (!modality) errors.push(modalityError);
 
       if (errors.length) {
@@ -967,6 +1000,7 @@ export class AcademicAssignmentReportsService {
           if (!currentArrayClassroomMap.has(classroomKey)) {
             currentArrayClassroomMap.set(classroomKey, []);
           }
+
           currentArrayClassroomMap.get(classroomKey)!.push({
             daysSet: itemDaysSet,
             item: item,
